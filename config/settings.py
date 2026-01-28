@@ -28,6 +28,13 @@ OPENROUTER_API_KEY: str = os.getenv("OPENROUTER_API_KEY", "")
 SERPER_BASE_URL: str = "https://google.serper.dev/search"
 
 # =============================================================================
+# OpenRouter Configuration
+# =============================================================================
+
+OPENROUTER_BASE_URL: str = "https://openrouter.ai/api/v1"
+TONGYI_MODEL: str = os.getenv("TONGYI_MODEL", "qwen/qwen-2.5-72b-instruct")
+
+# =============================================================================
 # Caching Configuration
 # =============================================================================
 
@@ -40,6 +47,7 @@ CACHE_DIR: Path = PROJECT_ROOT / "data" / "cache"
 
 MAX_CONCURRENT_REQUESTS: int = int(os.getenv("MAX_CONCURRENT_REQUESTS", "5"))
 REQUEST_TIMEOUT: int = int(os.getenv("REQUEST_TIMEOUT", "30"))
+LLM_TIMEOUT: int = int(os.getenv("LLM_TIMEOUT", "120"))
 
 # =============================================================================
 # Retry Configuration
@@ -49,12 +57,22 @@ MAX_RETRIES: int = int(os.getenv("MAX_RETRIES", "3"))
 RETRY_DELAY: float = float(os.getenv("RETRY_DELAY", "1.0"))
 
 # =============================================================================
+# Research Agent Configuration
+# =============================================================================
+
+MAX_RESEARCH_ITERATIONS: int = int(os.getenv("MAX_RESEARCH_ITERATIONS", "3"))
+MIN_RESEARCH_ITERATIONS: int = int(os.getenv("MIN_RESEARCH_ITERATIONS", "2"))
+
+# =============================================================================
 # Validation
 # =============================================================================
 
-def validate_config() -> list[str]:
+def validate_config(require_openrouter: bool = False) -> list[str]:
     """
     Validate that required configuration is present.
+    
+    Args:
+        require_openrouter: If True, also validate OpenRouter API key
     
     Returns:
         List of validation error messages (empty if valid)
@@ -64,9 +82,8 @@ def validate_config() -> list[str]:
     if not SERPER_API_KEY:
         errors.append("SERPER_API_KEY is not set. Please add it to your .env file.")
     
-    # OPENROUTER_API_KEY is optional for search layer, required later
-    # if not OPENROUTER_API_KEY:
-    #     errors.append("OPENROUTER_API_KEY is not set.")
+    if require_openrouter and not OPENROUTER_API_KEY:
+        errors.append("OPENROUTER_API_KEY is not set. Please add it to your .env file.")
     
     return errors
 
