@@ -16,6 +16,7 @@ from dataclasses import dataclass, asdict
 from datetime import datetime
 from pathlib import Path
 from typing import List, Optional
+from urllib.parse import urlparse
 
 import httpx
 from tenacity import (
@@ -59,6 +60,8 @@ class PermanentSearchError(SearchError):
 # Data Classes
 # =============================================================================
 
+from agents.source_scoring import SourceScorer
+
 @dataclass
 class SearchResultItem:
     """A single search result item."""
@@ -66,7 +69,8 @@ class SearchResultItem:
     url: str
     snippet: str
     position: int
-
+    source_score: float = 0.5
+    domain: str = ""
 
 @dataclass
 class SearchResult:
@@ -224,12 +228,26 @@ class SearchClient:
         items = []
         organic_results = response_data.get("organic", [])
         
+        # Extract company name from query if possible (heuristic)
+        # Assumes query format like "{company} {variable}"
+        company_name = ""
+        parts = query.split()
+        if parts:
+            company_name = parts[0]
+        
         for result in organic_results:
+            url = result.get("link", "")
+            domain = urlparse(url).netloc.lower()
+            if domain.startswith("www."):
+                domain = domain[4:]
+                
             item = SearchResultItem(
                 title=result.get("title", ""),
-                url=result.get("link", ""),
+                url=url,
                 snippet=result.get("snippet", ""),
                 position=result.get("position", 0),
+                source_score=SourceScorer.score_url(url, company_name),
+                domain=domain
             )
             items.append(item)
         

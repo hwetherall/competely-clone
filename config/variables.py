@@ -5,7 +5,7 @@ Each variable defines what information to research about a company,
 including the research prompt and example search queries.
 """
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import List, Dict
 
 
@@ -17,6 +17,12 @@ class VariableDefinition:
     category: str              # e.g., "Core Positioning & Value"
     research_prompt: str       # Detailed instructions for researching this variable
     example_queries: List[str] # Example search queries to help the agent
+    
+    # New fields for Upgrade 3
+    answer_spec: List[str] = field(default_factory=list) # What must be answered
+    preferred_source_types: List[str] = field(default_factory=list) # e.g., "official", "analyst"
+    key_terms: List[str] = field(default_factory=list) # For passage selection
+    max_concise_chars: int = 240
 
 
 # =============================================================================
@@ -46,7 +52,14 @@ Summarize the core promise they make to customers in a clear, specific way.""",
             "{company} why choose us",
             "{company} company mission",
             "what makes {company} different"
-        ]
+        ],
+        answer_spec=[
+            "Primary tagline or core promise",
+            "Main differentiator vs competitors",
+            "Key benefit to the customer"
+        ],
+        preferred_source_types=["official", "marketing"],
+        key_terms=["value proposition", "mission", "unique", "differentiator", "why choose", "promise"]
     ),
     
     VariableDefinition(
@@ -67,7 +80,14 @@ Look at marketing language, pricing strategy, and target audience signals.""",
             "{company} target market",
             "{company} brand strategy",
             "how {company} competes"
-        ]
+        ],
+        answer_spec=[
+            "Market segment (Premium/Economy/Mid-market)",
+            "Archetype (Innovator/Incumbent/Disruptor)",
+            "Target audience focus"
+        ],
+        preferred_source_types=["official", "analyst"],
+        key_terms=["positioning", "market segment", "strategy", "brand", "target"]
     ),
     
     VariableDefinition(
@@ -88,7 +108,14 @@ Focus on concrete differentiators, not just marketing claims.""",
             "{company} competitive advantage",
             "{company} comparison",
             "why {company} over alternatives"
-        ]
+        ],
+        answer_spec=[
+            "Main competitors mentioned",
+            "Key advantages claimed vs competitors",
+            "Key disadvantages or gaps vs competitors"
+        ],
+        preferred_source_types=["analyst", "review", "official"],
+        key_terms=["vs", "competitors", "comparison", "advantage", "better than", "alternatives"]
     ),
     
     VariableDefinition(
@@ -110,7 +137,14 @@ Prioritize concrete, verifiable differences.""",
             "{company} key differentiators",
             "{company} competitive features",
             "what {company} does differently"
-        ]
+        ],
+        answer_spec=[
+            "Unique features/capabilities",
+            "Technical advantages",
+            "Service/Business model advantages"
+        ],
+        preferred_source_types=["official", "technical", "analyst"],
+        key_terms=["unique", "exclusive", "patent", "proprietary", "only", "first"]
     ),
     
     VariableDefinition(
@@ -130,7 +164,14 @@ Look at:
             "{company} mission statement",
             "{company} our values",
             "{company} customer commitment"
-        ]
+        ],
+        answer_spec=[
+            "Core brand slogan/tagline",
+            "Emotional/Functional commitment",
+            "Stated company values"
+        ],
+        preferred_source_types=["official"],
+        key_terms=["promise", "mission", "vision", "values", "commitment", "slogan"]
     ),
     
     # -------------------------------------------------------------------------
@@ -155,7 +196,14 @@ Look at case studies, testimonials, and marketing targeting.""",
             "{company} who uses",
             "{company} ideal customer",
             "{company} testimonials"
-        ]
+        ],
+        answer_spec=[
+            "Primary persona (Role/Title)",
+            "Company size target (SMB/Ent)",
+            "Key verticals"
+        ],
+        preferred_source_types=["official", "marketing"],
+        key_terms=["persona", "customer", "who uses", "case study", "ideal client"]
     ),
     
     VariableDefinition(
@@ -175,7 +223,14 @@ Look for:
             "{company} enterprise vs startup",
             "{company} customer segments",
             "{company} plans pricing"
-        ]
+        ],
+        answer_spec=[
+            "Segmentation by size (SMB/Ent)",
+            "Segmentation by industry",
+            "Segmentation by geography/product"
+        ],
+        preferred_source_types=["official", "pricing"],
+        key_terms=["segment", "tier", "plan", "enterprise", "small business", "industry"]
     ),
     
     VariableDefinition(
@@ -194,7 +249,14 @@ Find:
             "{company} active accounts",
             "{company} user statistics",
             "how many people use {company}"
-        ]
+        ],
+        answer_spec=[
+            "Primary user roles",
+            "Total user count/metrics",
+            "Active user stats"
+        ],
+        preferred_source_types=["official", "press", "analyst"],
+        key_terms=["users", "count", "million", "active", "developers", "teams"]
     ),
     
     VariableDefinition(
@@ -213,7 +275,14 @@ Identify:
             "{company} who buys",
             "{company} decision maker",
             "{company} purchasing process"
-        ]
+        ],
+        answer_spec=[
+            "Primary decision maker title",
+            "Buying process type",
+            "Budget holder"
+        ],
+        preferred_source_types=["marketing", "analyst"],
+        key_terms=["buyer", "decision maker", "purchasing", "cfo", "cto", "procurement"]
     ),
     
     VariableDefinition(
@@ -234,7 +303,14 @@ Look at documentation, case studies, and feature pages.""",
             "{company} what can you do",
             "{company} solutions",
             "{company} how businesses use"
-        ]
+        ],
+        answer_spec=[
+            "Top 3 primary use cases",
+            "Specific problem solved",
+            "Industry applications"
+        ],
+        preferred_source_types=["official", "documentation"],
+        key_terms=["use case", "solution", "workflow", "example", "application"]
     ),
     
     # -------------------------------------------------------------------------
@@ -258,7 +334,14 @@ Use official product pages and feature lists.""",
             "{company} product capabilities",
             "{company} what does it do",
             "{company} key functionality"
-        ]
+        ],
+        answer_spec=[
+            "Top 5 core features",
+            "Key functionality",
+            "Platform capabilities"
+        ],
+        preferred_source_types=["official", "product"],
+        key_terms=["feature", "capability", "functionality", "tool", "platform"]
     ),
     
     VariableDefinition(
@@ -278,7 +361,14 @@ Look for:
             "{company} advanced capabilities",
             "{company} pro features",
             "{company} API features"
-        ]
+        ],
+        answer_spec=[
+            "Enterprise-grade features",
+            "Security/Compliance features",
+            "API/Developer capabilities"
+        ],
+        preferred_source_types=["official", "technical"],
+        key_terms=["enterprise", "advanced", "security", "compliance", "sso", "api"]
     ),
     
     VariableDefinition(
@@ -298,7 +388,14 @@ Find:
             "{company} apps marketplace",
             "{company} connects with",
             "{company} API partners"
-        ]
+        ],
+        answer_spec=[
+            "Major integration categories (CRM, ERP, etc.)",
+            "Key named partners",
+            "Marketplace existence"
+        ],
+        preferred_source_types=["official", "marketplace"],
+        key_terms=["integration", "partner", "connect", "plugin", "app store", "marketplace"]
     ),
     
     VariableDefinition(
@@ -318,7 +415,14 @@ Look for:
             "{company} engineering blog",
             "{company} technology",
             "{company} built with"
-        ]
+        ],
+        answer_spec=[
+            "Core languages/frameworks",
+            "Infrastructure/Cloud providers",
+            "Database/Data technologies"
+        ],
+        preferred_source_types=["technical", "blog"],
+        key_terms=["stack", "technology", "built with", "language", "framework", "database"]
     ),
     
     VariableDefinition(
@@ -338,7 +442,14 @@ Look for:
             "{company} new features 2024",
             "{company} product updates",
             "{company} whats new"
-        ]
+        ],
+        answer_spec=[
+            "Recent major releases",
+            "Upcoming/Planned features",
+            "Strategic product direction"
+        ],
+        preferred_source_types=["official", "blog", "news"],
+        key_terms=["roadmap", "upcoming", "coming soon", "release", "launch", "future"]
     ),
     
     # -------------------------------------------------------------------------
@@ -360,7 +471,14 @@ Identify:
             "{company} how they make money",
             "{company} revenue model",
             "{company} pricing model"
-        ]
+        ],
+        answer_spec=[
+            "Primary revenue model (SaaS/Transactional/etc.)",
+            "Secondary revenue streams",
+            "Monetization strategy"
+        ],
+        preferred_source_types=["analyst", "official"],
+        key_terms=["business model", "revenue", "monetization", "subscription", "fee"]
     ),
     
     VariableDefinition(
@@ -380,7 +498,14 @@ Find:
             "{company} cost",
             "{company} fees",
             "{company} plans"
-        ]
+        ],
+        answer_spec=[
+            "Pricing model (Tiered/Usage/Flat)",
+            "Specific price points/ranges",
+            "Free tier availability"
+        ],
+        preferred_source_types=["official", "pricing"],
+        key_terms=["price", "cost", "plan", "fee", "subscription", "free"]
     ),
     
     VariableDefinition(
@@ -402,7 +527,14 @@ Include the source and methodology when available.""",
             "{company} market position",
             "{company} industry ranking",
             "{company} vs competitors market"
-        ]
+        ],
+        answer_spec=[
+            "Market share percentage",
+            "Relative ranking (1st, 2nd, etc.)",
+            "Source/Date of data"
+        ],
+        preferred_source_types=["analyst", "news", "regulatory"],
+        key_terms=["market share", "percent", "ranking", "leader", "share"]
     ),
     
     VariableDefinition(
@@ -423,7 +555,14 @@ Look for analyst reports, investor presentations, and industry publications.""",
             "{company} TAM",
             "digital payments market size",
             "{company} industry size"
-        ]
+        ],
+        answer_spec=[
+            "TAM (Total Addressable Market)",
+            "Market growth rate (CAGR)",
+            "Forecast year"
+        ],
+        preferred_source_types=["analyst", "regulatory"],
+        key_terms=["market size", "TAM", "billion", "growth", "CAGR", "forecast"]
     ),
     
     VariableDefinition(
@@ -448,7 +587,14 @@ Always note the time period and source.""",
             "{company} annual revenue",
             "{company} earnings",
             "{company} financial results"
-        ]
+        ],
+        answer_spec=[
+            "Annual revenue figure",
+            "Fiscal year/period",
+            "Growth rate vs prior year"
+        ],
+        preferred_source_types=["regulatory", "official", "financial_news"],
+        key_terms=["revenue", "earnings", "sales", "arr", "annual", "quarter"]
     ),
 ]
 
