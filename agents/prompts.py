@@ -105,21 +105,25 @@ Comprehensive Answer:"""
 # Summarization
 # =============================================================================
 
-SUMMARIZE_PROMPT = """Summarize this comprehensive analysis into 1-3 concise sentences.
+SUMMARIZE_PROMPT = """Your task is to write a concise summary for a competitive analysis table cell.
 
 Company: {company}
 Variable: {variable_name}
 
-Comprehensive Analysis:
+Full Analysis:
 {comprehensive_answer}
 
-The summary should:
-- Capture the most important 1-2 points
-- Include specific numbers or facts if available
-- Be suitable for a competitive analysis table cell (max 50 words)
-- Be direct and factual, not promotional
+INSTRUCTIONS:
+- Write exactly 1-3 sentences
+- Do NOT use any markdown formatting (no headers, no bullets, no bold)
+- Do NOT start with the company name or variable name as a header
+- Include the most important specific facts or numbers
+- Write in plain prose suitable for a table cell
 
-Concise Summary:"""
+EXAMPLE FORMAT:
+"The company generates revenue primarily through transaction fees of 2.9% + $0.30 per transaction, with additional fees for international cards. Enterprise customers negotiate custom rates."
+
+YOUR SUMMARY (1-3 sentences, no formatting):"""
 
 
 # =============================================================================

@@ -407,8 +407,13 @@ class ResearchAgent:
             comprehensive: The comprehensive answer to summarize
             
         Returns:
-            Concise summary (1-3 sentences)
+            Concise summary (1-3 sentences, plain text)
         """
+        # Dedicated system prompt for summarization (no markdown)
+        summarize_system_prompt = """You are a concise business analyst writing table cells for competitive analysis.
+Your output must be plain text only - no markdown formatting, no headers, no bullets, no bold.
+Write clear, factual prose with specific numbers when available."""
+
         try:
             prompt = SUMMARIZE_PROMPT.format(
                 company=company,
@@ -418,16 +423,17 @@ class ResearchAgent:
             
             response = await self.llm_client.complete_simple(
                 prompt=prompt,
-                system_prompt=RESEARCH_SYSTEM_PROMPT,
+                system_prompt=summarize_system_prompt,
                 temperature=0.3,
                 max_tokens=200,
             )
             
-            result = response.strip()
+            # Clean any markdown that may have slipped through
+            result = self._clean_markdown(response.strip())
             
-            # If LLM returned empty, use fallback
-            if not result or len(result) < 10:
-                logger.warning("LLM returned empty summary, using fallback")
+            # If result is too short after cleaning, use fallback
+            if not result or len(result) < 20:
+                logger.warning("LLM returned empty/short summary, using fallback")
                 return self._create_fallback_summary(comprehensive)
             
             return result
@@ -436,22 +442,109 @@ class ResearchAgent:
             logger.error(f"LLM summarization failed: {e}")
             return self._create_fallback_summary(comprehensive)
     
+    def _clean_markdown(self, text: str) -> str:
+        """
+        Strip all markdown formatting from text.
+        
+        Removes:
+        - # headers
+        - **bold** and *italic*
+        - Bullet points (-, *, •)
+        - Numbered lists
+        - Multiple newlines
+        
+        Args:
+            text: Text potentially containing markdown
+            
+        Returns:
+            Clean plain text
+        """
+        if not text:
+            return text
+        
+        # Remove markdown headers (# ## ### etc.)
+        cleaned = re.sub(r'^#{1,6}\s+', '', text, flags=re.MULTILINE)
+        
+        # Remove **bold** formatting
+        cleaned = re.sub(r'\*\*([^*]+)\*\*', r'\1', cleaned)
+        
+        # Remove *italic* formatting
+        cleaned = re.sub(r'\*([^*]+)\*', r'\1', cleaned)
+        
+        # Remove __bold__ formatting
+        cleaned = re.sub(r'__([^_]+)__', r'\1', cleaned)
+        
+        # Remove _italic_ formatting
+        cleaned = re.sub(r'_([^_]+)_', r'\1', cleaned)
+        
+        # Remove bullet points at start of lines (-, *, •)
+        cleaned = re.sub(r'^\s*[\-\*\•]\s+', '', cleaned, flags=re.MULTILINE)
+        
+        # Remove numbered lists (1. 2. etc.)
+        cleaned = re.sub(r'^\s*\d+\.\s+', '', cleaned, flags=re.MULTILINE)
+        
+        # Collapse multiple newlines to single space
+        cleaned = re.sub(r'\n\s*\n', ' ', cleaned)
+        
+        # Replace remaining newlines with spaces
+        cleaned = re.sub(r'\n', ' ', cleaned)
+        
+        # Collapse multiple spaces
+        cleaned = re.sub(r'\s+', ' ', cleaned)
+        
+        return cleaned.strip()
+
     def _create_fallback_summary(self, comprehensive: str) -> str:
-        """Create a fallback summary from comprehensive text."""
-        # Try to extract first meaningful sentence
-        sentences = comprehensive.split(".")
+        """
+        Create a fallback summary from comprehensive text.
+        
+        Extracts 2-3 sentences (up to ~300 chars) from the clean text.
+        
+        Args:
+            comprehensive: The comprehensive text to summarize
+            
+        Returns:
+            Plain text summary (1-3 sentences)
+        """
+        # First, clean any markdown formatting
+        clean_text = self._clean_markdown(comprehensive)
+        
+        if not clean_text:
+            return "No information available."
+        
+        # Split into sentences and collect meaningful ones
+        sentences = re.split(r'(?<=[.!?])\s+', clean_text)
+        result_sentences = []
+        total_length = 0
+        
         for sentence in sentences:
             sentence = sentence.strip()
-            # Skip empty or very short sentences
-            if len(sentence) > 20:
-                # Clean up markdown formatting
-                sentence = re.sub(r"\*\*([^*]+)\*\*", r"\1", sentence)
-                sentence = re.sub(r"\*([^*]+)\*", r"\1", sentence)
-                return sentence + "."
+            # Skip fragments shorter than 20 chars
+            if len(sentence) < 20:
+                continue
+            
+            # Check if adding this sentence would exceed our limit (~300 chars)
+            if total_length + len(sentence) > 300 and result_sentences:
+                break
+            
+            result_sentences.append(sentence)
+            total_length += len(sentence) + 1  # +1 for space
+            
+            # Stop after 3 sentences
+            if len(result_sentences) >= 3:
+                break
         
-        # Last resort: truncate comprehensive
-        clean = re.sub(r"\*\*([^*]+)\*\*", r"\1", comprehensive[:150])
-        return clean + "..."
+        if result_sentences:
+            result = ' '.join(result_sentences)
+            # Ensure it ends with punctuation
+            if not result.endswith(('.', '!', '?')):
+                result += '.'
+            return result
+        
+        # Last resort: truncate clean text
+        if len(clean_text) > 150:
+            return clean_text[:147] + "..."
+        return clean_text
     
     def _extract_info(self, search_result: SearchResult) -> List[Dict[str, Any]]:
         """
