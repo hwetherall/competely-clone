@@ -20,6 +20,7 @@ load_dotenv(PROJECT_ROOT / ".env")
 
 SERPER_API_KEY: str = os.getenv("SERPER_API_KEY", "")
 OPENROUTER_API_KEY: str = os.getenv("OPENROUTER_API_KEY", "")
+ATLASCLOUD_API_KEY: str = os.getenv("ATLAS_CLOUD_API", "")
 
 # =============================================================================
 # Serper API Configuration
@@ -28,11 +29,28 @@ OPENROUTER_API_KEY: str = os.getenv("OPENROUTER_API_KEY", "")
 SERPER_BASE_URL: str = "https://google.serper.dev/search"
 
 # =============================================================================
-# OpenRouter Configuration
+# Atlas Cloud Configuration (Primary provider for Tongyi DeepResearch)
+# =============================================================================
+
+ATLASCLOUD_BASE_URL: str = "https://api.atlascloud.ai/v1"
+
+# Primary research model - Tongyi DeepResearch is specialized for agentic research
+# See: https://tongyi-agent.github.io/blog/introducing-tongyi-deep-research/
+# Using Atlas Cloud as the provider for better reliability
+RESEARCH_MODEL: str = os.getenv("RESEARCH_MODEL", "Alibaba-NLP/Tongyi-DeepResearch-30B-A3B")
+
+# =============================================================================
+# OpenRouter Configuration (Secondary provider for fallback/summarization)
 # =============================================================================
 
 OPENROUTER_BASE_URL: str = "https://openrouter.ai/api/v1"
-TONGYI_MODEL: str = os.getenv("TONGYI_MODEL", "qwen/qwen-2.5-72b-instruct")
+
+# Fast model for summarization (doesn't need agentic capabilities)
+# Using OpenRouter for this model
+SUMMARIZE_MODEL: str = os.getenv("SUMMARIZE_MODEL", "meta-llama/llama-3.3-70b-instruct")
+
+# Legacy alias for backward compatibility (defaults to RESEARCH_MODEL)
+TONGYI_MODEL: str = os.getenv("TONGYI_MODEL", RESEARCH_MODEL)
 
 # =============================================================================
 # Caching Configuration
@@ -67,12 +85,12 @@ MIN_RESEARCH_ITERATIONS: int = int(os.getenv("MIN_RESEARCH_ITERATIONS", "2"))
 # Validation
 # =============================================================================
 
-def validate_config(require_openrouter: bool = False) -> list[str]:
+def validate_config(require_llm: bool = False) -> list[str]:
     """
     Validate that required configuration is present.
     
     Args:
-        require_openrouter: If True, also validate OpenRouter API key
+        require_llm: If True, also validate LLM API keys (Atlas Cloud and/or OpenRouter)
     
     Returns:
         List of validation error messages (empty if valid)
@@ -82,10 +100,38 @@ def validate_config(require_openrouter: bool = False) -> list[str]:
     if not SERPER_API_KEY:
         errors.append("SERPER_API_KEY is not set. Please add it to your .env file.")
     
-    if require_openrouter and not OPENROUTER_API_KEY:
-        errors.append("OPENROUTER_API_KEY is not set. Please add it to your .env file.")
+    if require_llm:
+        # Check Atlas Cloud for research model
+        if not ATLASCLOUD_API_KEY:
+            errors.append("ATLAS_CLOUD_API is not set. Please add it to your .env file.")
+        
+        # Check OpenRouter for summarize model (optional fallback)
+        if not OPENROUTER_API_KEY:
+            errors.append("OPENROUTER_API_KEY is not set (needed for summarization fallback). Please add it to your .env file.")
     
     return errors
+
+
+def get_config_info() -> dict:
+    """
+    Get configuration information for debugging.
+    
+    Returns:
+        Dict with non-sensitive configuration info
+    """
+    return {
+        "research_model": RESEARCH_MODEL,
+        "summarize_model": SUMMARIZE_MODEL,
+        "atlascloud_base_url": ATLASCLOUD_BASE_URL,
+        "atlascloud_api_key_set": bool(ATLASCLOUD_API_KEY),
+        "atlascloud_api_key_prefix": ATLASCLOUD_API_KEY[:10] + "..." if ATLASCLOUD_API_KEY else None,
+        "openrouter_base_url": OPENROUTER_BASE_URL,
+        "openrouter_api_key_set": bool(OPENROUTER_API_KEY),
+        "openrouter_api_key_prefix": OPENROUTER_API_KEY[:10] + "..." if OPENROUTER_API_KEY else None,
+        "serper_api_key_set": bool(SERPER_API_KEY),
+        "cache_enabled": CACHE_ENABLED,
+        "llm_timeout": LLM_TIMEOUT,
+    }
 
 
 def ensure_directories() -> None:

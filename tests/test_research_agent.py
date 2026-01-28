@@ -156,7 +156,7 @@ def main():
     
     # Check configuration
     print_separator("Configuration Check")
-    errors = validate_config(require_openrouter=True)
+    errors = validate_config(require_llm=True)
     if errors:
         for error in errors:
             print(f"  ERROR: {error}")

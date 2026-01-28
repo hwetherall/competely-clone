@@ -33,6 +33,10 @@ from config import settings
 
 logger = logging.getLogger(__name__)
 
+# Model configuration: use specialized models for different tasks
+RESEARCH_MODEL = settings.RESEARCH_MODEL  # Tongyi DeepResearch for agentic tasks
+SUMMARIZE_MODEL = settings.SUMMARIZE_MODEL  # Fast model for summarization
+
 
 # =============================================================================
 # Data Classes
@@ -124,6 +128,7 @@ class ResearchAgent:
         llm_client: Optional[LLMClient] = None,
         max_iterations: Optional[int] = None,
         min_iterations: Optional[int] = None,
+        skip_evaluation: bool = False,
     ):
         """
         Initialize the research agent.
@@ -133,11 +138,13 @@ class ResearchAgent:
             llm_client: LLMClient instance (creates new if not provided)
             max_iterations: Maximum research iterations (default from settings)
             min_iterations: Minimum iterations before checking sufficiency
+            skip_evaluation: If True, skip LLM evaluation step (faster but less thorough)
         """
         self.search_client = search_client or SearchClient()
         self.llm_client = llm_client or LLMClient()
         self.max_iterations = max_iterations or settings.MAX_RESEARCH_ITERATIONS
         self.min_iterations = min_iterations or settings.MIN_RESEARCH_ITERATIONS
+        self.skip_evaluation = skip_evaluation
     
     async def research(
         self,
@@ -182,8 +189,8 @@ class ResearchAgent:
                             logger.warning(f"Search failed for '{query[:40]}...': {e}")
                             continue
                 
-                # Step 3: Evaluate if we have enough information
-                if state.iteration >= self.min_iterations:
+                # Step 3: Evaluate if we have enough information (skip if flag set)
+                if state.iteration >= self.min_iterations and not self.skip_evaluation:
                     evaluation = await self._evaluate_results(state)
                     state.is_sufficient = evaluation.get("sufficient", False)
                     state.confidence = evaluation.get("confidence", "low")
@@ -193,6 +200,12 @@ class ResearchAgent:
                         break
                     else:
                         logger.info(f"Need more information. Missing: {evaluation.get('missing', 'unknown')}")
+                elif self.skip_evaluation:
+                    # In fast mode, assume medium confidence and move on
+                    state.confidence = "medium"
+                    state.is_sufficient = True
+                    logger.info(f"Fast mode: skipping evaluation after {state.iteration} iterations")
+                    break
             
             # Step 4: Synthesize comprehensive answer
             comprehensive = await self._synthesize(state)
@@ -266,34 +279,47 @@ class ResearchAgent:
                 previous_queries="\n".join(f"- {q}" for q in state.queries_tried) or "None yet",
             )
             
+            # Use research model with higher token limit for reasoning
+            # Falls back to summarize model if research model is unavailable
             response = await self.llm_client.complete_simple(
                 prompt=prompt,
                 system_prompt=RESEARCH_SYSTEM_PROMPT,
                 temperature=0.7,
-                max_tokens=500,
+                max_tokens=2000,  # More tokens for reasoning models
+                model_override=RESEARCH_MODEL,
+                fallback_model=SUMMARIZE_MODEL,
             )
             
-            # Parse queries from response (one per line)
-            queries = []
-            for line in response.strip().split("\n"):
-                line = line.strip()
-                # Skip empty lines and lines that look like numbering
-                if line and not line.startswith("#") and len(line) > 5:
-                    # Remove common prefixes like "1.", "- ", etc.
-                    line = re.sub(r"^[\d\.\-\*\)]+\s*", "", line)
-                    # Remove "Search for" prefix that LLMs sometimes add
-                    line = re.sub(r"^(Search\s+for\s+)", "", line, flags=re.IGNORECASE)
-                    # Remove surrounding quotes
-                    line = line.strip('"\'')
-                    # Skip if too short after cleaning
-                    if line and len(line) > 5:
-                        queries.append(line)
+            # Handle empty or None response
+            if not response:
+                logger.warning("LLM returned empty response for query generation. Using fallback.")
+                return [
+                    f"{company} {variable.name} 2024",
+                    f"{company} {variable.name} analysis",
+                ]
+            
+            # Parse queries from response - handle reasoning models that include thinking
+            queries = self._extract_search_queries(response, company)
+            
+            # Ensure we have at least some queries
+            if not queries:
+                logger.warning("No queries extracted from LLM response. Using fallback.")
+                return [
+                    f"{company} {variable.name} 2024",
+                    f"{company} {variable.name} analysis",
+                ]
             
             return queries[:5]  # Limit to 5 queries per iteration
             
         except LLMError as e:
             logger.warning(f"LLM query generation failed: {e}. Using fallback queries.")
             # Fallback: generate basic queries
+            return [
+                f"{company} {variable.name} 2024",
+                f"{company} {variable.name} analysis",
+            ]
+        except Exception as e:
+            logger.error(f"Unexpected error in query generation: {e}. Using fallback queries.")
             return [
                 f"{company} {variable.name} 2024",
                 f"{company} {variable.name} analysis",
@@ -322,11 +348,15 @@ class ResearchAgent:
                 search_results=format_search_results_for_evaluation(state.search_results[-3:]),  # Last 3 searches
             )
             
+            # Use research model for evaluation
+            # Falls back to summarize model if research model is unavailable
             response = await self.llm_client.complete_simple(
                 prompt=prompt,
                 system_prompt=RESEARCH_SYSTEM_PROMPT,
                 temperature=0.3,  # Lower temperature for more consistent evaluation
-                max_tokens=500,
+                max_tokens=2000,  # More tokens for reasoning
+                model_override=RESEARCH_MODEL,
+                fallback_model=SUMMARIZE_MODEL,
             )
             
             # Parse structured response
@@ -382,12 +412,22 @@ class ResearchAgent:
                 gathered_information=format_gathered_info_for_synthesis(state.gathered_info),
             )
             
+            # Use research model for synthesis - needs more tokens for deep reasoning
+            # Falls back to summarize model if research model is unavailable
             response = await self.llm_client.complete_simple(
                 prompt=prompt,
                 system_prompt=RESEARCH_SYSTEM_PROMPT,
                 temperature=0.5,
-                max_tokens=1500,
+                max_tokens=4000,  # More tokens for comprehensive synthesis
+                model_override=RESEARCH_MODEL,
+                fallback_model=SUMMARIZE_MODEL,
             )
+            
+            # Handle empty response
+            if not response or not response.strip():
+                logger.warning("LLM returned empty synthesis. Using fallback.")
+                snippets = [info.get("snippet", "") for info in state.gathered_info[:5]]
+                return f"Research on {state.variable.name} for {state.company}:\n\n" + "\n\n".join(snippets)
             
             return response.strip()
             
@@ -396,10 +436,16 @@ class ResearchAgent:
             # Fallback: return raw snippets
             snippets = [info.get("snippet", "") for info in state.gathered_info[:5]]
             return f"Research on {state.variable.name} for {state.company}:\n\n" + "\n\n".join(snippets)
+        except Exception as e:
+            logger.error(f"Unexpected error in synthesis: {e}")
+            snippets = [info.get("snippet", "") for info in state.gathered_info[:5]]
+            return f"Research on {state.variable.name} for {state.company}:\n\n" + "\n\n".join(snippets)
     
     async def _summarize(self, company: str, variable_name: str, comprehensive: str) -> str:
         """
         Summarize comprehensive answer into concise version.
+        
+        Uses a fast model for summarization since this is a simple task.
         
         Args:
             company: Company name
@@ -421,12 +467,19 @@ Write clear, factual prose with specific numbers when available."""
                 comprehensive_answer=comprehensive,
             )
             
+            # Use fast summarization model - doesn't need deep reasoning
             response = await self.llm_client.complete_simple(
                 prompt=prompt,
                 system_prompt=summarize_system_prompt,
                 temperature=0.3,
-                max_tokens=200,
+                max_tokens=300,
+                model_override=SUMMARIZE_MODEL,
             )
+            
+            # Handle None or empty response
+            if not response:
+                logger.warning("LLM returned None/empty for summarization, using fallback")
+                return self._create_fallback_summary(comprehensive)
             
             # Clean any markdown that may have slipped through
             result = self._clean_markdown(response.strip())
@@ -441,7 +494,97 @@ Write clear, factual prose with specific numbers when available."""
         except LLMError as e:
             logger.error(f"LLM summarization failed: {e}")
             return self._create_fallback_summary(comprehensive)
+        except Exception as e:
+            logger.error(f"Unexpected error in summarization: {e}")
+            return self._create_fallback_summary(comprehensive)
     
+    def _extract_search_queries(self, response: str, company: str) -> List[str]:
+        """
+        Extract search queries from LLM response.
+        
+        Handles reasoning models (like Tongyi DeepResearch) that include thinking
+        in their response. First looks for <queries> tags, then falls back to
+        filtering heuristics.
+        
+        Args:
+            response: Raw LLM response text
+            company: Company name (queries should contain this)
+            
+        Returns:
+            List of clean search queries
+        """
+        queries = []
+        
+        # First, try to extract from <queries> tags
+        queries_match = re.search(r'<queries>\s*(.*?)\s*</queries>', response, re.DOTALL | re.IGNORECASE)
+        if queries_match:
+            queries_text = queries_match.group(1)
+            for line in queries_text.strip().split("\n"):
+                line = line.strip().strip('"\'')
+                line = re.sub(r"^[\d\.\-\*\)\•]+\s*", "", line)  # Remove prefixes
+                if line and 10 < len(line) < 100:
+                    queries.append(line)
+            if queries:
+                logger.debug(f"Extracted {len(queries)} queries from <queries> tags")
+                return queries
+        
+        # Fallback: filter out reasoning text
+        # Patterns that indicate reasoning/thinking text (not queries)
+        reasoning_patterns = [
+            r'^(we |i |let\'s |okay|the |this |these |to |for |here |now |first|based on)',
+            r'(should|would|could|need to|want to|trying to|looking for)',
+            r'(previously|already|avoid|cover|highlight|emphasize)',
+            r'^(key points|official|investor|how they|what makes)',
+            r'[:]{1}$',  # Lines ending with colon (likely headers)
+            r'^\d+\.\s+[A-Z]',  # Numbered reasoning steps like "1. First we..."
+        ]
+        
+        for line in response.strip().split("\n"):
+            line = line.strip()
+            
+            # Skip empty, very short, or very long lines
+            if not line or len(line) < 10 or len(line) > 100:
+                continue
+            
+            # Skip lines that look like reasoning/thinking
+            is_reasoning = False
+            for pattern in reasoning_patterns:
+                if re.search(pattern, line.lower()):
+                    is_reasoning = True
+                    break
+            
+            if is_reasoning:
+                continue
+            
+            # Clean up the line
+            line = re.sub(r"^[\d\.\-\*\)\•]+\s*", "", line)
+            line = re.sub(r"^(Search\s+for\s+|Query:\s*)", "", line, flags=re.IGNORECASE)
+            line = line.strip('"\'')
+            
+            if len(line) < 10:
+                continue
+            
+            # Prefer queries that contain the company name
+            if company.lower() in line.lower():
+                queries.insert(0, line)
+            else:
+                queries.append(line)
+        
+        # Final fallback: extract any line with company name
+        if len(queries) < 2:
+            logger.warning(f"Query extraction found only {len(queries)} queries, using fallback")
+            fallback_queries = []
+            for line in response.strip().split("\n"):
+                line = line.strip().strip('"\'')
+                line = re.sub(r"^[\d\.\-\*\)\•]+\s*", "", line)
+                if company.lower() in line.lower() and 10 < len(line) < 80:
+                    if line and line not in fallback_queries:
+                        fallback_queries.append(line)
+            if fallback_queries:
+                queries = fallback_queries[:5]
+        
+        return queries
+
     def _clean_markdown(self, text: str) -> str:
         """
         Strip all markdown formatting from text.

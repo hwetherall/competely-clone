@@ -1,11 +1,11 @@
 """
 Full Column Test for Research Agent.
 
-Run with: python tests/test_full_column.py
+Run with: 
+    python tests/test_full_column.py          # Normal mode (~10-20 min)
+    python tests/test_full_column.py --fast   # Fast mode (~3-5 min)
 
 Tests all 20 research variables for Stripe and saves results.
-
-Expected runtime: 10-20 minutes depending on API response times.
 """
 
 import sys
@@ -23,6 +23,9 @@ import logging
 from agents.research_agent import ResearchAgent, ResearchResult
 from config.settings import validate_config
 from config.variables import VARIABLES, get_variables_by_category
+
+# Check for --fast flag
+FAST_MODE = "--fast" in sys.argv
 
 # Configure logging (less verbose for full run)
 logging.basicConfig(
@@ -63,10 +66,19 @@ async def run_full_column(company: str = "Stripe"):
     print("\n" + "=" * 70)
     print(f"  Full Column Test: {company}")
     print("=" * 70)
-    print(f"\n  Running all {len(VARIABLES)} research variables...")
-    print(f"  Estimated time: 10-20 minutes\n")
     
-    agent = ResearchAgent()
+    if FAST_MODE:
+        print(f"\n  FAST MODE: Single iteration, no evaluation")
+        print(f"  Running all {len(VARIABLES)} research variables...")
+        print(f"  Estimated time: 3-5 minutes\n")
+        # Fast mode: 1 iteration, skip evaluation = search + synthesize only
+        agent = ResearchAgent(max_iterations=1, min_iterations=1, skip_evaluation=True)
+    else:
+        print(f"\n  Running all {len(VARIABLES)} research variables...")
+        print(f"  Estimated time: 10-20 minutes")
+        print(f"  TIP: Use --fast flag for faster testing\n")
+        agent = ResearchAgent()
+    
     results = []
     
     total = len(VARIABLES)
@@ -209,7 +221,7 @@ async def main():
     print("  Configuration Check")
     print("=" * 70)
     
-    errors = validate_config(require_openrouter=True)
+    errors = validate_config(require_llm=True)
     if errors:
         for error in errors:
             print(f"  ERROR: {error}")

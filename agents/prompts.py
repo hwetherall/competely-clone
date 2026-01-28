@@ -38,17 +38,20 @@ Previous queries tried (avoid repeating these):
 
 Requirements:
 - Each query should be what you'd type into Google
-- Include the company name in each query
+- Include the company name "{company}" in each query
 - Add years (2024, 2025) for recent data
 - Target official sources, analyst reports, or news coverage
+- Keep each query under 60 characters
 
-IMPORTANT: Output ONLY the raw search queries, one per line.
-Do NOT include numbering, bullets, "Search for", or any other text.
+OUTPUT FORMAT: Output the queries between <queries> tags, one per line:
 
-Example output format:
-Stripe payment processing fees 2024
-Stripe vs PayPal comparison
-Stripe developer API documentation"""
+<queries>
+{company} payment processing fees 2024
+{company} vs competitors comparison
+{company} official documentation features
+</queries>
+
+Generate your queries now:"""
 
 
 # =============================================================================

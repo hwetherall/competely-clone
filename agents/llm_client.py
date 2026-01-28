@@ -1,5 +1,9 @@
 """
-LLM client for interacting with language models via OpenRouter.
+LLM client for interacting with language models via multiple providers.
+
+Supports:
+- Atlas Cloud (primary provider for Tongyi DeepResearch)
+- OpenRouter (fallback provider for other models)
 
 Provides async and sync interfaces for:
 - Chat completions
@@ -10,7 +14,7 @@ Provides async and sync interfaces for:
 import asyncio
 import logging
 from dataclasses import dataclass
-from typing import Optional, List, Dict, Any
+from typing import Optional, List, Dict, Any, Tuple
 
 import httpx
 from tenacity import (
@@ -74,9 +78,11 @@ class LLMResponse:
 
 class LLMClient:
     """
-    Client for LLM completions via OpenRouter.
+    Client for LLM completions via multiple providers.
     
-    Supports multiple models through OpenRouter's unified API.
+    Routes requests to the appropriate provider based on the model:
+    - Atlas Cloud: For Tongyi DeepResearch models
+    - OpenRouter: For other models (Llama, etc.)
     
     Example:
         client = LLMClient()
@@ -97,25 +103,71 @@ class LLMClient:
         Initialize the LLM client.
         
         Args:
-            api_key: OpenRouter API key (defaults to settings.OPENROUTER_API_KEY)
-            model: Model identifier (defaults to settings.TONGYI_MODEL)
-            base_url: API base URL (defaults to settings.OPENROUTER_BASE_URL)
+            api_key: Default API key (optional, will use provider-specific keys)
+            model: Default model identifier (defaults to settings.RESEARCH_MODEL)
+            base_url: Default API base URL (optional, will use provider-specific URLs)
         """
-        self.api_key = api_key or settings.OPENROUTER_API_KEY
-        self.model = model or settings.TONGYI_MODEL
-        self.base_url = base_url or settings.OPENROUTER_BASE_URL
+        # Default model
+        self.model = model or settings.RESEARCH_MODEL
         
-        if not self.api_key:
-            logger.warning("No OpenRouter API key configured. LLM calls will fail.")
-    
-    def _get_headers(self) -> Dict[str, str]:
-        """Get headers for API requests."""
-        return {
-            "Authorization": f"Bearer {self.api_key}",
-            "Content-Type": "application/json",
-            "HTTP-Referer": "https://github.com/competely-clone",
-            "X-Title": "CompetelyClone Research Agent",
+        # Provider configurations
+        self.providers = {
+            "atlascloud": {
+                "api_key": settings.ATLASCLOUD_API_KEY,
+                "base_url": settings.ATLASCLOUD_BASE_URL,
+                "models": ["Alibaba-NLP/Tongyi-DeepResearch-30B-A3B"],  # Models hosted on Atlas Cloud
+            },
+            "openrouter": {
+                "api_key": settings.OPENROUTER_API_KEY,
+                "base_url": settings.OPENROUTER_BASE_URL,
+                "models": [],  # Default provider for all other models
+            },
         }
+        
+        # Allow override via constructor (for backward compatibility)
+        if api_key:
+            self.providers["openrouter"]["api_key"] = api_key
+        if base_url:
+            self.providers["openrouter"]["base_url"] = base_url
+        
+        # Check API keys
+        if not self.providers["atlascloud"]["api_key"]:
+            logger.warning("No Atlas Cloud API key configured. Tongyi model calls may fail.")
+        if not self.providers["openrouter"]["api_key"]:
+            logger.warning("No OpenRouter API key configured. Fallback model calls may fail.")
+    
+    def _get_provider_for_model(self, model: str) -> Tuple[str, str, str]:
+        """
+        Get the appropriate provider configuration for a model.
+        
+        Args:
+            model: Model identifier
+            
+        Returns:
+            Tuple of (api_key, base_url, provider_name)
+        """
+        # Check if model is explicitly assigned to Atlas Cloud
+        if model in self.providers["atlascloud"]["models"]:
+            provider = self.providers["atlascloud"]
+            return provider["api_key"], provider["base_url"], "atlascloud"
+        
+        # Default to OpenRouter for all other models
+        provider = self.providers["openrouter"]
+        return provider["api_key"], provider["base_url"], "openrouter"
+    
+    def _get_headers(self, api_key: str, provider_name: str) -> Dict[str, str]:
+        """Get headers for API requests."""
+        headers = {
+            "Authorization": f"Bearer {api_key}",
+            "Content-Type": "application/json",
+        }
+        
+        # Add OpenRouter-specific headers
+        if provider_name == "openrouter":
+            headers["HTTP-Referer"] = "https://github.com/competely-clone"
+            headers["X-Title"] = "CompetelyClone Research Agent"
+        
+        return headers
     
     @retry(
         retry=retry_if_exception_type(TransientLLMError),
@@ -128,6 +180,7 @@ class LLMClient:
         messages: List[Dict[str, str]],
         temperature: float,
         max_tokens: int,
+        model: Optional[str] = None,
     ) -> Dict[str, Any]:
         """
         Execute the actual API request with retry logic.
@@ -136,14 +189,21 @@ class LLMClient:
             messages: List of message dicts
             temperature: Sampling temperature
             max_tokens: Maximum tokens to generate
+            model: Model to use (defaults to self.model)
             
         Returns:
             Raw API response as dict
         """
-        url = f"{self.base_url}/chat/completions"
+        effective_model = model or self.model
+        
+        # Get provider-specific configuration
+        api_key, base_url, provider_name = self._get_provider_for_model(effective_model)
+        url = f"{base_url}/chat/completions"
+        
+        logger.debug(f"Using provider '{provider_name}' for model '{effective_model}'")
         
         payload = {
-            "model": self.model,
+            "model": effective_model,
             "messages": messages,
             "temperature": temperature,
             "max_tokens": max_tokens,
@@ -153,12 +213,22 @@ class LLMClient:
             try:
                 response = await client.post(
                     url,
-                    headers=self._get_headers(),
+                    headers=self._get_headers(api_key, provider_name),
                     json=payload,
                 )
                 
                 if response.status_code == 200:
-                    return response.json()
+                    response_json = response.json()
+                    # Check if the API returned an error in the response body
+                    if "error" in response_json:
+                        error_info = response_json.get("error", {})
+                        error_msg = error_info.get("message", str(error_info)) if isinstance(error_info, dict) else str(error_info)
+                        error_code = error_info.get("code", "") if isinstance(error_info, dict) else ""
+                        # Some errors are transient (rate limits, overloaded)
+                        if error_code in ("rate_limit_exceeded", "overloaded", "service_unavailable"):
+                            raise TransientLLMError(f"API error: {error_msg}", status_code=429)
+                        raise PermanentLLMError(f"API error: {error_msg}", status_code=response.status_code)
+                    return response_json
                 elif response.status_code in (429, 500, 502, 503, 504):
                     error_text = response.text[:200]
                     raise TransientLLMError(
@@ -187,6 +257,8 @@ class LLMClient:
         messages: List[Dict[str, str]],
         temperature: float = 0.7,
         max_tokens: int = 4096,
+        model_override: Optional[str] = None,
+        fallback_model: Optional[str] = None,
     ) -> LLMResponse:
         """
         Send a completion request to the LLM.
@@ -195,28 +267,94 @@ class LLMClient:
             messages: List of message dicts with 'role' and 'content' keys
             temperature: Sampling temperature (0.0-1.0)
             max_tokens: Maximum tokens to generate
+            model_override: Override the default model for this request
+            fallback_model: Optional fallback model to try if primary fails
             
         Returns:
             LLMResponse with generated content
             
         Raises:
-            LLMError: If the request fails
+            LLMError: If the request fails (and fallback also fails)
         """
-        logger.debug(f"LLM request: {len(messages)} messages, model={self.model}")
+        effective_model = model_override or self.model
+        logger.debug(f"LLM request: {len(messages)} messages, model={effective_model}")
         
         try:
             response_data = await self._execute_completion(
-                messages, temperature, max_tokens
+                messages, temperature, max_tokens, model=effective_model
             )
         except (TransientLLMError, PermanentLLMError) as e:
             logger.error(f"LLM request failed: {e.message}")
-            raise LLMError(e.message, status_code=e.status_code)
+            
+            # Try fallback model if provided
+            if fallback_model and fallback_model != effective_model:
+                logger.info(f"Trying fallback model: {fallback_model}")
+                try:
+                    response_data = await self._execute_completion(
+                        messages, temperature, max_tokens, model=fallback_model
+                    )
+                    logger.info(f"Fallback model succeeded")
+                except (TransientLLMError, PermanentLLMError) as fallback_e:
+                    logger.error(f"Fallback model also failed: {fallback_e.message}")
+                    raise LLMError(e.message, status_code=e.status_code)
+            else:
+                raise LLMError(e.message, status_code=e.status_code)
         
         # Parse response
         try:
-            choice = response_data["choices"][0]
-            content = choice["message"]["content"]
+            # Log raw response structure for debugging (without full content)
+            response_keys = list(response_data.keys()) if isinstance(response_data, dict) else type(response_data)
+            logger.debug(f"API response keys: {response_keys}")
+            
+            # Check for error in response
+            if "error" in response_data:
+                error_info = response_data.get("error", {})
+                error_msg = error_info.get("message", str(error_info)) if isinstance(error_info, dict) else str(error_info)
+                raise LLMError(f"API returned error: {error_msg}")
+            
+            # Validate response structure
+            if "choices" not in response_data:
+                logger.error(f"Unexpected API response structure. Keys: {response_keys}")
+                logger.error(f"Full response (truncated): {str(response_data)[:500]}")
+                raise LLMError(f"Invalid API response: missing 'choices' key. Got keys: {response_keys}")
+            
+            choices = response_data["choices"]
+            if not choices or len(choices) == 0:
+                raise LLMError("API returned empty choices array")
+            
+            choice = choices[0]
+            
+            # Check for error inside the choice (some providers put errors here)
+            if "error" in choice:
+                error_info = choice["error"]
+                error_msg = error_info.get("message", str(error_info)) if isinstance(error_info, dict) else str(error_info)
+                error_code = error_info.get("code", "") if isinstance(error_info, dict) else ""
+                # Check for quota/billing errors
+                if "quota" in error_msg.lower() or "billing" in error_msg.lower() or error_code == "insufficient_quota":
+                    raise LLMError(f"API quota exceeded: {error_msg[:200]}")
+                raise LLMError(f"API error in response: {error_msg[:200]}")
+            
+            message = choice.get("message", {})
+            content = message.get("content", "")
             finish_reason = choice.get("finish_reason", "unknown")
+            
+            # Handle Tongyi DeepResearch format: it may put thinking in "reasoning" field
+            # and final answer in "content". If content is empty, extract from reasoning.
+            if not content and "reasoning" in message:
+                reasoning = message.get("reasoning", "")
+                # The reasoning contains the model's thinking - extract useful content
+                # For DeepResearch, the final answer appears after reasoning completes
+                logger.debug(f"Using reasoning field ({len(reasoning)} chars)")
+                content = reasoning
+            
+            # Handle case where content is still empty
+            if not content:
+                # Check if there's a delta (streaming response) or other content fields
+                if "delta" in choice:
+                    content = choice["delta"].get("content", "")
+                if not content:
+                    logger.warning(f"LLM returned empty content. Choice: {choice}")
+                    content = ""  # Return empty rather than failing
             
             usage = response_data.get("usage", {
                 "prompt_tokens": 0,
@@ -235,7 +373,9 @@ class LLMClient:
                 finish_reason=finish_reason,
             )
             
-        except (KeyError, IndexError) as e:
+        except (KeyError, IndexError, TypeError) as e:
+            logger.error(f"Failed to parse API response: {e}")
+            logger.error(f"Response data (truncated): {str(response_data)[:500]}")
             raise LLMError(f"Failed to parse API response: {e}")
     
     def complete_sync(
@@ -263,6 +403,8 @@ class LLMClient:
         system_prompt: Optional[str] = None,
         temperature: float = 0.7,
         max_tokens: int = 4096,
+        model_override: Optional[str] = None,
+        fallback_model: Optional[str] = None,
     ) -> str:
         """
         Simplified completion with just a user prompt.
@@ -272,6 +414,8 @@ class LLMClient:
             system_prompt: Optional system prompt
             temperature: Sampling temperature
             max_tokens: Maximum tokens to generate
+            model_override: Override the default model for this request
+            fallback_model: Optional fallback model to try if primary fails
             
         Returns:
             The generated content string
@@ -281,7 +425,7 @@ class LLMClient:
             messages.append({"role": "system", "content": system_prompt})
         messages.append({"role": "user", "content": prompt})
         
-        response = await self.complete(messages, temperature, max_tokens)
+        response = await self.complete(messages, temperature, max_tokens, model_override, fallback_model)
         return response.content
     
     def complete_simple_sync(
@@ -290,8 +434,9 @@ class LLMClient:
         system_prompt: Optional[str] = None,
         temperature: float = 0.7,
         max_tokens: int = 4096,
+        model_override: Optional[str] = None,
     ) -> str:
         """Synchronous wrapper for complete_simple()."""
         return asyncio.run(
-            self.complete_simple(prompt, system_prompt, temperature, max_tokens)
+            self.complete_simple(prompt, system_prompt, temperature, max_tokens, model_override)
         )
