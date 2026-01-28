@@ -47,7 +47,7 @@ OPENROUTER_BASE_URL: str = "https://openrouter.ai/api/v1"
 
 # Fast model for summarization (doesn't need agentic capabilities)
 # Using OpenRouter for this model
-SUMMARIZE_MODEL: str = os.getenv("SUMMARIZE_MODEL", "meta-llama/llama-3.3-70b-instruct")
+SUMMARIZE_MODEL: str = os.getenv("SUMMARIZE_MODEL", "deepseek/deepseek-v3.2")
 
 # Legacy alias for backward compatibility (defaults to RESEARCH_MODEL)
 TONGYI_MODEL: str = os.getenv("TONGYI_MODEL", RESEARCH_MODEL)
@@ -80,16 +80,6 @@ RETRY_DELAY: float = float(os.getenv("RETRY_DELAY", "1.0"))
 
 MAX_RESEARCH_ITERATIONS: int = int(os.getenv("MAX_RESEARCH_ITERATIONS", "3"))
 MIN_RESEARCH_ITERATIONS: int = int(os.getenv("MIN_RESEARCH_ITERATIONS", "2"))
-
-# Evidence & Fetching Configuration
-ENABLE_PAGE_FETCH: bool = os.getenv("ENABLE_PAGE_FETCH", "true").lower() == "true"
-TOP_K_RESULTS_TO_FETCH: int = int(os.getenv("TOP_K_RESULTS_TO_FETCH", "3"))
-MAX_PAGES_PER_CELL: int = int(os.getenv("MAX_PAGES_PER_CELL", "8"))
-MIN_SOURCE_SCORE: float = float(os.getenv("MIN_SOURCE_SCORE", "0.35"))
-EVIDENCE_PASSAGES_PER_SOURCE: int = int(os.getenv("EVIDENCE_PASSAGES_PER_SOURCE", "4"))
-MAX_EVIDENCE_CHARS: int = int(os.getenv("MAX_EVIDENCE_CHARS", "12000"))
-ENABLE_LLM_PASSAGE_SELECTION: bool = os.getenv("ENABLE_LLM_PASSAGE_SELECTION", "false").lower() == "true"
-ENABLE_NUMERIC_VERIFICATION: bool = os.getenv("ENABLE_NUMERIC_VERIFICATION", "true").lower() == "true"
 
 # =============================================================================
 # Validation

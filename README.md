@@ -1,10 +1,10 @@
 # CompetelyClone
 
-A competitive analysis tool that uses parallel AI research agents to generate comprehensive 5�20 competitive analysis tables.
+A competitive analysis tool that uses parallel AI research agents to generate comprehensive 5ï¿½20 competitive analysis tables.
 
 ## Overview
 
-CompetelyClone automates competitive research by deploying 100 parallel research agents (5 companies � 20 variables) to gather, analyze, and synthesize competitive intelligence. The tool produces interactive HTML tables with expandable cells containing both concise summaries and comprehensive analyses with source citations.
+CompetelyClone automates competitive research by deploying 100 parallel research agents (5 companies ï¿½ 20 variables) to gather, analyze, and synthesize competitive intelligence. The tool produces interactive HTML tables with expandable cells containing both concise summaries and comprehensive analyses with source citations.
 
 ## Features
 

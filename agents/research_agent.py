@@ -279,15 +279,15 @@ class ResearchAgent:
                 previous_queries="\n".join(f"- {q}" for q in state.queries_tried) or "None yet",
             )
             
-            # Use research model with higher token limit for reasoning
-            # Falls back to summarize model if research model is unavailable
+            # Use FAST model for query generation - reasoning models waste tokens
+            # on "thinking" and often return empty content. Query generation is
+            # a simple task that doesn't need deep reasoning.
             response = await self.llm_client.complete_simple(
                 prompt=prompt,
                 system_prompt=RESEARCH_SYSTEM_PROMPT,
                 temperature=0.7,
-                max_tokens=2000,  # More tokens for reasoning models
-                model_override=RESEARCH_MODEL,
-                fallback_model=SUMMARIZE_MODEL,
+                max_tokens=1000,  # Queries are short, don't need many tokens
+                model_override=SUMMARIZE_MODEL,  # Use fast model, NOT reasoning model
             )
             
             # Handle empty or None response
@@ -348,15 +348,15 @@ class ResearchAgent:
                 search_results=format_search_results_for_evaluation(state.search_results[-3:]),  # Last 3 searches
             )
             
-            # Use research model for evaluation
-            # Falls back to summarize model if research model is unavailable
+            # Use FAST model for evaluation - reasoning models waste tokens on
+            # "thinking" and often return empty content. Evaluation is a
+            # structured task that doesn't need deep reasoning.
             response = await self.llm_client.complete_simple(
                 prompt=prompt,
                 system_prompt=RESEARCH_SYSTEM_PROMPT,
                 temperature=0.3,  # Lower temperature for more consistent evaluation
-                max_tokens=2000,  # More tokens for reasoning
-                model_override=RESEARCH_MODEL,
-                fallback_model=SUMMARIZE_MODEL,
+                max_tokens=1000,  # Evaluation responses are short
+                model_override=SUMMARIZE_MODEL,  # Use fast model, NOT reasoning model
             )
             
             # Parse structured response
