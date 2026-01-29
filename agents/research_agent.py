@@ -1,23 +1,26 @@
 """
-Research Agent for competitive analysis.
+Research Agent for competitive analysis with evidence-grounded synthesis.
 
 This agent performs iterative research on a (Company, Variable) pair:
 1. Generate search queries based on the variable definition
 2. Search and gather results using the SearchClient
-3. Evaluate if gathered information is sufficient
-4. Refine queries and search more if needed
-5. Synthesize comprehensive answer using LLM
-6. Create concise summary for table display
+3. Fetch and extract content from top pages
+4. Build evidence packs with passages
+5. Evaluate if gathered evidence is sufficient
+6. Synthesize comprehensive answer with citations
+7. Verify numeric claims against evidence
+8. Create concise summary for table display
 """
 
 import asyncio
+import json
 import logging
 import re
 from dataclasses import dataclass, field
-from typing import List, Optional, Dict, Any
+from typing import List, Optional, Dict, Any, Tuple
 from datetime import datetime
 
-from agents.search_client import SearchClient, SearchResult
+from agents.search_client import SearchClient, SearchResult, SearchResultItem
 from agents.llm_client import LLMClient, LLMError
 from agents.prompts import (
     RESEARCH_SYSTEM_PROMPT,
@@ -25,17 +28,40 @@ from agents.prompts import (
     EVALUATION_PROMPT,
     SYNTHESIS_PROMPT,
     SUMMARIZE_PROMPT,
+    TIGHTEN_PROMPT,
+    NUMERIC_FIX_PROMPT,
     format_search_results_for_evaluation,
     format_gathered_info_for_synthesis,
+    format_evidence_pack,
+    format_answer_spec,
+    format_evidence_summary,
+)
+from agents.schemas import (
+    EvidenceSource,
+    EvidencePassage,
+    EvidencePack,
+    Claim,
+    SynthesisResult,
+    ResearchMetadata,
+    PageContent,
+)
+from agents.page_reader import PageReader, get_page_reader
+from agents.passage_selector import select_passages_for_variable, merge_passages
+from agents.source_scoring import score_url, rank_urls, extract_domain
+from agents.verification import (
+    extract_numbers,
+    verify_numbers_against_evidence,
+    should_reduce_confidence,
+    format_unsupported_for_fix,
 )
 from config.variables import VariableDefinition, get_variable
 from config import settings
 
 logger = logging.getLogger(__name__)
 
-# Model configuration: use specialized models for different tasks
-RESEARCH_MODEL = settings.RESEARCH_MODEL  # Tongyi DeepResearch for agentic tasks
-SUMMARIZE_MODEL = settings.SUMMARIZE_MODEL  # Fast model for summarization
+# Model configuration
+RESEARCH_MODEL = settings.RESEARCH_MODEL
+SUMMARIZE_MODEL = settings.SUMMARIZE_MODEL
 
 
 # =============================================================================
@@ -49,11 +75,14 @@ class ResearchSource:
     url: str
     snippet: str
     query: str
+    domain: str = ""
+    source_score: float = 0.5
+    is_official: bool = False
 
 
 @dataclass
 class ResearchResult:
-    """Complete result of a research task."""
+    """Complete result of a research task with evidence-grounded synthesis."""
     company: str
     variable_id: str
     variable_name: str
@@ -65,6 +94,10 @@ class ResearchResult:
     total_searches: int
     timestamp: str
     error: Optional[str] = None
+    # New fields for evidence-grounded research
+    claims: List[Dict[str, Any]] = field(default_factory=list)
+    gaps: List[str] = field(default_factory=list)
+    metadata: Optional[Dict[str, Any]] = None
     
     def to_dict(self) -> dict:
         """Convert to dictionary for JSON serialization."""
@@ -75,7 +108,15 @@ class ResearchResult:
             "concise": self.concise,
             "comprehensive": self.comprehensive,
             "sources": [
-                {"title": s.title, "url": s.url, "snippet": s.snippet, "query": s.query}
+                {
+                    "title": s.title,
+                    "url": s.url,
+                    "snippet": s.snippet,
+                    "query": s.query,
+                    "domain": s.domain,
+                    "source_score": s.source_score,
+                    "is_official": s.is_official,
+                }
                 for s in self.sources
             ],
             "confidence": self.confidence,
@@ -83,6 +124,9 @@ class ResearchResult:
             "total_searches": self.total_searches,
             "timestamp": self.timestamp,
             "error": self.error,
+            "claims": self.claims,
+            "gaps": self.gaps,
+            "metadata": self.metadata,
         }
 
 
@@ -97,6 +141,13 @@ class ResearchState:
     iteration: int = 0
     is_sufficient: bool = False
     confidence: str = "low"
+    missing_info: List[str] = field(default_factory=list)
+    # New fields for evidence-grounded research
+    evidence_sources: List[EvidenceSource] = field(default_factory=list)
+    evidence_passages: List[EvidencePassage] = field(default_factory=list)
+    pages_fetched: int = 0
+    pages_failed: int = 0
+    synthesis_result: Optional[SynthesisResult] = None
 
 
 # =============================================================================
@@ -105,30 +156,29 @@ class ResearchState:
 
 class ResearchAgent:
     """
-    Agent that performs iterative research for competitive analysis.
+    Agent that performs iterative research with evidence-grounded synthesis.
     
     The research flow:
     1. Start with example queries from the variable definition
-    2. Search and gather results
-    3. Evaluate if we have enough information
-    4. If not, generate refined queries using LLM and search again
-    5. Synthesize all gathered information into a comprehensive answer
-    6. Summarize into a concise version for table display
-    
-    Example:
-        agent = ResearchAgent()
-        result = await agent.research("Stripe", "unique_value_proposition")
-        print(result.concise)
-        print(result.comprehensive)
+    2. Search and gather results with source scoring
+    3. Fetch top pages and extract passages
+    4. Build evidence pack for synthesis
+    5. Evaluate if we have enough evidence
+    6. Synthesize all gathered information with citations
+    7. Verify numeric claims against evidence
+    8. Summarize into a concise version (max chars enforced)
     """
     
     def __init__(
         self,
         search_client: Optional[SearchClient] = None,
         llm_client: Optional[LLMClient] = None,
+        page_reader: Optional[PageReader] = None,
         max_iterations: Optional[int] = None,
         min_iterations: Optional[int] = None,
         skip_evaluation: bool = False,
+        enable_page_fetch: Optional[bool] = None,
+        enable_verification: Optional[bool] = None,
     ):
         """
         Initialize the research agent.
@@ -136,15 +186,21 @@ class ResearchAgent:
         Args:
             search_client: SearchClient instance (creates new if not provided)
             llm_client: LLMClient instance (creates new if not provided)
-            max_iterations: Maximum research iterations (default from settings)
+            page_reader: PageReader instance (uses singleton if not provided)
+            max_iterations: Maximum research iterations
             min_iterations: Minimum iterations before checking sufficiency
-            skip_evaluation: If True, skip LLM evaluation step (faster but less thorough)
+            skip_evaluation: If True, skip LLM evaluation step
+            enable_page_fetch: Override for page fetching (default from settings)
+            enable_verification: Override for numeric verification (default from settings)
         """
         self.search_client = search_client or SearchClient()
         self.llm_client = llm_client or LLMClient()
+        self.page_reader = page_reader or get_page_reader()
         self.max_iterations = max_iterations or settings.MAX_RESEARCH_ITERATIONS
         self.min_iterations = min_iterations or settings.MIN_RESEARCH_ITERATIONS
         self.skip_evaluation = skip_evaluation
+        self.enable_page_fetch = enable_page_fetch if enable_page_fetch is not None else settings.ENABLE_PAGE_FETCH
+        self.enable_verification = enable_verification if enable_verification is not None else settings.ENABLE_NUMERIC_VERIFICATION
     
     async def research(
         self,
@@ -176,11 +232,15 @@ class ResearchAgent:
                 queries = await self._generate_queries(state)
                 logger.debug(f"Generated {len(queries)} queries")
                 
-                # Step 2: Execute searches
+                # Step 2: Execute searches with company context for source scoring
                 for query in queries:
                     if query not in state.queries_tried:
                         try:
-                            result = await self.search_client.search(query, num_results=10)
+                            result = await self.search_client.search(
+                                query,
+                                num_results=10,
+                                company=company,
+                            )
                             state.queries_tried.append(query)
                             state.search_results.append(result)
                             state.gathered_info.extend(self._extract_info(result))
@@ -189,29 +249,52 @@ class ResearchAgent:
                             logger.warning(f"Search failed for '{query[:40]}...': {e}")
                             continue
                 
-                # Step 3: Evaluate if we have enough information (skip if flag set)
+                # Step 3: Fetch pages and build evidence (if enabled)
+                if self.enable_page_fetch and state.search_results:
+                    await self._fetch_and_build_evidence(state)
+                
+                # Step 4: Evaluate if we have enough information
                 if state.iteration >= self.min_iterations and not self.skip_evaluation:
                     evaluation = await self._evaluate_results(state)
                     state.is_sufficient = evaluation.get("sufficient", False)
                     state.confidence = evaluation.get("confidence", "low")
+                    state.missing_info = evaluation.get("missing", [])
                     
                     if state.is_sufficient:
                         logger.info(f"Sufficient information gathered after {state.iteration} iterations")
                         break
                     else:
-                        logger.info(f"Need more information. Missing: {evaluation.get('missing', 'unknown')}")
+                        logger.info(f"Need more information. Missing: {state.missing_info}")
                 elif self.skip_evaluation:
-                    # In fast mode, assume medium confidence and move on
                     state.confidence = "medium"
                     state.is_sufficient = True
                     logger.info(f"Fast mode: skipping evaluation after {state.iteration} iterations")
                     break
             
-            # Step 4: Synthesize comprehensive answer
-            comprehensive = await self._synthesize(state)
+            # Step 5: Synthesize comprehensive answer with citations
+            synthesis_result = await self._synthesize(state)
+            state.synthesis_result = synthesis_result
+            comprehensive = synthesis_result.comprehensive_markdown or self._fallback_synthesis(state)
             
-            # Step 5: Create concise summary
-            concise = await self._summarize(state.company, variable.name, comprehensive)
+            # Step 6: Verify numeric claims (if enabled)
+            if self.enable_verification and state.evidence_passages:
+                comprehensive, verification_reduced = await self._verify_and_fix(
+                    comprehensive, state
+                )
+                if verification_reduced:
+                    state.confidence = "low"
+            
+            # Step 7: Create concise summary with length enforcement
+            max_chars = variable.max_concise_chars or settings.DEFAULT_MAX_CONCISE_CHARS
+            concise = await self._summarize(
+                state.company,
+                variable.name,
+                comprehensive,
+                max_chars,
+            )
+            
+            # Build metadata
+            metadata = self._build_metadata(state)
             
             # Build final result
             return ResearchResult(
@@ -225,6 +308,9 @@ class ResearchAgent:
                 iterations=state.iteration,
                 total_searches=len(state.search_results),
                 timestamp=datetime.utcnow().isoformat(),
+                claims=[c.to_dict() for c in synthesis_result.claims] if synthesis_result.claims else [],
+                gaps=synthesis_result.gaps or [],
+                metadata=metadata,
             )
             
         except Exception as e:
@@ -247,19 +333,90 @@ class ResearchAgent:
         """Synchronous wrapper for research()."""
         return asyncio.run(self.research(company, variable_id))
     
-    async def _generate_queries(self, state: ResearchState) -> List[str]:
+    async def _fetch_and_build_evidence(self, state: ResearchState) -> None:
         """
-        Generate search queries for the current iteration.
-        
-        On first iteration, uses example queries from the variable definition.
-        On subsequent iterations, uses LLM to generate refined queries.
+        Fetch top pages and build evidence pack.
         
         Args:
             state: Current research state
-            
-        Returns:
-            List of search queries to execute
         """
+        # Collect URLs to fetch from recent search results
+        urls_to_fetch = []
+        seen_urls = set()
+        
+        for result in state.search_results:
+            # Rank items by score with diversity
+            ranked_items = sorted(
+                result.items,
+                key=lambda x: (-x.source_score, x.position)
+            )
+            
+            for item in ranked_items[:settings.TOP_K_RESULTS_TO_FETCH]:
+                if item.url not in seen_urls and item.source_score >= settings.MIN_SOURCE_SCORE:
+                    urls_to_fetch.append(item)
+                    seen_urls.add(item.url)
+        
+        # Limit total pages
+        urls_to_fetch = urls_to_fetch[:settings.MAX_PAGES_PER_CELL]
+        
+        if not urls_to_fetch:
+            return
+        
+        # Fetch pages concurrently
+        page_contents = await self.page_reader.fetch_batch(
+            [item.url for item in urls_to_fetch],
+            max_concurrent=settings.MAX_CONCURRENT_PAGE_FETCHES,
+        )
+        
+        # Build evidence sources and passages
+        source_counter = len(state.evidence_sources) + 1
+        
+        for item, page_content in zip(urls_to_fetch, page_contents):
+            if page_content.is_success:
+                state.pages_fetched += 1
+                
+                # Create evidence source
+                source_id = f"S{source_counter}"
+                source = EvidenceSource(
+                    source_id=source_id,
+                    url=item.url,
+                    title=page_content.title or item.title,
+                    domain=item.domain,
+                    source_score=item.source_score,
+                    is_official=item.is_official,
+                    tier=item.source_tier,
+                    fetched_at=page_content.fetched_at,
+                    content_type=page_content.content_type,
+                )
+                state.evidence_sources.append(source)
+                
+                # Extract passages for this variable
+                passages = select_passages_for_variable(
+                    text=page_content.text,
+                    company=state.company,
+                    key_terms=state.variable.key_terms,
+                    answer_spec=state.variable.answer_spec,
+                    max_passages=settings.EVIDENCE_PASSAGES_PER_SOURCE,
+                )
+                
+                # Assign source_id to passages
+                for passage in passages:
+                    passage.source_id = source_id
+                    state.evidence_passages.append(passage)
+                
+                source_counter += 1
+            else:
+                state.pages_failed += 1
+                logger.debug(f"Failed to fetch {item.url}: {page_content.error}")
+        
+        # Merge passages to fit within limit
+        state.evidence_passages = merge_passages(
+            state.evidence_passages,
+            max_total_chars=settings.MAX_EVIDENCE_CHARS,
+        )
+    
+    async def _generate_queries(self, state: ResearchState) -> List[str]:
+        """Generate search queries for the current iteration."""
         company = state.company
         variable = state.variable
         
@@ -276,229 +433,298 @@ class ResearchAgent:
                 company=company,
                 variable_name=variable.name,
                 research_prompt=variable.research_prompt.format(company=company),
+                answer_spec=format_answer_spec(variable.answer_spec),
                 previous_queries="\n".join(f"- {q}" for q in state.queries_tried) or "None yet",
+                missing_info="\n".join(f"- {m}" for m in state.missing_info) if state.missing_info else "None identified",
             )
             
-            # Use FAST model for query generation - reasoning models waste tokens
-            # on "thinking" and often return empty content. Query generation is
-            # a simple task that doesn't need deep reasoning.
             response = await self.llm_client.complete_simple(
                 prompt=prompt,
                 system_prompt=RESEARCH_SYSTEM_PROMPT,
                 temperature=0.7,
-                max_tokens=1000,  # Queries are short, don't need many tokens
-                model_override=SUMMARIZE_MODEL,  # Use fast model, NOT reasoning model
+                max_tokens=1000,
+                model_override=SUMMARIZE_MODEL,
             )
             
-            # Handle empty or None response
             if not response:
                 logger.warning("LLM returned empty response for query generation. Using fallback.")
-                return [
-                    f"{company} {variable.name} 2024",
-                    f"{company} {variable.name} analysis",
-                ]
+                return self._fallback_queries(company, variable.name)
             
-            # Parse queries from response - handle reasoning models that include thinking
             queries = self._extract_search_queries(response, company)
             
-            # Ensure we have at least some queries
             if not queries:
                 logger.warning("No queries extracted from LLM response. Using fallback.")
-                return [
-                    f"{company} {variable.name} 2024",
-                    f"{company} {variable.name} analysis",
-                ]
+                return self._fallback_queries(company, variable.name)
             
-            return queries[:5]  # Limit to 5 queries per iteration
+            return queries[:5]
             
         except LLMError as e:
             logger.warning(f"LLM query generation failed: {e}. Using fallback queries.")
-            # Fallback: generate basic queries
-            return [
-                f"{company} {variable.name} 2024",
-                f"{company} {variable.name} analysis",
-            ]
+            return self._fallback_queries(company, variable.name)
         except Exception as e:
             logger.error(f"Unexpected error in query generation: {e}. Using fallback queries.")
-            return [
-                f"{company} {variable.name} 2024",
-                f"{company} {variable.name} analysis",
-            ]
+            return self._fallback_queries(company, variable.name)
+    
+    def _fallback_queries(self, company: str, variable_name: str) -> List[str]:
+        """Generate fallback queries when LLM fails."""
+        return [
+            f"{company} {variable_name} 2024",
+            f"{company} {variable_name} analysis",
+        ]
     
     async def _evaluate_results(self, state: ResearchState) -> Dict[str, Any]:
-        """
-        Evaluate if gathered information is sufficient.
-        
-        Uses LLM to analyze the search results against the research goal.
-        Tries reasoning model first, falls back to fast model.
-        
-        Args:
-            state: Current research state
-            
-        Returns:
-            Dict with 'sufficient' (bool), 'confidence' (str), 'missing' (str)
-        """
+        """Evaluate if gathered evidence is sufficient."""
         if not state.search_results:
-            return {"sufficient": False, "confidence": "low", "missing": "No search results yet"}
+            return {"sufficient": False, "confidence": "low", "missing": ["No search results yet"]}
+        
+        # Use evidence summary if we have evidence, else use search results
+        if state.evidence_sources and state.evidence_passages:
+            evidence_summary = format_evidence_summary(
+                state.evidence_sources,
+                state.evidence_passages,
+            )
+        else:
+            evidence_summary = format_search_results_for_evaluation(state.search_results[-3:])
         
         prompt = EVALUATION_PROMPT.format(
             company=state.company,
             variable_name=state.variable.name,
             research_prompt=state.variable.research_prompt.format(company=state.company),
-            search_results=format_search_results_for_evaluation(state.search_results[-3:]),  # Last 3 searches
+            answer_spec=format_answer_spec(state.variable.answer_spec),
+            evidence_summary=evidence_summary,
         )
         
-        # Helper to parse response
-        def parse_evaluation(response_text: str) -> Dict[str, Any]:
-            result = {
-                "sufficient": False,
-                "confidence": "low",
-                "missing": "",
-                "suggested_queries": [],
-            }
-            for line in response_text.strip().split("\n"):
-                line = line.strip()
-                if line.upper().startswith("SUFFICIENT:"):
-                    value = line.split(":", 1)[1].strip().lower()
-                    result["sufficient"] = value in ("yes", "true", "1")
-                elif line.upper().startswith("CONFIDENCE:"):
-                    value = line.split(":", 1)[1].strip().lower()
-                    if value in ("high", "medium", "low"):
-                        result["confidence"] = value
-                elif line.upper().startswith("MISSING:"):
-                    result["missing"] = line.split(":", 1)[1].strip()
-                elif line.upper().startswith("SUGGESTED_QUERIES:"):
-                    queries = line.split(":", 1)[1].strip()
-                    if queries.lower() != "none":
-                        result["suggested_queries"] = [q.strip() for q in queries.split(",")]
-            return result
-
-        # Try 1: Reasoning Model (Professor)
-        try:
-            print(f"  ? Evaluating results (Reasoning Model)...", end="\r")
-            response = await self.llm_client.complete_simple(
-                prompt=prompt,
-                system_prompt=RESEARCH_SYSTEM_PROMPT,
-                temperature=0.3,
-                max_tokens=16000,  # Reduced from 100k to avoid 400 Bad Request
-                model_override=RESEARCH_MODEL,
-            )
-            
-            if response and response.strip():
-                print(f"  ✓ Evaluation complete (Reasoning Model)   ")
-                return parse_evaluation(response)
+        # Try reasoning model first, then fast model
+        for model, model_name in [(RESEARCH_MODEL, "Reasoning"), (SUMMARIZE_MODEL, "Fast")]:
+            try:
+                print(f"  ? Evaluating results ({model_name} Model)...", end="\r")
+                response = await self.llm_client.complete_simple(
+                    prompt=prompt,
+                    system_prompt=RESEARCH_SYSTEM_PROMPT,
+                    temperature=0.3,
+                    max_tokens=16000 if model == RESEARCH_MODEL else 10000,
+                    model_override=model,
+                )
                 
-            print(f"  ! Reasoning model returned empty. Switching to Fast Model...")
-            logger.warning("Reasoning model returned empty evaluation. Falling back to fast model.")
-            
-        except Exception as e:
-            print(f"  ! Reasoning model failed. Switching to Fast Model...")
-            logger.warning(f"Reasoning model evaluation failed: {e}. Falling back to fast model.")
-
-        # Try 2: Fast Model (Assistant) - Fallback
-        try:
-            print(f"  > Evaluating results (Fast Model)...", end="\r")
-            response = await self.llm_client.complete_simple(
-                prompt=prompt,
-                system_prompt=RESEARCH_SYSTEM_PROMPT,
-                temperature=0.3,
-                max_tokens=10000,
-                model_override=SUMMARIZE_MODEL,
-            )
-            print(f"  ✓ Evaluation complete (Fast Model)        ")
-            return parse_evaluation(response)
-            
-        except Exception as e:
-            print(f"  x Evaluation failed completely.")
-            logger.warning(f"Fast model evaluation failed: {e}. Assuming insufficient.")
-            return {"sufficient": False, "confidence": "low", "missing": "Evaluation failed"}
+                if response and response.strip():
+                    print(f"  ✓ Evaluation complete ({model_name} Model)   ")
+                    return self._parse_evaluation_json(response)
+                
+                if model == RESEARCH_MODEL:
+                    print(f"  ! {model_name} model returned empty. Switching to Fast Model...")
+                    logger.warning(f"{model_name} model returned empty evaluation. Falling back.")
+                    
+            except Exception as e:
+                if model == RESEARCH_MODEL:
+                    print(f"  ! {model_name} model failed. Switching to Fast Model...")
+                    logger.warning(f"{model_name} model evaluation failed: {e}. Falling back.")
+                else:
+                    print(f"  x Evaluation failed completely.")
+                    logger.warning(f"Fast model evaluation failed: {e}. Assuming insufficient.")
+        
+        return {"sufficient": False, "confidence": "low", "missing": ["Evaluation failed"]}
     
-    async def _synthesize(self, state: ResearchState) -> str:
-        """
-        Synthesize gathered information into a comprehensive answer.
+    def _parse_evaluation_json(self, response: str) -> Dict[str, Any]:
+        """Parse evaluation response, handling both JSON and legacy formats."""
+        result = {
+            "sufficient": False,
+            "confidence": "low",
+            "missing": [],
+            "next_queries": [],
+        }
         
-        Uses LLM to write a structured answer based on all gathered information.
-        Tries reasoning model first, falls back to fast model.
+        # Try to extract JSON from <evaluation_json> tags
+        json_match = re.search(r'<evaluation_json>\s*(.*?)\s*</evaluation_json>', response, re.DOTALL)
+        if json_match:
+            try:
+                parsed = json.loads(json_match.group(1))
+                result["sufficient"] = parsed.get("sufficient", False)
+                result["confidence"] = parsed.get("confidence", "low")
+                result["missing"] = parsed.get("missing", [])
+                result["next_queries"] = parsed.get("next_queries", [])
+                return result
+            except json.JSONDecodeError:
+                logger.debug("Failed to parse evaluation JSON, falling back to text parsing")
         
-        Args:
-            state: Current research state
-            
-        Returns:
-            Comprehensive answer string (2-4 paragraphs)
-        """
-        if not state.gathered_info:
-            return f"Unable to find sufficient information about {state.variable.name} for {state.company}."
+        # Fallback: parse legacy text format
+        for line in response.strip().split("\n"):
+            line = line.strip()
+            if line.upper().startswith("SUFFICIENT:"):
+                value = line.split(":", 1)[1].strip().lower()
+                result["sufficient"] = value in ("yes", "true", "1")
+            elif line.upper().startswith("CONFIDENCE:"):
+                value = line.split(":", 1)[1].strip().lower()
+                if value in ("high", "medium", "low"):
+                    result["confidence"] = value
+            elif line.upper().startswith("MISSING:"):
+                missing_text = line.split(":", 1)[1].strip()
+                if missing_text.lower() != "none":
+                    result["missing"] = [missing_text]
+        
+        return result
+    
+    async def _synthesize(self, state: ResearchState) -> SynthesisResult:
+        """Synthesize gathered information into a comprehensive answer with citations."""
+        if not state.gathered_info and not state.evidence_passages:
+            return SynthesisResult(
+                comprehensive_markdown=f"Unable to find sufficient information about {state.variable.name} for {state.company}.",
+                claims=[],
+                gaps=["No information gathered"],
+            )
+        
+        # Build evidence pack for synthesis
+        if state.evidence_sources and state.evidence_passages:
+            evidence_pack = EvidencePack(
+                sources=state.evidence_sources,
+                passages=state.evidence_passages,
+                total_chars=sum(len(p.text) for p in state.evidence_passages),
+                avg_source_score=sum(s.source_score for s in state.evidence_sources) / len(state.evidence_sources) if state.evidence_sources else 0,
+            )
+            evidence_text = evidence_pack.format_for_prompt()
+        else:
+            # Fallback to legacy format if no evidence pack
+            evidence_text = format_gathered_info_for_synthesis(state.gathered_info)
         
         prompt = SYNTHESIS_PROMPT.format(
             company=state.company,
             variable_name=state.variable.name,
             research_prompt=state.variable.research_prompt.format(company=state.company),
-            gathered_information=format_gathered_info_for_synthesis(state.gathered_info),
+            answer_spec=format_answer_spec(state.variable.answer_spec),
+            evidence_pack=evidence_text,
         )
         
-        # Try 1: Reasoning Model (Professor)
-        try:
-            print(f"  ? Synthesizing answer (Reasoning Model)...", end="\r")
-            response = await self.llm_client.complete_simple(
-                prompt=prompt,
-                system_prompt=RESEARCH_SYSTEM_PROMPT,
-                temperature=0.5,
-                max_tokens=16000,  # Reduced from 100k to avoid 400 Bad Request
-                model_override=RESEARCH_MODEL,
-            )
-            
-            if response and response.strip():
-                print(f"  ✓ Synthesis complete (Reasoning Model)    ")
-                return response.strip()
+        # Try reasoning model first, then fast model
+        for model, model_name in [(RESEARCH_MODEL, "Reasoning"), (SUMMARIZE_MODEL, "Fast")]:
+            try:
+                print(f"  ? Synthesizing answer ({model_name} Model)...", end="\r")
+                response = await self.llm_client.complete_simple(
+                    prompt=prompt,
+                    system_prompt=RESEARCH_SYSTEM_PROMPT,
+                    temperature=0.5,
+                    max_tokens=16000 if model == RESEARCH_MODEL else 4000,
+                    model_override=model,
+                )
                 
-            print(f"  ! Reasoning model returned empty. Switching to Fast Model...")
-            logger.warning("Reasoning model returned empty synthesis. Falling back to fast model.")
-            
-        except Exception as e:
-            print(f"  ! Reasoning model failed. Switching to Fast Model...")
-            logger.warning(f"Reasoning model synthesis failed: {e}. Falling back to fast model.")
-
-        # Try 2: Fast Model (Assistant) - Fallback
-        try:
-            print(f"  > Synthesizing answer (Fast Model)...", end="\r")
-            response = await self.llm_client.complete_simple(
-                prompt=prompt,
-                system_prompt=RESEARCH_SYSTEM_PROMPT,
-                temperature=0.5,
-                max_tokens=2000,
-                model_override=SUMMARIZE_MODEL,
-            )
-            
-            if not response or not response.strip():
-                print(f"  ! Fast model returned empty. Using snippet fallback.")
-                logger.warning("Fast model returned empty synthesis. Using snippet fallback.")
-                snippets = [info.get("snippet", "") for info in state.gathered_info[:5]]
-                return f"Research on {state.variable.name} for {state.company}:\n\n" + "\n\n".join(snippets)
-            
-            print(f"  ✓ Synthesis complete (Fast Model)         ")
-            return response.strip()
-            
-        except Exception as e:
-            print(f"  x Synthesis failed completely.")
-            logger.error(f"Fast model synthesis failed: {e}")
-            snippets = [info.get("snippet", "") for info in state.gathered_info[:5]]
-            return f"Research on {state.variable.name} for {state.company}:\n\n" + "\n\n".join(snippets)
+                if response and response.strip():
+                    print(f"  ✓ Synthesis complete ({model_name} Model)    ")
+                    return self._parse_synthesis_json(response)
+                
+                if model == RESEARCH_MODEL:
+                    print(f"  ! {model_name} model returned empty. Switching to Fast Model...")
+                    logger.warning(f"{model_name} model returned empty synthesis. Falling back.")
+                    
+            except Exception as e:
+                if model == RESEARCH_MODEL:
+                    print(f"  ! {model_name} model failed. Switching to Fast Model...")
+                    logger.warning(f"{model_name} model synthesis failed: {e}. Falling back.")
+                else:
+                    print(f"  x Synthesis failed completely.")
+                    logger.error(f"Fast model synthesis failed: {e}")
+        
+        # Final fallback
+        return SynthesisResult(
+            comprehensive_markdown=self._fallback_synthesis(state),
+            claims=[],
+            gaps=["Synthesis failed"],
+            parse_error="All synthesis attempts failed",
+        )
     
-    async def _summarize(self, company: str, variable_name: str, comprehensive: str) -> str:
+    def _parse_synthesis_json(self, response: str) -> SynthesisResult:
+        """Parse synthesis response, handling both JSON and plain text."""
+        # Try to extract JSON from <synthesis_json> tags
+        json_match = re.search(r'<synthesis_json>\s*(.*?)\s*</synthesis_json>', response, re.DOTALL)
+        if json_match:
+            try:
+                parsed = json.loads(json_match.group(1))
+                claims = []
+                for c in parsed.get("claims", []):
+                    claims.append(Claim(
+                        text=c.get("text", ""),
+                        source_ids=c.get("source_ids", []),
+                        confidence=c.get("confidence", "medium"),
+                    ))
+                return SynthesisResult(
+                    comprehensive_markdown=parsed.get("comprehensive_markdown", ""),
+                    claims=claims,
+                    gaps=parsed.get("gaps", []),
+                    raw_response=response,
+                )
+            except json.JSONDecodeError as e:
+                logger.debug(f"Failed to parse synthesis JSON: {e}")
+        
+        # Fallback: use response as comprehensive text
+        return SynthesisResult(
+            comprehensive_markdown=response.strip(),
+            claims=[],
+            gaps=[],
+            raw_response=response,
+            parse_error="Could not parse JSON, using raw response",
+        )
+    
+    def _fallback_synthesis(self, state: ResearchState) -> str:
+        """Create fallback synthesis from snippets."""
+        snippets = [info.get("snippet", "") for info in state.gathered_info[:5]]
+        return f"Research on {state.variable.name} for {state.company}:\n\n" + "\n\n".join(snippets)
+    
+    async def _verify_and_fix(
+        self,
+        comprehensive: str,
+        state: ResearchState,
+    ) -> Tuple[str, bool]:
         """
-        Summarize comprehensive answer into concise version.
+        Verify numeric claims and fix unsupported ones.
         
-        Uses a fast model for summarization since this is a simple task.
-        
-        Args:
-            company: Company name
-            variable_name: Variable name
-            comprehensive: The comprehensive answer to summarize
-            
         Returns:
-            Concise summary (1-3 sentences, plain text)
+            Tuple of (possibly fixed text, whether confidence was reduced)
         """
-        # Dedicated system prompt for summarization (no markdown)
+        numbers = extract_numbers(comprehensive)
+        if not numbers:
+            return comprehensive, False
+        
+        results, unsupported = verify_numbers_against_evidence(
+            numbers,
+            state.evidence_passages,
+        )
+        
+        if not unsupported:
+            return comprehensive, False
+        
+        confidence_reduced = should_reduce_confidence(results)
+        
+        # If too many unsupported numbers, try to fix
+        if len(unsupported) >= 2:
+            try:
+                fix_prompt = NUMERIC_FIX_PROMPT.format(
+                    text=comprehensive,
+                    unsupported_numbers=format_unsupported_for_fix(unsupported),
+                    evidence_passages="\n".join(p.text[:200] for p in state.evidence_passages[:5]),
+                )
+                
+                fixed = await self.llm_client.complete_simple(
+                    prompt=fix_prompt,
+                    system_prompt="You are a careful editor. Remove or qualify unsupported claims.",
+                    temperature=0.3,
+                    max_tokens=4000,
+                    model_override=SUMMARIZE_MODEL,
+                )
+                
+                if fixed and fixed.strip():
+                    logger.info(f"Fixed {len(unsupported)} unsupported numbers in synthesis")
+                    return fixed.strip(), confidence_reduced
+                    
+            except Exception as e:
+                logger.warning(f"Failed to fix unsupported numbers: {e}")
+        
+        return comprehensive, confidence_reduced
+    
+    async def _summarize(
+        self,
+        company: str,
+        variable_name: str,
+        comprehensive: str,
+        max_chars: int,
+    ) -> str:
+        """Summarize comprehensive answer with length enforcement."""
         summarize_system_prompt = """You are a concise business analyst writing table cells for competitive analysis.
 Your output must be plain text only - no markdown formatting, no headers, no bullets, no bold.
 Write clear, factual prose with specific numbers when available."""
@@ -507,55 +733,67 @@ Write clear, factual prose with specific numbers when available."""
             prompt = SUMMARIZE_PROMPT.format(
                 company=company,
                 variable_name=variable_name,
+                max_chars=max_chars,
                 comprehensive_answer=comprehensive,
             )
             
-            # Use fast summarization model - doesn't need deep reasoning
             response = await self.llm_client.complete_simple(
                 prompt=prompt,
                 system_prompt=summarize_system_prompt,
+                temperature=0.3,
+                max_tokens=500,
+                model_override=SUMMARIZE_MODEL,
+            )
+            
+            if not response:
+                logger.warning("LLM returned None/empty for summarization, using fallback")
+                return self._create_fallback_summary(comprehensive, max_chars)
+            
+            result = self._clean_markdown(response.strip())
+            
+            # If still too long, run tighten pass
+            if len(result) > max_chars:
+                result = await self._tighten_summary(result, max_chars)
+            
+            if not result or len(result) < 20:
+                logger.warning("LLM returned empty/short summary, using fallback")
+                return self._create_fallback_summary(comprehensive, max_chars)
+            
+            return result
+            
+        except Exception as e:
+            logger.error(f"Summarization failed: {e}")
+            return self._create_fallback_summary(comprehensive, max_chars)
+    
+    async def _tighten_summary(self, summary: str, max_chars: int) -> str:
+        """Run a second pass to shorten an over-long summary."""
+        try:
+            prompt = TIGHTEN_PROMPT.format(
+                max_chars=max_chars,
+                current_chars=len(summary),
+                summary=summary,
+            )
+            
+            response = await self.llm_client.complete_simple(
+                prompt=prompt,
+                system_prompt="You are a concise editor. Shorten text while keeping key facts.",
                 temperature=0.3,
                 max_tokens=300,
                 model_override=SUMMARIZE_MODEL,
             )
             
-            # Handle None or empty response
-            if not response:
-                logger.warning("LLM returned None/empty for summarization, using fallback")
-                return self._create_fallback_summary(comprehensive)
-            
-            # Clean any markdown that may have slipped through
-            result = self._clean_markdown(response.strip())
-            
-            # If result is too short after cleaning, use fallback
-            if not result or len(result) < 20:
-                logger.warning("LLM returned empty/short summary, using fallback")
-                return self._create_fallback_summary(comprehensive)
-            
-            return result
-            
-        except LLMError as e:
-            logger.error(f"LLM summarization failed: {e}")
-            return self._create_fallback_summary(comprehensive)
+            if response:
+                result = self._clean_markdown(response.strip())
+                if len(result) <= max_chars:
+                    return result
         except Exception as e:
-            logger.error(f"Unexpected error in summarization: {e}")
-            return self._create_fallback_summary(comprehensive)
+            logger.warning(f"Tighten pass failed: {e}")
+        
+        # Hard truncation as last resort
+        return summary[:max_chars - 3] + "..."
     
     def _extract_search_queries(self, response: str, company: str) -> List[str]:
-        """
-        Extract search queries from LLM response.
-        
-        Handles reasoning models (like Tongyi DeepResearch) that include thinking
-        in their response. First looks for <queries> tags, then falls back to
-        filtering heuristics.
-        
-        Args:
-            response: Raw LLM response text
-            company: Company name (queries should contain this)
-            
-        Returns:
-            List of clean search queries
-        """
+        """Extract search queries from LLM response."""
         queries = []
         
         # First, try to extract from <queries> tags
@@ -564,184 +802,98 @@ Write clear, factual prose with specific numbers when available."""
             queries_text = queries_match.group(1)
             for line in queries_text.strip().split("\n"):
                 line = line.strip().strip('"\'')
-                line = re.sub(r"^[\d\.\-\*\)\•]+\s*", "", line)  # Remove prefixes
+                line = re.sub(r"^[\d\.\-\*\)\•]+\s*", "", line)
                 if line and 10 < len(line) < 100:
                     queries.append(line)
             if queries:
-                logger.debug(f"Extracted {len(queries)} queries from <queries> tags")
                 return queries
         
         # Fallback: filter out reasoning text
-        # Patterns that indicate reasoning/thinking text (not queries)
         reasoning_patterns = [
             r'^(we |i |let\'s |okay|the |this |these |to |for |here |now |first|based on)',
             r'(should|would|could|need to|want to|trying to|looking for)',
-            r'(previously|already|avoid|cover|highlight|emphasize)',
-            r'^(key points|official|investor|how they|what makes)',
-            r'[:]{1}$',  # Lines ending with colon (likely headers)
-            r'^\d+\.\s+[A-Z]',  # Numbered reasoning steps like "1. First we..."
+            r'[:]{1}$',
         ]
         
         for line in response.strip().split("\n"):
             line = line.strip()
-            
-            # Skip empty, very short, or very long lines
             if not line or len(line) < 10 or len(line) > 100:
                 continue
             
-            # Skip lines that look like reasoning/thinking
-            is_reasoning = False
-            for pattern in reasoning_patterns:
-                if re.search(pattern, line.lower()):
-                    is_reasoning = True
-                    break
-            
+            is_reasoning = any(re.search(p, line.lower()) for p in reasoning_patterns)
             if is_reasoning:
                 continue
             
-            # Clean up the line
             line = re.sub(r"^[\d\.\-\*\)\•]+\s*", "", line)
-            line = re.sub(r"^(Search\s+for\s+|Query:\s*)", "", line, flags=re.IGNORECASE)
             line = line.strip('"\'')
             
             if len(line) < 10:
                 continue
             
-            # Prefer queries that contain the company name
             if company.lower() in line.lower():
                 queries.insert(0, line)
             else:
                 queries.append(line)
         
-        # Final fallback: extract any line with company name
-        if len(queries) < 2:
-            logger.warning(f"Query extraction found only {len(queries)} queries, using fallback")
-            fallback_queries = []
-            for line in response.strip().split("\n"):
-                line = line.strip().strip('"\'')
-                line = re.sub(r"^[\d\.\-\*\)\•]+\s*", "", line)
-                if company.lower() in line.lower() and 10 < len(line) < 80:
-                    if line and line not in fallback_queries:
-                        fallback_queries.append(line)
-            if fallback_queries:
-                queries = fallback_queries[:5]
-        
         return queries
-
+    
     def _clean_markdown(self, text: str) -> str:
-        """
-        Strip all markdown formatting from text.
-        
-        Removes:
-        - # headers
-        - **bold** and *italic*
-        - Bullet points (-, *, •)
-        - Numbered lists
-        - Multiple newlines
-        
-        Args:
-            text: Text potentially containing markdown
-            
-        Returns:
-            Clean plain text
-        """
+        """Strip all markdown formatting from text."""
         if not text:
             return text
         
-        # Remove markdown headers (# ## ### etc.)
         cleaned = re.sub(r'^#{1,6}\s+', '', text, flags=re.MULTILINE)
-        
-        # Remove **bold** formatting
         cleaned = re.sub(r'\*\*([^*]+)\*\*', r'\1', cleaned)
-        
-        # Remove *italic* formatting
         cleaned = re.sub(r'\*([^*]+)\*', r'\1', cleaned)
-        
-        # Remove __bold__ formatting
         cleaned = re.sub(r'__([^_]+)__', r'\1', cleaned)
-        
-        # Remove _italic_ formatting
         cleaned = re.sub(r'_([^_]+)_', r'\1', cleaned)
-        
-        # Remove bullet points at start of lines (-, *, •)
         cleaned = re.sub(r'^\s*[\-\*\•]\s+', '', cleaned, flags=re.MULTILINE)
-        
-        # Remove numbered lists (1. 2. etc.)
         cleaned = re.sub(r'^\s*\d+\.\s+', '', cleaned, flags=re.MULTILINE)
-        
-        # Collapse multiple newlines to single space
         cleaned = re.sub(r'\n\s*\n', ' ', cleaned)
-        
-        # Replace remaining newlines with spaces
         cleaned = re.sub(r'\n', ' ', cleaned)
-        
-        # Collapse multiple spaces
         cleaned = re.sub(r'\s+', ' ', cleaned)
         
         return cleaned.strip()
-
-    def _create_fallback_summary(self, comprehensive: str) -> str:
-        """
-        Create a fallback summary from comprehensive text.
-        
-        Extracts 2-3 sentences (up to ~300 chars) from the clean text.
-        
-        Args:
-            comprehensive: The comprehensive text to summarize
-            
-        Returns:
-            Plain text summary (1-3 sentences)
-        """
-        # First, clean any markdown formatting
+    
+    def _create_fallback_summary(self, comprehensive: str, max_chars: int = 240) -> str:
+        """Create a fallback summary from comprehensive text."""
         clean_text = self._clean_markdown(comprehensive)
         
         if not clean_text:
             return "No information available."
         
-        # Split into sentences and collect meaningful ones
         sentences = re.split(r'(?<=[.!?])\s+', clean_text)
         result_sentences = []
         total_length = 0
         
         for sentence in sentences:
             sentence = sentence.strip()
-            # Skip fragments shorter than 20 chars
             if len(sentence) < 20:
                 continue
             
-            # Check if adding this sentence would exceed our limit (~300 chars)
-            if total_length + len(sentence) > 300 and result_sentences:
+            if total_length + len(sentence) > max_chars and result_sentences:
                 break
             
             result_sentences.append(sentence)
-            total_length += len(sentence) + 1  # +1 for space
+            total_length += len(sentence) + 1
             
-            # Stop after 3 sentences
             if len(result_sentences) >= 3:
                 break
         
         if result_sentences:
             result = ' '.join(result_sentences)
-            # Ensure it ends with punctuation
             if not result.endswith(('.', '!', '?')):
                 result += '.'
+            if len(result) > max_chars:
+                result = result[:max_chars - 3] + "..."
             return result
         
-        # Last resort: truncate clean text
-        if len(clean_text) > 150:
-            return clean_text[:147] + "..."
+        if len(clean_text) > max_chars:
+            return clean_text[:max_chars - 3] + "..."
         return clean_text
     
     def _extract_info(self, search_result: SearchResult) -> List[Dict[str, Any]]:
-        """
-        Extract relevant information from a search result.
-        
-        Args:
-            search_result: SearchResult from the search client
-            
-        Returns:
-            List of dicts with title, url, snippet, query
-        """
+        """Extract relevant information from a search result."""
         info_list = []
         for item in search_result.items:
             info_list.append({
@@ -749,22 +901,33 @@ Write clear, factual prose with specific numbers when available."""
                 "url": item.url,
                 "snippet": item.snippet,
                 "query": search_result.query,
+                "domain": item.domain,
+                "source_score": item.source_score,
+                "is_official": item.is_official,
             })
         return info_list
     
     def _build_sources(self, state: ResearchState) -> List[ResearchSource]:
-        """
-        Build deduplicated list of sources from gathered information.
-        
-        Args:
-            state: Current research state
-            
-        Returns:
-            List of ResearchSource objects
-        """
+        """Build deduplicated list of sources from gathered information."""
         seen_urls = set()
         sources = []
         
+        # Prefer evidence sources if available
+        if state.evidence_sources:
+            for src in state.evidence_sources:
+                if src.url not in seen_urls:
+                    seen_urls.add(src.url)
+                    sources.append(ResearchSource(
+                        title=src.title,
+                        url=src.url,
+                        snippet="",
+                        query="",
+                        domain=src.domain,
+                        source_score=src.source_score,
+                        is_official=src.is_official,
+                    ))
+        
+        # Add from gathered info
         for info in state.gathered_info:
             url = info.get("url", "")
             if url and url not in seen_urls:
@@ -774,6 +937,31 @@ Write clear, factual prose with specific numbers when available."""
                     url=url,
                     snippet=info.get("snippet", "")[:200],
                     query=info.get("query", ""),
+                    domain=info.get("domain", ""),
+                    source_score=info.get("source_score", 0.5),
+                    is_official=info.get("is_official", False),
                 ))
         
-        return sources[:10]  # Limit to top 10 sources
+        # Sort by score descending
+        sources.sort(key=lambda x: -x.source_score)
+        return sources[:10]
+    
+    def _build_metadata(self, state: ResearchState) -> Dict[str, Any]:
+        """Build rich metadata about the research process."""
+        avg_score = 0.0
+        if state.evidence_sources:
+            avg_score = sum(s.source_score for s in state.evidence_sources) / len(state.evidence_sources)
+        
+        return {
+            "iterations": state.iteration,
+            "searches": len(state.search_results),
+            "pages_fetched": state.pages_fetched,
+            "pages_failed": state.pages_failed,
+            "evidence_sources_used": len(state.evidence_sources),
+            "evidence_passages_count": len(state.evidence_passages),
+            "avg_source_score": round(avg_score, 3),
+            "total_evidence_chars": sum(len(p.text) for p in state.evidence_passages),
+            "model_used": RESEARCH_MODEL,
+            "verification_applied": self.enable_verification,
+            "page_fetch_enabled": self.enable_page_fetch,
+        }

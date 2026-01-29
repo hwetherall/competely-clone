@@ -2,21 +2,27 @@
 Variable definitions for competitive analysis.
 
 Each variable defines what information to research about a company,
-including the research prompt and example search queries.
+including the research prompt, example search queries, and structured
+answer specifications for evidence-grounded research.
 """
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import List, Dict
 
 
 @dataclass
 class VariableDefinition:
-    """Definition of a research variable."""
+    """Definition of a research variable with structured answer requirements."""
     id: str                    # e.g., "unique_value_proposition"
     name: str                  # e.g., "Unique Value Proposition"
     category: str              # e.g., "Core Positioning & Value"
     research_prompt: str       # Detailed instructions for researching this variable
     example_queries: List[str] # Example search queries to help the agent
+    # New fields for evidence-grounded research
+    answer_spec: List[str] = field(default_factory=list)  # What must be answered
+    preferred_source_types: List[str] = field(default_factory=list)  # e.g., "official", "regulatory", "tier1_news"
+    key_terms: List[str] = field(default_factory=list)  # Keywords for passage selection
+    max_concise_chars: int = 240  # Maximum characters for concise summary
 
 
 # =============================================================================
@@ -46,7 +52,15 @@ Summarize the core promise they make to customers in a clear, specific way.""",
             "{company} why choose us",
             "{company} company mission",
             "what makes {company} different"
-        ]
+        ],
+        answer_spec=[
+            "core promise to customers",
+            "primary benefit offered",
+            "key differentiator from alternatives",
+        ],
+        preferred_source_types=["official", "tier1_news"],
+        key_terms=["value proposition", "mission", "why", "unique", "benefit", "promise", "choose"],
+        max_concise_chars=180,
     ),
     
     VariableDefinition(
@@ -67,7 +81,15 @@ Look at marketing language, pricing strategy, and target audience signals.""",
             "{company} target market",
             "{company} brand strategy",
             "how {company} competes"
-        ]
+        ],
+        answer_spec=[
+            "market segment (premium/mid/budget)",
+            "target customer type (enterprise/SMB/consumer)",
+            "positioning vs competitors",
+        ],
+        preferred_source_types=["official", "tier1_news", "analyst"],
+        key_terms=["positioning", "market", "target", "segment", "enterprise", "SMB", "premium", "strategy"],
+        max_concise_chars=180,
     ),
     
     VariableDefinition(
@@ -88,7 +110,15 @@ Focus on concrete differentiators, not just marketing claims.""",
             "{company} competitive advantage",
             "{company} comparison",
             "why {company} over alternatives"
-        ]
+        ],
+        answer_spec=[
+            "main competitors",
+            "key competitive advantages",
+            "concrete differentiators",
+        ],
+        preferred_source_types=["official", "tier1_news", "analyst"],
+        key_terms=["competitive", "vs", "comparison", "alternative", "advantage", "differentiator", "better"],
+        max_concise_chars=150,
     ),
     
     VariableDefinition(
@@ -110,7 +140,15 @@ Prioritize concrete, verifiable differences.""",
             "{company} key differentiators",
             "{company} competitive features",
             "what {company} does differently"
-        ]
+        ],
+        answer_spec=[
+            "unique features",
+            "technical capabilities",
+            "business model differences",
+        ],
+        preferred_source_types=["official", "tier1_news"],
+        key_terms=["unique", "different", "feature", "capability", "patent", "exclusive", "only"],
+        max_concise_chars=180,
     ),
     
     VariableDefinition(
@@ -130,7 +168,15 @@ Look at:
             "{company} mission statement",
             "{company} our values",
             "{company} customer commitment"
-        ]
+        ],
+        answer_spec=[
+            "brand tagline/slogan",
+            "core commitment to customers",
+            "brand values",
+        ],
+        preferred_source_types=["official"],
+        key_terms=["promise", "mission", "vision", "values", "commitment", "tagline", "slogan"],
+        max_concise_chars=150,
     ),
     
     # -------------------------------------------------------------------------
@@ -155,7 +201,15 @@ Look at case studies, testimonials, and marketing targeting.""",
             "{company} who uses",
             "{company} ideal customer",
             "{company} testimonials"
-        ]
+        ],
+        answer_spec=[
+            "primary personas (role/title)",
+            "company size/type targeted",
+            "industry verticals",
+        ],
+        preferred_source_types=["official", "tier1_news"],
+        key_terms=["customer", "persona", "user", "case study", "testimonial", "industry", "vertical"],
+        max_concise_chars=150,
     ),
     
     VariableDefinition(
@@ -175,7 +229,15 @@ Look for:
             "{company} enterprise vs startup",
             "{company} customer segments",
             "{company} plans pricing"
-        ]
+        ],
+        answer_spec=[
+            "pricing tier structure",
+            "segment definitions",
+            "go-to-market approach per segment",
+        ],
+        preferred_source_types=["official"],
+        key_terms=["segment", "tier", "enterprise", "SMB", "startup", "plan", "pricing"],
+        max_concise_chars=180,
     ),
     
     VariableDefinition(
@@ -194,7 +256,15 @@ Find:
             "{company} active accounts",
             "{company} user statistics",
             "how many people use {company}"
-        ]
+        ],
+        answer_spec=[
+            "user count/active accounts",
+            "user roles/types",
+            "growth trends",
+        ],
+        preferred_source_types=["official", "tier1_news", "regulatory"],
+        key_terms=["users", "accounts", "active", "million", "growth", "statistics", "demographics"],
+        max_concise_chars=160,
     ),
     
     VariableDefinition(
@@ -213,7 +283,15 @@ Identify:
             "{company} who buys",
             "{company} decision maker",
             "{company} purchasing process"
-        ]
+        ],
+        answer_spec=[
+            "decision-maker roles",
+            "buying process",
+            "evaluation criteria",
+        ],
+        preferred_source_types=["official", "tier1_news"],
+        key_terms=["buyer", "decision", "purchasing", "CFO", "CTO", "budget", "approval"],
+        max_concise_chars=160,
     ),
     
     VariableDefinition(
@@ -234,7 +312,15 @@ Look at documentation, case studies, and feature pages.""",
             "{company} what can you do",
             "{company} solutions",
             "{company} how businesses use"
-        ]
+        ],
+        answer_spec=[
+            "primary use cases",
+            "problems solved",
+            "key workflows enabled",
+        ],
+        preferred_source_types=["official"],
+        key_terms=["use case", "solution", "workflow", "problem", "application", "how to"],
+        max_concise_chars=150,
     ),
     
     # -------------------------------------------------------------------------
@@ -258,7 +344,15 @@ Use official product pages and feature lists.""",
             "{company} product capabilities",
             "{company} what does it do",
             "{company} key functionality"
-        ]
+        ],
+        answer_spec=[
+            "top 5-7 features",
+            "core capabilities",
+            "key functionality",
+        ],
+        preferred_source_types=["official"],
+        key_terms=["feature", "capability", "functionality", "product", "tool", "platform"],
+        max_concise_chars=150,
     ),
     
     VariableDefinition(
@@ -278,7 +372,15 @@ Look for:
             "{company} advanced capabilities",
             "{company} pro features",
             "{company} API features"
-        ]
+        ],
+        answer_spec=[
+            "enterprise features",
+            "advanced capabilities",
+            "API/developer features",
+        ],
+        preferred_source_types=["official"],
+        key_terms=["enterprise", "advanced", "API", "security", "compliance", "custom", "pro"],
+        max_concise_chars=150,
     ),
     
     VariableDefinition(
@@ -298,7 +400,15 @@ Find:
             "{company} apps marketplace",
             "{company} connects with",
             "{company} API partners"
-        ]
+        ],
+        answer_spec=[
+            "number of integrations",
+            "key integration partners",
+            "API capabilities",
+        ],
+        preferred_source_types=["official"],
+        key_terms=["integration", "API", "connect", "partner", "marketplace", "ecosystem", "webhook"],
+        max_concise_chars=180,
     ),
     
     VariableDefinition(
@@ -318,7 +428,15 @@ Look for:
             "{company} engineering blog",
             "{company} technology",
             "{company} built with"
-        ]
+        ],
+        answer_spec=[
+            "programming languages",
+            "infrastructure/cloud",
+            "key technologies used",
+        ],
+        preferred_source_types=["official", "tier1_news"],
+        key_terms=["stack", "technology", "engineering", "infrastructure", "cloud", "language", "framework"],
+        max_concise_chars=180,
     ),
     
     VariableDefinition(
@@ -338,7 +456,15 @@ Look for:
             "{company} new features 2024",
             "{company} product updates",
             "{company} whats new"
-        ]
+        ],
+        answer_spec=[
+            "recent releases",
+            "announced features",
+            "strategic direction",
+        ],
+        preferred_source_types=["official", "tier1_news"],
+        key_terms=["roadmap", "release", "update", "new", "upcoming", "announcement", "launch"],
+        max_concise_chars=150,
     ),
     
     # -------------------------------------------------------------------------
@@ -360,7 +486,15 @@ Identify:
             "{company} how they make money",
             "{company} revenue model",
             "{company} pricing model"
-        ]
+        ],
+        answer_spec=[
+            "primary revenue streams",
+            "pricing model type",
+            "monetization strategy",
+        ],
+        preferred_source_types=["official", "tier1_news", "regulatory"],
+        key_terms=["revenue", "business model", "monetization", "fees", "subscription", "transaction"],
+        max_concise_chars=180,
     ),
     
     VariableDefinition(
@@ -380,7 +514,15 @@ Find:
             "{company} cost",
             "{company} fees",
             "{company} plans"
-        ]
+        ],
+        answer_spec=[
+            "pricing tiers with costs",
+            "fee structure",
+            "free tier availability",
+        ],
+        preferred_source_types=["official"],
+        key_terms=["pricing", "cost", "fee", "plan", "tier", "free", "enterprise", "per"],
+        max_concise_chars=150,
     ),
     
     VariableDefinition(
@@ -402,7 +544,15 @@ Include the source and methodology when available.""",
             "{company} market position",
             "{company} industry ranking",
             "{company} vs competitors market"
-        ]
+        ],
+        answer_spec=[
+            "market share percentage",
+            "market ranking",
+            "data source/methodology",
+        ],
+        preferred_source_types=["tier1_news", "analyst", "regulatory"],
+        key_terms=["market share", "percent", "ranking", "leader", "position", "volume"],
+        max_concise_chars=160,
     ),
     
     VariableDefinition(
@@ -423,7 +573,15 @@ Look for analyst reports, investor presentations, and industry publications.""",
             "{company} TAM",
             "digital payments market size",
             "{company} industry size"
-        ]
+        ],
+        answer_spec=[
+            "TAM value",
+            "growth rate/CAGR",
+            "market forecast",
+        ],
+        preferred_source_types=["tier1_news", "analyst"],
+        key_terms=["TAM", "market size", "billion", "trillion", "CAGR", "growth", "forecast"],
+        max_concise_chars=160,
     ),
     
     VariableDefinition(
@@ -448,7 +606,15 @@ Always note the time period and source.""",
             "{company} annual revenue",
             "{company} earnings",
             "{company} financial results"
-        ]
+        ],
+        answer_spec=[
+            "annual revenue figure",
+            "time period",
+            "source of data",
+        ],
+        preferred_source_types=["regulatory", "tier1_news", "official"],
+        key_terms=["revenue", "earnings", "billion", "million", "annual", "fiscal", "quarter"],
+        max_concise_chars=150,
     ),
 ]
 
@@ -499,3 +665,13 @@ def get_all_variable_ids() -> List[str]:
 def get_all_variable_names() -> List[str]:
     """Get list of all variable names."""
     return [var.name for var in VARIABLES]
+
+
+def get_variable_answer_spec(variable_id: str) -> List[str]:
+    """Get the answer specification for a variable."""
+    return get_variable(variable_id).answer_spec
+
+
+def get_variable_key_terms(variable_id: str) -> List[str]:
+    """Get the key terms for passage selection for a variable."""
+    return get_variable(variable_id).key_terms

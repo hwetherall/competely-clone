@@ -6,13 +6,14 @@ This module provides a robust search client with:
 - MD5-based query caching
 - Retry logic with exponential backoff
 - Structured result parsing
+- Source quality scoring
 """
 
 import asyncio
 import hashlib
 import json
 import logging
-from dataclasses import dataclass, asdict
+from dataclasses import dataclass, asdict, field
 from datetime import datetime
 from pathlib import Path
 from typing import List, Optional
@@ -26,6 +27,7 @@ from tenacity import (
 )
 
 from config import settings
+from agents.source_scoring import score_url, extract_domain
 
 # Configure logging
 logger = logging.getLogger(__name__)
@@ -61,11 +63,16 @@ class PermanentSearchError(SearchError):
 
 @dataclass
 class SearchResultItem:
-    """A single search result item."""
+    """A single search result item with source quality scoring."""
     title: str
     url: str
     snippet: str
     position: int
+    # New fields for source quality
+    domain: str = ""
+    source_score: float = 0.5
+    is_official: bool = False
+    source_tier: str = "general"
 
 
 @dataclass
@@ -92,7 +99,20 @@ class SearchResult:
     @classmethod
     def from_dict(cls, data: dict) -> "SearchResult":
         """Create from dictionary (for cache loading)."""
-        items = [SearchResultItem(**item) for item in data["items"]]
+        items = []
+        for item_data in data["items"]:
+            # Handle both old and new format cache entries
+            item = SearchResultItem(
+                title=item_data.get("title", ""),
+                url=item_data.get("url", ""),
+                snippet=item_data.get("snippet", ""),
+                position=item_data.get("position", 0),
+                domain=item_data.get("domain", ""),
+                source_score=item_data.get("source_score", 0.5),
+                is_official=item_data.get("is_official", False),
+                source_tier=item_data.get("source_tier", "general"),
+            )
+            items.append(item)
         return cls(
             query=data["query"],
             items=items,
@@ -209,7 +229,13 @@ class SearchClient:
         except IOError as e:
             logger.warning(f"Failed to cache result for query '{result.query[:50]}...': {e}")
     
-    def _parse_response(self, query: str, response_data: dict, search_time: float) -> SearchResult:
+    def _parse_response(
+        self,
+        query: str,
+        response_data: dict,
+        search_time: float,
+        company: str = "",
+    ) -> SearchResult:
         """
         Parse Serper API response into structured SearchResult.
         
@@ -217,19 +243,29 @@ class SearchClient:
             query: The original search query
             response_data: Raw response from Serper API
             search_time: Time taken for the search
+            company: Optional company name for official domain detection
             
         Returns:
-            Structured SearchResult
+            Structured SearchResult with source quality scores
         """
         items = []
         organic_results = response_data.get("organic", [])
         
         for result in organic_results:
+            url = result.get("link", "")
+            
+            # Score the source quality
+            source_score_result = score_url(url, company)
+            
             item = SearchResultItem(
                 title=result.get("title", ""),
-                url=result.get("link", ""),
+                url=url,
                 snippet=result.get("snippet", ""),
                 position=result.get("position", 0),
+                domain=source_score_result.domain,
+                source_score=source_score_result.score,
+                is_official=source_score_result.is_official,
+                source_tier=source_score_result.tier,
             )
             items.append(item)
         
@@ -317,23 +353,29 @@ class SearchClient:
                     query=query,
                 )
     
-    async def search(self, query: str, num_results: int = 10) -> SearchResult:
+    async def search(
+        self,
+        query: str,
+        num_results: int = 10,
+        company: str = "",
+    ) -> SearchResult:
         """
-        Perform a web search.
+        Perform a web search with source quality scoring.
         
         This method will:
         1. Check cache first
         2. If not cached, call Serper API
-        3. Parse and structure the response
+        3. Parse and structure the response with source scores
         4. Cache the result
         5. Return the structured result
         
         Args:
             query: The search query
             num_results: Number of results to return (default: 10)
+            company: Optional company name for official domain detection
             
         Returns:
-            SearchResult with structured search results
+            SearchResult with structured search results and source scores
             
         Raises:
             SearchError: If the search fails after retries
@@ -341,6 +383,14 @@ class SearchClient:
         # Check cache first
         cached_result = self._load_from_cache(query)
         if cached_result:
+            # Re-score cached results if company is provided (scores may differ)
+            if company:
+                for item in cached_result.items:
+                    source_score_result = score_url(item.url, company)
+                    item.domain = source_score_result.domain
+                    item.source_score = source_score_result.score
+                    item.is_official = source_score_result.is_official
+                    item.source_tier = source_score_result.tier
             return cached_result
         
         # Execute search
@@ -356,8 +406,8 @@ class SearchClient:
         end_time = asyncio.get_event_loop().time()
         search_time = end_time - start_time
         
-        # Parse response
-        result = self._parse_response(query, response_data, search_time)
+        # Parse response with source scoring
+        result = self._parse_response(query, response_data, search_time, company)
         
         # Cache result
         self._save_to_cache(result)
@@ -365,7 +415,12 @@ class SearchClient:
         logger.info(f"Search complete: {result.total_results} results in {search_time:.2f}s")
         return result
     
-    def search_sync(self, query: str, num_results: int = 10) -> SearchResult:
+    def search_sync(
+        self,
+        query: str,
+        num_results: int = 10,
+        company: str = "",
+    ) -> SearchResult:
         """
         Synchronous wrapper for the search method.
         
@@ -374,17 +429,19 @@ class SearchClient:
         Args:
             query: The search query
             num_results: Number of results to return (default: 10)
+            company: Optional company name for official domain detection
             
         Returns:
             SearchResult with structured search results
         """
-        return asyncio.run(self.search(query, num_results))
+        return asyncio.run(self.search(query, num_results, company))
     
     async def search_batch(
         self,
         queries: List[str],
         num_results: int = 10,
         max_concurrent: int = 5,
+        company: str = "",
     ) -> List[SearchResult]:
         """
         Perform multiple searches with concurrency control.
@@ -393,6 +450,7 @@ class SearchClient:
             queries: List of search queries
             num_results: Number of results per query
             max_concurrent: Maximum concurrent requests
+            company: Optional company name for official domain detection
             
         Returns:
             List of SearchResults (in same order as queries)
@@ -401,7 +459,7 @@ class SearchClient:
         
         async def bounded_search(query: str) -> SearchResult:
             async with semaphore:
-                return await self.search(query, num_results)
+                return await self.search(query, num_results, company)
         
         tasks = [bounded_search(q) for q in queries]
         return await asyncio.gather(*tasks, return_exceptions=True)

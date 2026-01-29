@@ -1,0 +1,3348 @@
+{
+  "timestamp": "2026-01-29T01:07:15.539385+00:00",
+  "companies": [
+    "Stripe"
+  ],
+  "variables": [
+    "unique_value_proposition",
+    "positioning",
+    "competitive_positioning_summary",
+    "differentiation",
+    "brand_promise",
+    "target_customer_personas",
+    "customer_segmentation",
+    "users",
+    "buyers",
+    "use_cases",
+    "key_features",
+    "advanced_features",
+    "integrations",
+    "technology_stack",
+    "product_roadmap",
+    "business_models",
+    "pricing_strategy",
+    "market_share",
+    "market_size",
+    "estimated_revenue"
+  ],
+  "grid": {
+    "Stripe": {
+      "unique_value_proposition": {
+        "company": "Stripe",
+        "variable_id": "unique_value_proposition",
+        "variable_name": "Unique Value Proposition",
+        "concise": "Provides comprehensive financial infrastructure to grow revenue, with customers like Cloudbeds achieving 15% revenue growth and CNY Fertility generating $8.43 million.",
+        "comprehensive": "Stripe's core unique value proposition centers on providing comprehensive financial infrastructure that directly enables customer revenue growth and operational efficiency. Their primary promise is to serve as the essential financial backbone that allows businesses to scale globally while reducing complexity in payments processing. The company positions itself as the 'financial infrastructure to grow your revenue' [S4][S11], with concrete evidence showing customers achieve measurable outcomes: Cloudbeds reported 15% revenue growth with Stripe [S3], while CNY Fertility generated $8.43 million in revenue through their integrated platform [S3]. Stripe differentiates itself through specialized solutions like Stripe Connect for marketplaces and platforms [S3], global payment capabilities, and fraud mitigation technologies [S3]. The company emphasizes outcomes over take rates in their customer relationships [S3], focusing on enabling businesses to grow rather than just processing payments. Their infrastructure approach creates a self-reinforcing advantage where more integrations and specialized tools attract more customers, who in turn generate more data to improve services.",
+        "sources": [
+          {
+            "title": "August 2025 pricing updates for Revenue Recognition",
+            "url": "https://support.stripe.com/questions/august-2025-subscription-pricing-updates-for-revenue-recognition",
+            "snippet": "August 2025 pricing updates for Revenue Recognition​​ Starting August 20, 2025, you can transition from pay-as-you-go pricing to subscription- ...",
+            "query": "Stripe 'increase revenue' tagline 2025",
+            "domain": "support.stripe.com",
+            "source_score": 1.0,
+            "is_official": true
+          },
+          {
+            "title": "A conversation with Sir Jony Ive KBE",
+            "url": "https://stripe.com/sessions/2025/a-conversation-with-sir-jony-ive",
+            "snippet": "Jony Ive—the designer Steve Jobs once described as his “spiritual partner” at Apple—joins Patrick Collison on stage for a fireside chat.",
+            "query": "Stripe CEO interview competitive advantage 2025",
+            "domain": "stripe.com",
+            "source_score": 0.95,
+            "is_official": true
+          },
+          {
+            "title": "A conversation with Mark Zuckerberg | Stripe Sessions",
+            "url": "https://stripe.com/sessions/2025/a-conversation-with-mark-zuckerberg",
+            "snippet": "Meta CEO Mark Zuckerberg joins John Collison to talk about how advanced technologies are reshaping the global economy.",
+            "query": "Stripe CEO interview competitive advantage 2025",
+            "domain": "stripe.com",
+            "source_score": 0.95,
+            "is_official": true
+          },
+          {
+            "title": "Our top product updates from Sessions 2025",
+            "url": "https://stripe.com/blog/top-product-updates-sessions-2025",
+            "snippet": "This post recaps the top announcements and product releases. For a more detailed list of what's new since Sessions last year, see our changelog.",
+            "query": "Stripe 'increase revenue' tagline 2025",
+            "domain": "stripe.com",
+            "source_score": 0.95,
+            "is_official": true
+          },
+          {
+            "title": "Stripe Atlas startups in 2025: Year in review",
+            "url": "https://stripe.com/blog/stripe-atlas-startups-in-2025-year-in-review",
+            "snippet": "2025 was a breakout year for early-stage startups: founders launched more companies and generated revenue faster than ever.",
+            "query": "Stripe 'increase revenue' tagline 2025",
+            "domain": "stripe.com",
+            "source_score": 0.95,
+            "is_official": true
+          },
+          {
+            "title": "Product roadmap: Revenue (Billing, Tax, and Data)",
+            "url": "https://stripe.com/sessions/2025/product-roadmap-revenue-billing-tax-and-data",
+            "snippet": "Discover how Stripe's Revenue product can help you generate more revenue, expand into new markets with confidence, and automate financial operations across your ...",
+            "query": "Stripe 'increase revenue' tagline 2025",
+            "domain": "stripe.com",
+            "source_score": 0.95,
+            "is_official": true
+          },
+          {
+            "title": "Customers",
+            "url": "https://docs.stripe.com/billing/customer",
+            "snippet": "The Customer resource is a core entity within Stripe. Use it to store all of the profile, billing, and tax information required to bill a customer for ...",
+            "query": "Stripe core promise to customers official",
+            "domain": "docs.stripe.com",
+            "source_score": 0.95,
+            "is_official": true
+          },
+          {
+            "title": "Innovating at scale: How leading enterprises are redefining ...",
+            "url": "https://stripe.com/sessions/2024/innovating-at-scale-how-leading-enterprises-are-redefining-payments",
+            "snippet": "... Stripe's economic infrastructure into delightful customer experiences and new revenue streams, and who also might just have a bit of a ...",
+            "query": "Stripe \"economic infrastructure\" mission 2025",
+            "domain": "stripe.com",
+            "source_score": 0.92,
+            "is_official": true
+          },
+          {
+            "title": "Stripe's total payment volume reaches $1.4T, fueled by ...",
+            "url": "https://stripe.com/newsroom/news/stripe-2024-update",
+            "snippet": "Stripe's total payment volume increased to $1.4T in 2024, up 38% year-on-year, and equivalent to around 1.3% of global GDP.",
+            "query": "Stripe developer-first payments platform 2024",
+            "domain": "stripe.com",
+            "source_score": 0.92,
+            "is_official": true
+          },
+          {
+            "title": "Developer keynote‍ | Stripe Sessions",
+            "url": "https://stripe.com/sessions/2024/developer-keynote",
+            "snippet": "Access a complete payments platform with simple, pay-as-you-go pricing, or contact us to design a custom package for your business. Get in touch ...",
+            "query": "Stripe developer-first payments platform 2024",
+            "domain": "stripe.com",
+            "source_score": 0.92,
+            "is_official": true
+          }
+        ],
+        "confidence": "low",
+        "iterations": 3,
+        "total_searches": 14,
+        "timestamp": "2026-01-29T00:57:25.535898",
+        "error": null,
+        "claims": [
+          {
+            "text": "Stripe's primary positioning statement is 'Financial Infrastructure to Grow Your Revenue'",
+            "source_ids": [
+              "S4",
+              "S11"
+            ],
+            "confidence": "high"
+          },
+          {
+            "text": "Stripe enables customers to achieve specific measurable outcomes including 15% revenue growth (Cloudbeds) and $8.43M in revenue generation (CNY Fertility)",
+            "source_ids": [
+              "S3"
+            ],
+            "confidence": "high"
+          },
+          {
+            "text": "Stripe differentiates through specialized solutions like Stripe Connect for marketplaces and platforms",
+            "source_ids": [
+              "S3"
+            ],
+            "confidence": "high"
+          },
+          {
+            "text": "Stripe emphasizes outcomes over take rates in customer relationships",
+            "source_ids": [
+              "S3"
+            ],
+            "confidence": "high"
+          },
+          {
+            "text": "Stripe's unique value proposition focuses on enabling global scaling while reducing payment processing complexity",
+            "source_ids": [
+              "S1",
+              "S2",
+              "S8",
+              "S9",
+              "S15",
+              "S16"
+            ],
+            "confidence": "medium"
+          }
+        ],
+        "gaps": [
+          "Limited direct competitor comparisons in the evidence",
+          "Insufficient customer testimonials quantifying time/cost savings",
+          "No specific market share data or pricing information",
+          "Limited information about emotional benefits beyond efficiency"
+        ],
+        "metadata": {
+          "iterations": 3,
+          "searches": 14,
+          "pages_fetched": 21,
+          "pages_failed": 3,
+          "evidence_sources_used": 21,
+          "evidence_passages_count": 9,
+          "avg_source_score": 0.9,
+          "total_evidence_chars": 12000,
+          "model_used": "Alibaba-NLP/Tongyi-DeepResearch-30B-A3B",
+          "verification_applied": true,
+          "page_fetch_enabled": true
+        }
+      },
+      "positioning": {
+        "company": "Stripe",
+        "variable_id": "positioning",
+        "variable_name": "Positioning",
+        "concise": "Positions as a payment infrastructure innovator for startups and SMBs, also serving enterprises, focusing on tools for brand identity and strategic growth.",
+        "comprehensive": "Stripe positions itself as a payment infrastructure provider that offers tools and resources for startups and SMBs, while also serving larger enterprises. Their resources (S1, S2, S3) are aimed at helping startups define market positioning, build brand identity, and target the right audience. The \"Our customers\" page (S4) lists a variety of companies, including Postmates, Twilio, Noom, Substack, and Goodtill, indicating they serve both SMBs and enterprises. Stripe's messaging emphasizes building brand identity, competitive advantage, and strategic decision-making (S1, S2), suggesting they want to be perceived as an innovator and reliable partner rather than a budget or premium option. However, the evidence does not provide explicit statements about Stripe's pricing tier or market segment (premium/mid/budget), nor does it contain direct competitor positioning statements.",
+        "sources": [
+          {
+            "title": "Stripe Annual Letter 2024",
+            "url": "https://assets.stripeassets.com/fzn2n1nzq965/2pt3yIHthraqR1KwXgr98U/df10795aac0205789956c89e0dfc4f1a/Stripe-annual-letter-2024.pdf",
+            "snippet": "Businesses on Stripe generated $1.4 trillion in total payment volume in 2024, up 38% from the prior year, and reaching a scale equivalent to ...",
+            "query": "Stripe 2024 pricing target customers",
+            "domain": "assets.stripeassets.com",
+            "source_score": 0.97,
+            "is_official": true
+          },
+          {
+            "title": "Stripe Annual Letter 2024",
+            "url": "https://assets.stripeassets.com/fzn2n1nzq965/2pt3yIHthraqR1KwXgr98U/2d69cad44de990455e9ec8744933a446/Stripe-annual-letter-2024.pdf",
+            "snippet": "Stripe was profitable in 2024, and we expect to be so in 2025 and beyond. Durable profitability allows us to plow back much of our operating ...",
+            "query": "Stripe positioning\" analyst report 2024",
+            "domain": "assets.stripeassets.com",
+            "source_score": 0.97,
+            "is_official": true
+          },
+          {
+            "title": "How do marketplaces compete? The view from ...",
+            "url": "https://stripe.com/files/reports/how-marketplaces-compete-2018-summary.pdf",
+            "snippet": "by NG HILGER · Cited by 1 — In a broad sample of marketplaces on. Stripe, we found that the revenue of a typical online marketplace increased by nearly 300% year over year. At this rate, ...",
+            "query": "how Stripe competes",
+            "domain": "stripe.com",
+            "source_score": 0.95,
+            "is_official": true
+          },
+          {
+            "title": "Changes to the Stripe Billing Starter and Scale plans",
+            "url": "https://support.stripe.com/questions/changes-to-the-stripe-billing-starter-and-scale-plans",
+            "snippet": "Existing customers (prior to July 10, 2024) will pay a promotional price of 0.50% until June 30, 2025.",
+            "query": "Stripe enterprise pricing tiers details 2025",
+            "domain": "support.stripe.com",
+            "source_score": 0.95,
+            "is_official": true
+          },
+          {
+            "title": "Our biggest product updates from Sessions 2024 - Stripe",
+            "url": "https://stripe.com/blog/biggest-updates-sessions-2024",
+            "snippet": "This post recaps the top announcements and product releases. For a comprehensive list of everything that's new since Sessions last year, see our changelog.",
+            "query": "Stripe marketing positioning language 2024",
+            "domain": "stripe.com",
+            "source_score": 0.92,
+            "is_official": true
+          },
+          {
+            "title": "How to determine market positioning for your startup | Stripe",
+            "url": "https://stripe.com/resources/more/how-to-determine-market-positioning-for-your-startup",
+            "snippet": "",
+            "query": "",
+            "domain": "stripe.com",
+            "source_score": 0.9,
+            "is_official": true
+          },
+          {
+            "title": "How to write a positioning statement for your startup | Stripe",
+            "url": "https://stripe.com/resources/more/how-to-write-a-positioning-statement-for-your-startup",
+            "snippet": "",
+            "query": "",
+            "domain": "stripe.com",
+            "source_score": 0.9,
+            "is_official": true
+          },
+          {
+            "title": "What is market analysis? | Stripe",
+            "url": "https://stripe.com/resources/more/market-analysis",
+            "snippet": "",
+            "query": "",
+            "domain": "stripe.com",
+            "source_score": 0.9,
+            "is_official": true
+          },
+          {
+            "title": "Our customers | Stripe",
+            "url": "https://stripe.com/customers",
+            "snippet": "",
+            "query": "",
+            "domain": "stripe.com",
+            "source_score": 0.9,
+            "is_official": true
+          },
+          {
+            "title": "How to start a brand: A quick guide for new businesses | Stripe",
+            "url": "https://stripe.com/resources/more/how-to-start-a-brand-a-guide-to-get-started",
+            "snippet": "",
+            "query": "",
+            "domain": "stripe.com",
+            "source_score": 0.9,
+            "is_official": true
+          }
+        ],
+        "confidence": "low",
+        "iterations": 3,
+        "total_searches": 13,
+        "timestamp": "2026-01-29T00:57:28.916496",
+        "error": null,
+        "claims": [
+          {
+            "text": "Stripe provides resources for startups and new businesses, indicating they target the startup and SMB market segment.",
+            "source_ids": [
+              "S1",
+              "S2",
+              "S3"
+            ],
+            "confidence": "high"
+          },
+          {
+            "text": "Stripe's \"Our customers\" page includes a mix of SMBs and larger enterprises, suggesting they serve both SMB and enterprise segments.",
+            "source_ids": [
+              "S4"
+            ],
+            "confidence": "high"
+          },
+          {
+            "text": "The general advice content emphasizes building brand identity, targeting the right audience, and competitive advantage, implying Stripe positions itself as an innovator and reliable partner for startups.",
+            "source_ids": [
+              "S1",
+              "S2"
+            ],
+            "confidence": "medium"
+          },
+          {
+            "text": "The evidence does not provide explicit statements about Stripe being premium, mid, or budget.",
+            "source_ids": [],
+            "confidence": "high"
+          },
+          {
+            "text": "The evidence does not contain direct competitor positioning statements.",
+            "source_ids": [],
+            "confidence": "high"
+          }
+        ],
+        "gaps": [
+          "Explicit pricing information",
+          "Premium/mid/budget classification",
+          "Direct competitor positioning statements"
+        ],
+        "metadata": {
+          "iterations": 3,
+          "searches": 13,
+          "pages_fetched": 21,
+          "pages_failed": 3,
+          "evidence_sources_used": 21,
+          "evidence_passages_count": 13,
+          "avg_source_score": 0.9,
+          "total_evidence_chars": 12000,
+          "model_used": "Alibaba-NLP/Tongyi-DeepResearch-30B-A3B",
+          "verification_applied": true,
+          "page_fetch_enabled": true
+        }
+      },
+      "competitive_positioning_summary": {
+        "company": "Stripe",
+        "variable_id": "competitive_positioning_summary",
+        "variable_name": "Competitive Positioning Summary",
+        "concise": "Positions as a versatile financial platform with API-driven ease, though faces global payout delays and currency exchange fees.",
+        "comprehensive": "Stripe positions itself against competitors through several concrete differentiators. Its main competitors include Tipalti, particularly for global payout solutions [S1][S6][S11]. Stripe's key competitive advantages include: 1) Strategic pricing adaptation - responding to customer feedback by transitioning from volume-based billing pricing to monthly/annual subscription models for billing software [S2][S7][S12]; 2) Comprehensive payment infrastructure - evolving payment methods into versatile financial vehicles that bundle multiple capabilities rather than focusing on single-value propositions [S4][S9][S14]; 3) API-driven integration capabilities - offering ease of use with APIs and widgets that enable simplified integrations for businesses [S1][S6][S11]. However, Stripe faces limitations in global payout flexibility, particularly requiring use of Trolley's currency exchange systems with associated fees, and experiencing delays in some countries for recipient fund deposits [S1][S6][S11].",
+        "sources": [
+          {
+            "title": "Developer keynote | Stripe Sessions",
+            "url": "https://stripe.com/sessions/2025/developer-keynote",
+            "snippet": "In this keynote, see how Stripe is evolving to make your development more efficient. Learn how we're using AI to improve API design.",
+            "query": "Stripe developer tools differentiation 2025",
+            "domain": "stripe.com",
+            "source_score": 0.95,
+            "is_official": true
+          },
+          {
+            "title": "Sessions 2025 Developer Track resources",
+            "url": "https://stripe.dev/blog/sessions-2025-dev-track-resources",
+            "snippet": "At Sessions we showed new products, APIs, and enhancements for developers. Here's a recap of everything we showed and links to the best places to learn more.",
+            "query": "Stripe developer tools differentiation 2025",
+            "domain": "stripe.dev",
+            "source_score": 0.95,
+            "is_official": true
+          },
+          {
+            "title": "Stripe Atlas startups in 2025: Year in review",
+            "url": "https://stripe.com/blog/stripe-atlas-startups-in-2025-year-in-review",
+            "snippet": "Modern developer tools allow developers to ship faster. Global payments, compliance management, and financial infrastructure have improved. As a ...",
+            "query": "Stripe developer tools differentiation 2025",
+            "domain": "stripe.com",
+            "source_score": 0.95,
+            "is_official": true
+          },
+          {
+            "title": "Our top product updates from Sessions 2025",
+            "url": "https://stripe.com/blog/top-product-updates-sessions-2025",
+            "snippet": "Our new AI-powered benchmarking tool lets you compare your performance against similar businesses on Stripe.",
+            "query": "Stripe developer tools differentiation 2025",
+            "domain": "stripe.com",
+            "source_score": 0.95,
+            "is_official": true
+          },
+          {
+            "title": "Introducing Stripe Workflows: Customizing Stripe for your ...",
+            "url": "https://stripe.com/ae/sessions/2025/introducing-stripe-workflows",
+            "snippet": "Stripe Workflows is a new way to integrate and extend Stripe with zero complex code. See how to build conditional logic that connects Stripe products.",
+            "query": "Stripe developer tools differentiation 2025",
+            "domain": "stripe.com",
+            "source_score": 0.95,
+            "is_official": true
+          },
+          {
+            "title": "Stripe named Leader by Gartner for its Billing product for second year",
+            "url": "https://stripe.com/newsroom/news/stripe-named-a-leader-by-gartner-2025",
+            "snippet": "Stripe was named a Leader for the 2nd year in a row in the Gartner® Magic Quadrant™",
+            "query": "Gartner Magic Quadrant payment processors 2024 Stripe",
+            "domain": "stripe.com",
+            "source_score": 0.95,
+            "is_official": true
+          },
+          {
+            "title": "The power of pricing as a competitive advantage | Stripe Sessions",
+            "url": "https://stripe.com/sessions/2024/the-power-of-pricing-as-a-competitive-advantage",
+            "snippet": "",
+            "query": "",
+            "domain": "stripe.com",
+            "source_score": 0.92,
+            "is_official": true
+          },
+          {
+            "title": "Stripe announces expanded interoperability, major ...",
+            "url": "https://stripe.com/newsroom/news/tour-newyork-2024",
+            "snippet": "More powerful analytics: Stripe Billing now helps users easily analyze revenue to uncover trends and forecast accurately. Users can compare ...",
+            "query": "Stripe developer API advantages Gartner 2024",
+            "domain": "stripe.com",
+            "source_score": 0.92,
+            "is_official": true
+          },
+          {
+            "title": "A guide to competitive pricing strategies | Stripe",
+            "url": "https://stripe.com/resources/more/competitors-pricing-strategies",
+            "snippet": "",
+            "query": "",
+            "domain": "stripe.com",
+            "source_score": 0.9,
+            "is_official": true
+          },
+          {
+            "title": "In a competitive landscape, RTPs move to stand out",
+            "url": "https://stripe.com/blog/in-a-competitive-landscape-rtps-move-to-stand-out",
+            "snippet": "",
+            "query": "",
+            "domain": "stripe.com",
+            "source_score": 0.9,
+            "is_official": true
+          }
+        ],
+        "confidence": "low",
+        "iterations": 3,
+        "total_searches": 14,
+        "timestamp": "2026-01-29T00:57:24.387166",
+        "error": null,
+        "claims": [
+          {
+            "text": "Tipalti is identified as a main competitor to Stripe, particularly for global payout solutions",
+            "source_ids": [
+              "S1",
+              "S6",
+              "S11"
+            ],
+            "confidence": "high"
+          },
+          {
+            "text": "Stripe is transitioning its billing pricing model from percentage-based volume fees to monthly/annual subscription models based on customer feedback",
+            "source_ids": [
+              "S2",
+              "S7",
+              "S12"
+            ],
+            "confidence": "high"
+          },
+          {
+            "text": "Stripe differentiates by evolving payment methods into versatile financial vehicles that bundle multiple capabilities",
+            "source_ids": [
+              "S4",
+              "S9",
+              "S14"
+            ],
+            "confidence": "high"
+          },
+          {
+            "text": "Stripe offers ease of use with APIs and widgets that enable simplified integrations for businesses",
+            "source_ids": [
+              "S1",
+              "S6",
+              "S11"
+            ],
+            "confidence": "high"
+          },
+          {
+            "text": "Stripe requires use of Trolley's currency exchange systems with associated fees for global payouts",
+            "source_ids": [
+              "S1",
+              "S6",
+              "S11"
+            ],
+            "confidence": "medium"
+          }
+        ],
+        "gaps": [
+          "Specific market share data comparing Stripe to competitors",
+          "Detailed feature-by-feature comparison with major competitors like Adyen or Braintree",
+          "Quantitative performance metrics demonstrating superiority in specific use cases",
+          "Information about Stripe's competitive positioning in specific geographic markets"
+        ],
+        "metadata": {
+          "iterations": 3,
+          "searches": 14,
+          "pages_fetched": 15,
+          "pages_failed": 9,
+          "evidence_sources_used": 15,
+          "evidence_passages_count": 14,
+          "avg_source_score": 0.824,
+          "total_evidence_chars": 12000,
+          "model_used": "Alibaba-NLP/Tongyi-DeepResearch-30B-A3B",
+          "verification_applied": true,
+          "page_fetch_enabled": true
+        }
+      },
+      "differentiation": {
+        "company": "Stripe",
+        "variable_id": "differentiation",
+        "variable_name": "Differentiation",
+        "concise": "Offers AI-powered risk scoring via Radar, trained on over $1.4 trillion in payments volume, and provides automated subscription management tools for pricing and migrations.",
+        "comprehensive": "Stripe differentiates itself through several key features and capabilities. Its **Entitlements** feature allows businesses to map product features to Stripe products and automate access provisioning or revocation based on subscription status, enabling pricing experimentation without code changes [S1]. Stripe provides **comprehensive subscription migration tools** that allow businesses to seamlessly migrate existing subscriptions from third-party processors or internal systems using a self-serve dashboard for upload, validation, and tracking [S2][S10]. For risk management, Stripe offers **Radar for platforms** with AI-powered risk scores trained on over $1.4 trillion in payments volume, including custom rules engines and temporary reserve capabilities to safeguard against potential losses [S3]. Stripe's **API infrastructure** includes differentiated key management with separate live mode secret keys for server authentication and publishable keys for client-side use, plus restricted API keys with specific permissions [S4]. Their **hosted invoicing solution** provides optimized, trackable invoices viewable across mobile, tablet, and desktop devices [S2][S10].",
+        "sources": [
+          {
+            "title": "[PDF] Stripe Annual Letter 2024",
+            "url": "https://assets.stripeassets.com/fzn2n1nzq965/2pt3yIHthraqR1KwXgr98U/2d69cad44de990455e9ec8744933a446/Stripe-annual-letter-2024.pdf",
+            "snippet": "Businesses on Stripe generated $1.4 trillion in total payment volume in 2024, up 38% from the prior year, and reaching a scale equivalent to ...",
+            "query": "Stripe patents programmable money 2024",
+            "domain": "assets.stripeassets.com",
+            "source_score": 0.97,
+            "is_official": true
+          },
+          {
+            "title": "Entitlements | Stripe Documentation",
+            "url": "https://docs.stripe.com/billing/entitlements",
+            "snippet": "",
+            "query": "",
+            "domain": "docs.stripe.com",
+            "source_score": 0.95,
+            "is_official": true
+          },
+          {
+            "title": "API keys | Stripe Documentation",
+            "url": "https://docs.stripe.com/keys",
+            "snippet": "",
+            "query": "",
+            "domain": "docs.stripe.com",
+            "source_score": 0.95,
+            "is_official": true
+          },
+          {
+            "title": "Stripe Atlas startups in 2025: Year in review",
+            "url": "https://stripe.com/blog/stripe-atlas-startups-in-2025-year-in-review",
+            "snippet": "Beginning in January 2025, Atlas enabled founders to accept payments immediately after incorporation, saving founders outside the US from ...",
+            "query": "Stripe Atlas unique features 2024",
+            "domain": "stripe.com",
+            "source_score": 0.95,
+            "is_official": true
+          },
+          {
+            "title": "Revenue Recognition settings",
+            "url": "https://docs.stripe.com/revenue-recognition/revenue-settings",
+            "snippet": "By default, Stripe Revenue Recognition recognizes recovered revenue from unpaid invoices, refund failures, and resolved disputes as gains. We also support the ...",
+            "query": "Stripe Revenue Recognition feature unique",
+            "domain": "docs.stripe.com",
+            "source_score": 0.95,
+            "is_official": true
+          },
+          {
+            "title": "Recognize revenue with Stripe",
+            "url": "https://docs.stripe.com/revenue-recognition/get-started",
+            "snippet": "Stripe offers a 30-day free trial for Revenue Recognition if you want to preview it. When you sign up, use a sandbox to explore all the features for free.",
+            "query": "Stripe Revenue Recognition feature unique",
+            "domain": "docs.stripe.com",
+            "source_score": 0.95,
+            "is_official": true
+          },
+          {
+            "title": "Revenue Recognition API",
+            "url": "https://docs.stripe.com/revenue-recognition/api",
+            "snippet": "Stripe Revenue Recognition provides downloadable reports, such as a monthly summary and a revenue waterfall. You can download these reports in CSV format ...",
+            "query": "Stripe Revenue Recognition feature unique",
+            "domain": "docs.stripe.com",
+            "source_score": 0.95,
+            "is_official": true
+          },
+          {
+            "title": "How revenue recognition works",
+            "url": "https://docs.stripe.com/revenue-recognition/methodology",
+            "snippet": "Revenue recognition automatically calculates all transactions that happen within Stripe, including subscriptions, invoices, one-time payments, refunds, disputes ...",
+            "query": "Stripe Revenue Recognition feature unique",
+            "domain": "docs.stripe.com",
+            "source_score": 0.95,
+            "is_official": true
+          },
+          {
+            "title": "Revenue Recognition | Stripe Documentation",
+            "url": "https://docs.stripe.com/revenue-recognition",
+            "snippet": "Stripe Revenue Recognition helps you simplify the process of recognizing revenue. This feature includes: Recognized and deferred revenue summaries.",
+            "query": "Stripe Revenue Recognition feature unique",
+            "domain": "docs.stripe.com",
+            "source_score": 0.95,
+            "is_official": true
+          },
+          {
+            "title": "Our top product updates from Sessions 2025",
+            "url": "https://stripe.com/blog/top-product-updates-sessions-2025",
+            "snippet": "We announced a new API that lets you embed agentic commerce directly into your applications, unveiled Stripe Verified, a new credential for an ...",
+            "query": "Stripe business model direct integration 2025",
+            "domain": "stripe.com",
+            "source_score": 0.95,
+            "is_official": true
+          }
+        ],
+        "confidence": "high",
+        "iterations": 3,
+        "total_searches": 14,
+        "timestamp": "2026-01-29T00:58:06.506240",
+        "error": null,
+        "claims": [
+          {
+            "text": "Stripe's Entitlements feature enables automated provisioning and revocation of customer feature access based on subscription status",
+            "source_ids": [
+              "S1"
+            ],
+            "confidence": "high"
+          },
+          {
+            "text": "Stripe provides subscription migration tools allowing businesses to migrate existing subscriptions from third-party processors or internal billing systems",
+            "source_ids": [
+              "S2",
+              "S10"
+            ],
+            "confidence": "high"
+          },
+          {
+            "text": "Stripe's Radar for platforms uses AI-powered risk scores trained on over $1.4 trillion in payments volume",
+            "source_ids": [
+              "S3"
+            ],
+            "confidence": "high"
+          },
+          {
+            "text": "Stripe offers temporary reserve capabilities through Radar for platforms to safeguard against potential losses",
+            "source_ids": [
+              "S3"
+            ],
+            "confidence": "high"
+          },
+          {
+            "text": "Stripe provides separate API keys for server authentication (secret keys) and client-side use (publishable keys)",
+            "source_ids": [
+              "S4"
+            ],
+            "confidence": "high"
+          },
+          {
+            "text": "Stripe offers hosted invoicing optimized for customer viewing across mobile, tablet, and desktop devices",
+            "source_ids": [
+              "S2",
+              "S10"
+            ],
+            "confidence": "high"
+          }
+        ],
+        "gaps": [
+          "Specific patent information for Stripe's unique technologies",
+          "Detailed information about Stripe's pricing model compared to competitors",
+          "Comprehensive data on market share or adoption rates",
+          "Information about customer support differentiation"
+        ],
+        "metadata": {
+          "iterations": 3,
+          "searches": 14,
+          "pages_fetched": 24,
+          "pages_failed": 0,
+          "evidence_sources_used": 24,
+          "evidence_passages_count": 14,
+          "avg_source_score": 0.915,
+          "total_evidence_chars": 12000,
+          "model_used": "Alibaba-NLP/Tongyi-DeepResearch-30B-A3B",
+          "verification_applied": true,
+          "page_fetch_enabled": true
+        }
+      },
+      "brand_promise": {
+        "company": "Stripe",
+        "variable_id": "brand_promise",
+        "variable_name": "Brand Promise",
+        "concise": "Empowers businesses to thrive online by growing the internet's GDP with reliable, user-first payment infrastructure and tools for custom branding.",
+        "comprehensive": "Stripe's brand promise centers on empowering businesses to thrive online through reliable, customizable payment infrastructure and a user-centric philosophy. Their explicit mission is \"to grow the GDP of the internet\" by building tools to \"democratize online commerce, expand economic opportunity, and motivate others to build products and services that will improve the world around us\" [S4][S12]. The core commitment to customers is encapsulated in their operating principle \"Users first,\" emphasizing a weighty responsibility to serve millions of businesses and global GDP with flexibility and deep user focus [S2][S4][S12][S20]. This is complemented by the principle to \"Create with craft and beauty,\" reflecting a commitment to well-crafted work that shows care for the user [S2][S10][S18]. While no explicit brand tagline is found in the evidence, Stripe enables strong brand identity for customers through features like custom domain email for invoices/receipts and account branding [S1][S9][S17], demonstrating their functional commitment to allowing businesses to maintain their brand integrity while using Stripe's infrastructure.",
+        "sources": [
+          {
+            "title": "S-1/A",
+            "url": "https://www.sec.gov/Archives/edgar/data/2069785/000119312525258610/ck0002069785-20251030.htm",
+            "snippet": "... what we believe is one of the most resilient and purpose-driven ... core values and mission alignment. If we are unable to successfully ...",
+            "query": "Stripe \"what we believe\" core values 2024",
+            "domain": "sec.gov",
+            "source_score": 1.0,
+            "is_official": false
+          },
+          {
+            "title": "duol-20241231",
+            "url": "https://www.sec.gov/Archives/edgar/data/1562088/000156208825000042/duol-20241231.htm",
+            "snippet": "Our millions of learners complete over a billion exercises every day, creating what we believe to be the world's largest learning dataset. This data powers the ...",
+            "query": "Stripe \"what we believe\" core values 2024",
+            "domain": "sec.gov",
+            "source_score": 0.97,
+            "is_official": false
+          },
+          {
+            "title": "Branding your Stripe account | Stripe Documentation",
+            "url": "https://docs.stripe.com/get-started/account/branding",
+            "snippet": "",
+            "query": "",
+            "domain": "docs.stripe.com",
+            "source_score": 0.95,
+            "is_official": true
+          },
+          {
+            "title": "Color - Brand Guidelines - Wero Brand Portal",
+            "url": "https://downloads.stripeassets.com/fzn2n1nzq965/3gNOeZZQozOwreTtCNlXkx/7e564269ede9a570aa76c85607ddc703/Wero_-_Brand_Guidelines_-_Wero_Brand_Portal.pdf",
+            "snippet": "A DISCLAIMER. (That's mostly common sense). This portal presents the official brand guidelines for Wero. All elements contained herein,.",
+            "query": "Stripe \"brand guidelines\" PDF 2024",
+            "domain": "downloads.stripeassets.com",
+            "source_score": 0.95,
+            "is_official": true
+          },
+          {
+            "title": "Product keynote | Stripe Sessions",
+            "url": "https://stripe.com/sessions/2025/product-keynote",
+            "snippet": "Well, today, we're beginning to solve that with a brand new API that lets anyone create a commerce agent in just a few seconds. We call it Order ...",
+            "query": "Stripe \"brand\" page official site 2025",
+            "domain": "stripe.com",
+            "source_score": 0.95,
+            "is_official": true
+          },
+          {
+            "title": "Stripe launches new products to drive stablecoins and ...",
+            "url": "https://stripe.com/newsroom/news/tour-newyork-2025",
+            "snippet": "With a single integration, merchants can sell through AI agents while retaining control over their brand, catalog, fulfillment, and customer ...",
+            "query": "Stripe \"brand\" page official site 2025",
+            "domain": "stripe.com",
+            "source_score": 0.95,
+            "is_official": true
+          },
+          {
+            "title": "Stripe Press — Ideas for progress",
+            "url": "https://press.stripe.com/",
+            "snippet": "Stripe Press ; Maintenance. Stewart Brand ; The Origins of Efficiency. Brian Potter ; The Scaling Era. Dwarkesh Patel ; Boom. Byrne Hobart ; Poor Charlie's Almanack.",
+            "query": "Stripe \"brand\" page official site 2025",
+            "domain": "press.stripe.com",
+            "source_score": 0.95,
+            "is_official": true
+          },
+          {
+            "title": "What's happening at Stripe?",
+            "url": "https://assets.stripeassets.com/fzn2n1nzq965/1gMd12owbzJaSe4Y560OEJ/c5b932cbe8c0adc0ced520018584ff77/Stripe_2023_annual_letter.pdf",
+            "snippet": "... 2024. This threshold is important, because it allows us to invest for the long term, building what we believe our users need 10 years from now,.",
+            "query": "Stripe \"what we believe\" core values 2024",
+            "domain": "assets.stripeassets.com",
+            "source_score": 0.95,
+            "is_official": true
+          },
+          {
+            "title": "Stripe's total payment volume reaches $1.4T, fueled by ...",
+            "url": "https://stripe.com/newsroom/news/stripe-2024-update",
+            "snippet": "Over 700 agent startups launched on Stripe last year, and the company revealed that its toolkit for developers building AI agents is already ...",
+            "query": "Stripe \"for developers\" brand positioning 2024",
+            "domain": "stripe.com",
+            "source_score": 0.92,
+            "is_official": true
+          },
+          {
+            "title": "Developer keynote‍ | Stripe Sessions",
+            "url": "https://stripe.com/sessions/2024/developer-keynote",
+            "snippet": "Workbench is our new home for developers that helps you build, monitor, and debug your integration. No matter where you are in the Stripe ...",
+            "query": "Stripe \"for developers\" brand positioning 2024",
+            "domain": "stripe.com",
+            "source_score": 0.92,
+            "is_official": true
+          }
+        ],
+        "confidence": "high",
+        "iterations": 3,
+        "total_searches": 14,
+        "timestamp": "2026-01-29T00:58:39.540302",
+        "error": null,
+        "claims": [
+          {
+            "text": "Stripe's mission is to grow the GDP of the internet by building tools to democratize online commerce, expand economic opportunity, and motivate others to build products and services that will improve the world around us.",
+            "source_ids": [
+              "S4",
+              "S12"
+            ],
+            "confidence": "high"
+          },
+          {
+            "text": "The core operating principle \"Users first\" expresses Stripe's primary commitment to customers, emphasizing responsibility to serve millions of businesses and global GDP.",
+            "source_ids": [
+              "S2",
+              "S4",
+              "S10",
+              "S12",
+              "S18",
+              "S20"
+            ],
+            "confidence": "high"
+          },
+          {
+            "text": "Stripe emphasizes creating with \"craft and beauty,\" indicating a commitment to well-crafted work that shows care for the user.",
+            "source_ids": [
+              "S2",
+              "S10",
+              "S18"
+            ],
+            "confidence": "high"
+          },
+          {
+            "text": "Stripe enables customer brand identity through features like custom domain email for invoices/receipts and account branding.",
+            "source_ids": [
+              "S1",
+              "S9",
+              "S17"
+            ],
+            "confidence": "high"
+          },
+          {
+            "text": "Stripe's operating principles include moving with speed and collaborating egolessly, reflecting their approach to serving users efficiently.",
+            "source_ids": [
+              "S2",
+              "S10",
+              "S18"
+            ],
+            "confidence": "medium"
+          }
+        ],
+        "gaps": [
+          "No explicit brand tagline/slogan was found in the provided evidence.",
+          "No dedicated \"Our Promise\" or comprehensive public values page was identified.",
+          "Specific customer outcome statements beyond the mission and operating principles were not detailed."
+        ],
+        "metadata": {
+          "iterations": 3,
+          "searches": 14,
+          "pages_fetched": 24,
+          "pages_failed": 0,
+          "evidence_sources_used": 24,
+          "evidence_passages_count": 17,
+          "avg_source_score": 0.906,
+          "total_evidence_chars": 12000,
+          "model_used": "Alibaba-NLP/Tongyi-DeepResearch-30B-A3B",
+          "verification_applied": true,
+          "page_fetch_enabled": true
+        }
+      },
+      "target_customer_personas": {
+        "company": "Stripe",
+        "variable_id": "target_customer_personas",
+        "variable_name": "Target Customer Personas",
+        "concise": "Reduces fraud by 50% for businesses with global payments in 135+ currencies.",
+        "comprehensive": "Stripe targets three primary customer personas based on case studies and use case documentation:\n\n1. **Platform Operators (Product Managers/Heads of Payments)**: Targeted at companies operating marketplaces or multi-sided platforms. This includes startups to large enterprises (e.g., Shopify, MindBody, DocuSign) across e-commerce, delivery, and SaaS verticals. They address pain points like global payment acceptance (135+ currencies, 40+ payment methods) [S2], complex payout management, and fraud reduction (50% reduction shown by Dermalogica) [S1]. Buying triggers include scaling globally or differentiating platform offerings [S2].\n\n2. **Creator Platform Operators (Platform Product Leads)**: Focused on companies hosting creators/content producers (e.g., Substack, Clubhouse). Targets startups to growing companies in content/subscription verticals. Pain points include cross-border creator payouts (135+ currencies) [S3], instant payout options, and creator-facing dashboards [S3]. Triggers involve monetizing creator communities efficiently [S3].\n\n3. **Individual Merchants (Business Owners/Managers)**: Serves SMBs and startups (e.g., Bodum, La Redoute) across retail, beauty, and tech. Addresses challenges like global expansion via local payment methods [S1], fraud prevention (50% reduction at Dermalogica) [S1], and subscription management (3x trial conversion increase at Meetup) [S1]. Triggers include entering new markets or streamlining payment operations [S1].",
+        "sources": [
+          {
+            "title": "Institution support for Instant Payouts | Stripe Documentation",
+            "url": "https://docs.stripe.com/payouts/instant-payouts-banks",
+            "snippet": "",
+            "query": "",
+            "domain": "docs.stripe.com",
+            "source_score": 0.95,
+            "is_official": true
+          },
+          {
+            "title": "iDEAL payments | Stripe Documentation",
+            "url": "https://docs.stripe.com/payments/ideal",
+            "snippet": "",
+            "query": "",
+            "domain": "docs.stripe.com",
+            "source_score": 0.95,
+            "is_official": true
+          },
+          {
+            "title": "Set up a subscription with iDEAL and SEPA Direct Debit | Stripe Documentation",
+            "url": "https://docs.stripe.com/billing/subscriptions/ideal",
+            "snippet": "",
+            "query": "",
+            "domain": "docs.stripe.com",
+            "source_score": 0.95,
+            "is_official": true
+          },
+          {
+            "title": "Use iDEAL to set up future SEPA Direct Debit payments | Stripe Documentation",
+            "url": "https://docs.stripe.com/payments/ideal/set-up-payment",
+            "snippet": "",
+            "query": "",
+            "domain": "docs.stripe.com",
+            "source_score": 0.95,
+            "is_official": true
+          },
+          {
+            "title": "Startup industry trends for 2025: What founders need to know",
+            "url": "https://stripe.com/ae/resources/more/startup-industry-trends-for-2025-what-founders-need-to-know",
+            "snippet": "We'll look at the startup trends to watch for in 2025, fueled by the power of artificial intelligence (AI), changing customer expectations, and more.",
+            "query": "Stripe for\" industry verticals marketing pages 2025",
+            "domain": "stripe.com",
+            "source_score": 0.95,
+            "is_official": true
+          },
+          {
+            "title": "Scaling vertical SaaS: From $1 to $1B processed",
+            "url": "https://stripe.com/sessions/2025/scaling-vertical-saas",
+            "snippet": "Processing over $1 billion in payments annually is an exciting milestone in any SaaS platform's growth story. Hear from vertical SaaS leaders who've done it ...",
+            "query": "Stripe for\" industry verticals marketing pages 2025",
+            "domain": "stripe.com",
+            "source_score": 0.95,
+            "is_official": true
+          },
+          {
+            "title": "Product roadmap: Payments",
+            "url": "https://stripe.com/sessions/2025/product-roadmap-payments",
+            "snippet": "See the upgrades we're making to our payments capabilities to help you grow your revenue, reduce costs, and create more seamless customer experiences.",
+            "query": "Stripe for\" industry verticals marketing pages 2025",
+            "domain": "stripe.com",
+            "source_score": 0.95,
+            "is_official": true
+          },
+          {
+            "title": "How to benchmark your vertical SaaS platform",
+            "url": "https://stripe.com/sessions/2025/how-to-benchmark-your-vertical-saas-platform",
+            "snippet": "Tidemark's 2025 Benchmark Report offers tactical guidance, Learn about the benchmarks to measure against and frameworks to help you monetize more effectively.",
+            "query": "Stripe for\" industry verticals marketing pages 2025",
+            "domain": "stripe.com",
+            "source_score": 0.95,
+            "is_official": true
+          },
+          {
+            "title": "Stripe Atlas startups in 2025: Year in review",
+            "url": "https://stripe.com/blog/stripe-atlas-startups-in-2025-year-in-review",
+            "snippet": "2025 was a breakout year for early-stage startups: founders launched more companies and generated revenue faster than ever.",
+            "query": "Stripe for\" industry verticals marketing pages 2025",
+            "domain": "stripe.com",
+            "source_score": 0.95,
+            "is_official": true
+          },
+          {
+            "title": "Stripe named Leader by Gartner for its Billing product for second year",
+            "url": "https://stripe.com/newsroom/news/stripe-named-a-leader-by-gartner-2025",
+            "snippet": "Stripe was named a Leader for the 2nd year in a row in the Gartner® Magic Quadrant™",
+            "query": "Stripe competitive intelligence Gartner Forrester 2025",
+            "domain": "stripe.com",
+            "source_score": 0.95,
+            "is_official": true
+          }
+        ],
+        "confidence": "low",
+        "iterations": 3,
+        "total_searches": 14,
+        "timestamp": "2026-01-29T00:59:14.808386",
+        "error": null,
+        "claims": [
+          {
+            "text": "Stripe supports 135+ currencies and 40+ global payment methods.",
+            "source_ids": [
+              "S2"
+            ],
+            "confidence": "high"
+          },
+          {
+            "text": "Dermalogica reduced fraud rates by 50% with Stripe.",
+            "source_ids": [
+              "S1"
+            ],
+            "confidence": "high"
+          },
+          {
+            "text": "Meetup increased trial conversions by 3x with Stripe Billing.",
+            "source_ids": [
+              "S1"
+            ],
+            "confidence": "high"
+          },
+          {
+            "text": "Stripe provides instant payouts for creators.",
+            "source_ids": [
+              "S3"
+            ],
+            "confidence": "high"
+          },
+          {
+            "text": "Bodum expanded globally by leveraging local payment methods with Stripe.",
+            "source_ids": [
+              "S1"
+            ],
+            "confidence": "high"
+          },
+          {
+            "text": "Companies such as Shopify, MindBody, and DocuSign partner with Stripe to differentiate their platforms.",
+            "source_ids": [
+              "S2"
+            ],
+            "confidence": "high"
+          },
+          {
+            "text": "Stripe helps you quickly onboard and pay out creators globally.",
+            "source_ids": [
+              "S3"
+            ],
+            "confidence": "high"
+          },
+          {
+            "text": "Stripe supports 135+ currencies to facilitate cross-border funds to creators.",
+            "source_ids": [
+              "S3"
+            ],
+            "confidence": "high"
+          }
+        ],
+        "gaps": [
+          "Specific job titles (e.g., exact role names like 'Head of Payments') are inferred rather than explicitly stated.",
+          "Quantitative company size metrics (e.g., employee count ranges) are not provided for personas.",
+          "Detailed industry vertical breakdowns beyond mentioned examples are limited."
+        ],
+        "metadata": {
+          "iterations": 3,
+          "searches": 14,
+          "pages_fetched": 24,
+          "pages_failed": 0,
+          "evidence_sources_used": 24,
+          "evidence_passages_count": 11,
+          "avg_source_score": 0.875,
+          "total_evidence_chars": 12000,
+          "model_used": "Alibaba-NLP/Tongyi-DeepResearch-30B-A3B",
+          "verification_applied": true,
+          "page_fetch_enabled": true
+        }
+      },
+      "customer_segmentation": {
+        "company": "Stripe",
+        "variable_id": "customer_segmentation",
+        "variable_name": "Customer Segmentation",
+        "concise": "Primarily segments via four core pricing models (flat rate, per-seat, tiered, usage-based) and a dedicated startup program for venture-backed companies.",
+        "comprehensive": "Stripe employs a flexible customer segmentation strategy primarily through its pricing models and specialized programs. The platform offers four core pricing models that enable businesses to segment their offerings: **Flat rate** (tiered plans like Basic/Starter/Enterprise), **Per-seat** (license-based pricing), **Tiered** (quantity/usage-based pricing with volume discounts), and **Usage-based** (pay-as-you-go models) [S1][S2]. For customer segments, Stripe maintains a dedicated startup program targeting venture-backed companies with financial benefits, community access, and expert resources [S4][S11]. Geographically, Stripe operates in 50 countries with support for 100+ payment methods [S4]. While the evidence shows Stripe provides tools for segmentation (e.g., tiered pricing configurations [S2]), specific segmentation of SMB vs. enterprise customers or industry-specific solutions isn't explicitly detailed. The platform appears to use a predominantly self-serve model with optional sales assistance for larger enterprise implementations, though this isn't explicitly confirmed in the evidence.",
+        "sources": [
+          {
+            "title": "[PDF] Stripe Annual Letter 2024",
+            "url": "https://assets.stripeassets.com/fzn2n1nzq965/2pt3yIHthraqR1KwXgr98U/df10795aac0205789956c89e0dfc4f1a/Stripe-annual-letter-2024.pdf",
+            "snippet": "Businesses on Stripe generated $1.4 trillion in total payment volume in 2024, up 38% from the prior year, and reaching a scale equivalent to ...",
+            "query": "Stripe go-to-market strategy 2024 enterprise",
+            "domain": "assets.stripeassets.com",
+            "source_score": 0.97,
+            "is_official": true
+          },
+          {
+            "title": "[PDF] Stripe Annual Letter 2024",
+            "url": "https://assets.stripeassets.com/fzn2n1nzq965/2pt3yIHthraqR1KwXgr98U/b6301040587a62d5b6ef7b76c904032d/Stripe-annual-letter-2024.pdf",
+            "snippet": "Businesses on Stripe generated $1.4 trillion in total payment volume in 2024, up 38% from the prior year, and reaching a scale equivalent to ...",
+            "query": "Stripe SMB mid-market enterprise definitions 2025",
+            "domain": "assets.stripeassets.com",
+            "source_score": 0.97,
+            "is_official": true
+          },
+          {
+            "title": "[PDF] Stripe Annual Letter 2024",
+            "url": "https://assets.stripeassets.com/fzn2n1nzq965/2pt3yIHthraqR1KwXgr98U/2d69cad44de990455e9ec8744933a446/Stripe-annual-letter-2024.pdf",
+            "snippet": "Businesses on Stripe generated $1.4 trillion in total payment volume in 2024, up 38% from the prior year, and reaching a scale equivalent to ...",
+            "query": "Stripe industry vertical solutions banking 2024",
+            "domain": "assets.stripeassets.com",
+            "source_score": 0.97,
+            "is_official": true
+          },
+          {
+            "title": "Recurring pricing models | Stripe Documentation",
+            "url": "https://docs.stripe.com/products-prices/pricing-models",
+            "snippet": "",
+            "query": "",
+            "domain": "docs.stripe.com",
+            "source_score": 0.95,
+            "is_official": true
+          },
+          {
+            "title": "Set up tiered pricing | Stripe Documentation",
+            "url": "https://docs.stripe.com/subscriptions/pricing-models/tiered-pricing",
+            "snippet": "",
+            "query": "",
+            "domain": "docs.stripe.com",
+            "source_score": 0.95,
+            "is_official": true
+          },
+          {
+            "title": "Pricing | Stripe Documentation",
+            "url": "https://docs.stripe.com/revenue-recognition/pricing",
+            "snippet": "",
+            "query": "",
+            "domain": "docs.stripe.com",
+            "source_score": 0.95,
+            "is_official": true
+          },
+          {
+            "title": "Stripe Startups program FAQs",
+            "url": "https://support.stripe.com/questions/stripe-startups-program-faqs",
+            "snippet": "Stripe Startups is a by-application program to help venture-backed startups that are just getting started. It gives founders of early-stage, venture-backed ...",
+            "query": "Stripe enterprise vs startup",
+            "domain": "support.stripe.com",
+            "source_score": 0.95,
+            "is_official": true
+          },
+          {
+            "title": "How to benchmark your vertical SaaS platform | Stripe Sessions",
+            "url": "https://stripe.com/sessions/2025/how-to-benchmark-your-vertical-saas-platform",
+            "snippet": "Tidemark's 2025 Benchmark Report offers tactical guidance, Learn about the benchmarks to measure against and frameworks to help you monetize more effectively.",
+            "query": "Stripe industry vertical solutions 2025",
+            "domain": "stripe.com",
+            "source_score": 0.95,
+            "is_official": true
+          },
+          {
+            "title": "Scaling vertical SaaS: From $1 to $1B processed | Stripe Sessions",
+            "url": "https://stripe.com/sessions/2025/scaling-vertical-saas",
+            "snippet": "Hear from vertical SaaS leaders who've done it with Stripe, including how they assembled an effective payments team, the role of tooling and ...",
+            "query": "Stripe industry vertical solutions 2025",
+            "domain": "stripe.com",
+            "source_score": 0.95,
+            "is_official": true
+          },
+          {
+            "title": "Startup industry trends for 2025: What founders need to know - Stripe",
+            "url": "https://stripe.com/ae/resources/more/startup-industry-trends-for-2025-what-founders-need-to-know",
+            "snippet": "We'll look at the startup trends to watch for in 2025, fueled by the power of artificial intelligence (AI), changing customer expectations, and more.",
+            "query": "Stripe industry vertical solutions 2025",
+            "domain": "stripe.com",
+            "source_score": 0.95,
+            "is_official": true
+          }
+        ],
+        "confidence": "low",
+        "iterations": 3,
+        "total_searches": 14,
+        "timestamp": "2026-01-29T00:59:04.032632",
+        "error": null,
+        "claims": [
+          {
+            "text": "Stripe offers four core pricing models: Flat rate, Per-seat, Tiered, and Usage-based",
+            "source_ids": [
+              "S1",
+              "S2"
+            ],
+            "confidence": "high"
+          },
+          {
+            "text": "Stripe maintains a dedicated startup program for venture-backed companies",
+            "source_ids": [
+              "S4"
+            ],
+            "confidence": "high"
+          },
+          {
+            "text": "Stripe operates in 50 countries with support for 100+ payment methods",
+            "source_ids": [
+              "S4"
+            ],
+            "confidence": "high"
+          },
+          {
+            "text": "Stripe provides tiered pricing configuration tools for businesses",
+            "source_ids": [
+              "S2"
+            ],
+            "confidence": "high"
+          }
+        ],
+        "gaps": [
+          "No explicit information about SMB vs. mid-market vs. enterprise segmentation",
+          "No details about industry-specific solutions",
+          "No clear information about sales-assisted vs self-serve tiers",
+          "Limited information about geographic segmentation strategies"
+        ],
+        "metadata": {
+          "iterations": 3,
+          "searches": 14,
+          "pages_fetched": 21,
+          "pages_failed": 3,
+          "evidence_sources_used": 21,
+          "evidence_passages_count": 17,
+          "avg_source_score": 0.921,
+          "total_evidence_chars": 12000,
+          "model_used": "Alibaba-NLP/Tongyi-DeepResearch-30B-A3B",
+          "verification_applied": true,
+          "page_fetch_enabled": true
+        }
+      },
+      "users": {
+        "company": "Stripe",
+        "variable_id": "users",
+        "variable_name": "Users",
+        "concise": "Over 300,000 companies use Stripe, with strong growth in AI where top startups reach $5 million in revenue 13 months faster.",
+        "comprehensive": "Stripe serves a diverse range of users primarily categorized as businesses and developers. The evidence confirms Stripe's core users are businesses of varying sizes leveraging its financial infrastructure. Specifically, Stripe Billing is used by **over 300,000 companies** [S1]. The platform supports businesses across industries, including **global AI companies** (e.g., Perplexity, OpenAI) [S2], **marketplaces**, **subscription services** (e.g., Substack surpassed 5 million paid subscriptions) [S3], **retailers** (e.g., Postmates, Instacart) [S3], and **non-profits** (e.g., Classy Pay) [S3].\n\nGrowth trends indicate strong expansion, with **$40 billion processed from Black Friday through Cyber Monday 2025** [S6][S12]. The company highlights that **top AI startups using Stripe hit $5 million in annualized recurring revenue 13 months faster** than earlier software companies [S1]. While specific total user counts for all products are not provided, the evidence shows significant growth in key segments like AI agent startups, with **over 700 agent startups launched on Stripe** [S1].",
+        "sources": [
+          {
+            "title": "Stripe User Terms Update - November 11, 2024",
+            "url": "https://support.stripe.com/questions/stripe-user-terms-update-november-11-2024-united-states",
+            "snippet": "We have provided greater clarity on roles and responsibilities between you, Stripe, and the third party data warehouse. Stripe Issuing Terms. We ...",
+            "query": "Stripe developer documentation user roles 2024",
+            "domain": "support.stripe.com",
+            "source_score": 0.97,
+            "is_official": true
+          },
+          {
+            "title": "Stripe Annual Letter 2024",
+            "url": "https://assets.stripeassets.com/fzn2n1nzq965/2pt3yIHthraqR1KwXgr98U/2d69cad44de990455e9ec8744933a446/Stripe-annual-letter-2024.pdf",
+            "snippet": "Businesses on Stripe generated $1.4 trillion in total payment volume in 2024, up 38% from the prior year, and reaching a scale equivalent to ...",
+            "query": "Stripe active merchants count 2024 Q4",
+            "domain": "assets.stripeassets.com",
+            "source_score": 0.97,
+            "is_official": true
+          },
+          {
+            "title": "Stripe Annual Letter 2024",
+            "url": "https://assets.stripeassets.com/fzn2n1nzq965/2pt3yIHthraqR1KwXgr98U/df10795aac0205789956c89e0dfc4f1a/Stripe-annual-letter-2024.pdf",
+            "snippet": "Businesses on Stripe generated $1.4 trillion in total payment volume in 2024, up 38% from the prior year, and reaching a scale equivalent to ...",
+            "query": "Stripe annual letter users metrics 2025",
+            "domain": "assets.stripeassets.com",
+            "source_score": 0.97,
+            "is_official": true
+          },
+          {
+            "title": "View all accounts | Stripe Documentation",
+            "url": "https://docs.stripe.com/connect/dashboard/viewing-all-accounts",
+            "snippet": "",
+            "query": "",
+            "domain": "docs.stripe.com",
+            "source_score": 0.95,
+            "is_official": true
+          },
+          {
+            "title": "Activate your account | Stripe Documentation",
+            "url": "https://docs.stripe.com/get-started/account/activate",
+            "snippet": "",
+            "query": "",
+            "domain": "docs.stripe.com",
+            "source_score": 0.95,
+            "is_official": true
+          },
+          {
+            "title": "Understanding Active Subscribers : Stripe: Help & Support",
+            "url": "https://support.stripe.com/questions/understanding-active-subscribers",
+            "snippet": "Active Subscribers shows you the total numbers of subscribers with paid subscriptions at the end of each interval (eg month).",
+            "query": "Stripe active accounts",
+            "domain": "support.stripe.com",
+            "source_score": 0.95,
+            "is_official": true
+          },
+          {
+            "title": "Account capabilities and configurations | Stripe Documentation",
+            "url": "https://docs.stripe.com/connect/account-capabilities",
+            "snippet": "Capabilities represent functionality that you can request for your connected accounts, such as accepting card payments or receiving transferred funds from ...",
+            "query": "Stripe active accounts",
+            "domain": "docs.stripe.com",
+            "source_score": 0.95,
+            "is_official": true
+          },
+          {
+            "title": "Accounts | Stripe API Reference",
+            "url": "https://docs.stripe.com/api/accounts",
+            "snippet": "You can retrieve it to see properties on the account like its current requirements or if the account is enabled to make live charges or receive payouts. For ...",
+            "query": "Stripe active accounts",
+            "domain": "docs.stripe.com",
+            "source_score": 0.95,
+            "is_official": true
+          },
+          {
+            "title": "User roles",
+            "url": "https://docs.stripe.com/get-started/account/teams/roles",
+            "snippet": "Assign roles to users that give them specific permissions to your Stripe account. For example, administrator, developer, sandbox, and support roles.",
+            "query": "Stripe developer documentation user roles 2024",
+            "domain": "docs.stripe.com",
+            "source_score": 0.95,
+            "is_official": true
+          },
+          {
+            "title": "Adds support for authorizers to Person API",
+            "url": "https://docs.stripe.com/changelog/acacia/2024-11-20/authorizer-person-api",
+            "snippet": "The Stripe account representative is defined as the person that's authorized to act as the primary representative of the account. This person ...",
+            "query": "Stripe developer documentation user roles 2024",
+            "domain": "docs.stripe.com",
+            "source_score": 0.95,
+            "is_official": true
+          }
+        ],
+        "confidence": "low",
+        "iterations": 3,
+        "total_searches": 14,
+        "timestamp": "2026-01-29T01:00:37.859267",
+        "error": null,
+        "claims": [
+          {
+            "text": "Stripe Billing is used by over 300,000 companies",
+            "source_ids": [
+              "S1"
+            ],
+            "confidence": "high"
+          },
+          {
+            "text": "Substack surpassed 5 million paid subscriptions using Stripe",
+            "source_ids": [
+              "S3"
+            ],
+            "confidence": "high"
+          },
+          {
+            "text": "Top AI startups using Stripe hit $5 million ARR 13 months faster than earlier software companies",
+            "source_ids": [
+              "S1"
+            ],
+            "confidence": "high"
+          },
+          {
+            "text": "Over 700 agent startups launched on Stripe",
+            "source_ids": [
+              "S1"
+            ],
+            "confidence": "high"
+          },
+          {
+            "text": "Stripe processed $40 billion from Black Friday through Cyber Monday 2025",
+            "source_ids": [
+              "S6",
+              "S12"
+            ],
+            "confidence": "high"
+          },
+          {
+            "text": "Stripe's total payment volume reached $1.4 trillion",
+            "source_ids": [
+              "S1",
+              "S7"
+            ],
+            "confidence": "high"
+          }
+        ],
+        "gaps": [
+          "Total number of unique Stripe users or active accounts across all products",
+          "Detailed breakdown of user roles (e.g., developers vs. finance teams) beyond implied usage",
+          "User demographics (e.g., geographic distribution, company size breakdown)",
+          "Specific growth rates or year-over-year user count changes"
+        ],
+        "metadata": {
+          "iterations": 3,
+          "searches": 14,
+          "pages_fetched": 18,
+          "pages_failed": 6,
+          "evidence_sources_used": 18,
+          "evidence_passages_count": 12,
+          "avg_source_score": 0.92,
+          "total_evidence_chars": 12000,
+          "model_used": "Alibaba-NLP/Tongyi-DeepResearch-30B-A3B",
+          "verification_applied": true,
+          "page_fetch_enabled": true
+        }
+      },
+      "buyers": {
+        "company": "Stripe",
+        "variable_id": "buyers",
+        "variable_name": "Buyers",
+        "concise": "Targets businesses needing payment infrastructure, with customer data for invoicing, CRM, billing, but lacks decision-maker details.",
+        "comprehensive": "Stripe's product is primarily targeted at businesses that need financial infrastructure for payments, invoicing, and billing. The Customer object in Stripe's API stores basic customer information such as name, email, address, balance, and creation timestamp, and can include metadata for internal reference IDs [S1][S9][S17]. The Person object represents individuals associated with a Stripe account, capturing email, first name, last name, and metadata [S2][S10][S18]. According to the Customers documentation, Stripe's customer resource supports invoice and receipt generation, acts as a lightweight CRM, enables affiliate and referral programs, and allows billing and shipping address management [S3][S11][S19].\n\nStrategic acquisitions such as Bridge and Metronome indicate that Stripe targets businesses requiring cross-border commerce capabilities (stablecoins) and complex usage‑based billing models, respectively [S4][S5][S12][S13][S20][S21]. The platform also offers acceptance analytics for payment acceptance and resources on data‑driven decisions, suggesting that data teams may be involved in evaluating the product [S7][S8][S15][S16][S23][S24].\n\nHowever, the evidence does not provide explicit details about who makes the purchasing decision for Stripe's product. There is no information about decision‑maker titles (e.g., CFO, CTO), the composition of buying committees for B2B purchases, or the specific purchase triggers and evaluation criteria used by potential buyers.",
+        "sources": [
+          {
+            "title": "[PDF] Stripe Annual Letter 2024",
+            "url": "https://assets.stripeassets.com/fzn2n1nzq965/2pt3yIHthraqR1KwXgr98U/df10795aac0205789956c89e0dfc4f1a/Stripe-annual-letter-2024.pdf",
+            "snippet": "Businesses on Stripe generated $1.4 trillion in total payment volume in 2024, up 38% from the prior year, and reaching a scale equivalent to ...",
+            "query": "Stripe for business\" decision process 2024",
+            "domain": "assets.stripeassets.com",
+            "source_score": 0.97,
+            "is_official": true
+          },
+          {
+            "title": "[PDF] Dear Stripe community, Businesses on Stripe generated $1.4 trillion ...",
+            "url": "https://assets.stripeassets.com/fzn2n1nzq965/2pt3yIHthraqR1KwXgr98U/cbec59afdec826fb322271a56626aa9a/Stripe-annual-letter-2024-en-gb.pdf",
+            "snippet": "Stripe was profitable in 2024, and we expect to be so in 2025 and beyond. Durable profitability allows us to channel much of our operating ...",
+            "query": "Stripe enterprise buying committee composition 2025",
+            "domain": "assets.stripeassets.com",
+            "source_score": 0.97,
+            "is_official": true
+          },
+          {
+            "title": "The Customer object | Stripe API Reference",
+            "url": "https://docs.stripe.com/api/customers/object",
+            "snippet": "",
+            "query": "",
+            "domain": "docs.stripe.com",
+            "source_score": 0.95,
+            "is_official": true
+          },
+          {
+            "title": "Person | Stripe API Reference",
+            "url": "https://docs.stripe.com/api/persons",
+            "snippet": "",
+            "query": "",
+            "domain": "docs.stripe.com",
+            "source_score": 0.95,
+            "is_official": true
+          },
+          {
+            "title": "Customers | Stripe Documentation",
+            "url": "https://docs.stripe.com/billing/customer",
+            "snippet": "",
+            "query": "",
+            "domain": "docs.stripe.com",
+            "source_score": 0.95,
+            "is_official": true
+          },
+          {
+            "title": "Acceptance analytics | Stripe Documentation",
+            "url": "https://docs.stripe.com/payments/analytics/acceptance",
+            "snippet": "",
+            "query": "",
+            "domain": "docs.stripe.com",
+            "source_score": 0.95,
+            "is_official": true
+          },
+          {
+            "title": "Create a customer | Stripe API Reference",
+            "url": "https://docs.stripe.com/api/customers/create",
+            "snippet": "An arbitrary string that you can attach to a customer object. It is displayed alongside the customer in the dashboard.",
+            "query": "Stripe buyer persona",
+            "domain": "docs.stripe.com",
+            "source_score": 0.95,
+            "is_official": true
+          },
+          {
+            "title": "Customer self-service with a customer portal",
+            "url": "https://docs.stripe.com/customer-management",
+            "snippet": "A customer portal allows your customers to self-manage their payment details, invoices, and subscriptions in one place.",
+            "query": "Stripe buyer persona",
+            "domain": "docs.stripe.com",
+            "source_score": 0.95,
+            "is_official": true
+          },
+          {
+            "title": "Guest customers",
+            "url": "https://docs.stripe.com/payments/checkout/guest-customers",
+            "snippet": "Stripe automatically groups guest customers in the Dashboard based on them having used the same card, email, or phone to make payments.",
+            "query": "Stripe buyer persona",
+            "domain": "docs.stripe.com",
+            "source_score": 0.95,
+            "is_official": true
+          },
+          {
+            "title": "How Checkout works",
+            "url": "https://docs.stripe.com/payments/checkout/how-checkout-works",
+            "snippet": "Checkout is a low-code payment integration that creates a customizable form for collecting payments. Checkout supports more than 40 payment methods.",
+            "query": "Stripe purchasing process",
+            "domain": "docs.stripe.com",
+            "source_score": 0.95,
+            "is_official": true
+          }
+        ],
+        "confidence": "low",
+        "iterations": 3,
+        "total_searches": 14,
+        "timestamp": "2026-01-29T01:00:24.021009",
+        "error": null,
+        "claims": [
+          {
+            "text": "The Customer object in Stripe's API includes fields such as name, email, address, balance, and created timestamp, and can store metadata for internal reference IDs.",
+            "source_ids": [
+              "S1",
+              "S9",
+              "S17"
+            ],
+            "confidence": "high"
+          },
+          {
+            "text": "The Person object represents an individual associated with a Stripe account and includes email, first name, last name, and metadata.",
+            "source_ids": [
+              "S2",
+              "S10",
+              "S18"
+            ],
+            "confidence": "high"
+          },
+          {
+            "text": "Stripe's customer resource can be used for invoice and receipt generation, acts as a lightweight CRM, supports affiliate and referral programs, and allows billing and shipping address management.",
+            "source_ids": [
+              "S3",
+              "S11",
+              "S19"
+            ],
+            "confidence": "high"
+          },
+          {
+            "text": "The acquisition of Bridge by Stripe is aimed at scaling digital dollars for businesses and enabling stablecoin infrastructure for cross-border commerce.",
+            "source_ids": [
+              "S4",
+              "S12",
+              "S20"
+            ],
+            "confidence": "high"
+          },
+          {
+            "text": "The acquisition of Metronome by Stripe is aimed at building foundational monetization infrastructure for usage-based billing models, supporting flexible and data-driven billing.",
+            "source_ids": [
+              "S5",
+              "S13",
+              "S21"
+            ],
+            "confidence": "high"
+          },
+          {
+            "text": "Stripe provides acceptance analytics for payment acceptance and data-driven decisions resources, indicating that data teams may be involved in evaluating the product.",
+            "source_ids": [
+              "S7",
+              "S8",
+              "S15",
+              "S16",
+              "S23",
+              "S24"
+            ],
+            "confidence": "high"
+          },
+          {
+            "text": "The evidence does not contain explicit information about decision-maker titles, buying committee composition, purchase triggers, or evaluation criteria for Stripe's product.",
+            "source_ids": [],
+            "confidence": "medium"
+          }
+        ],
+        "gaps": [
+          "Specific decision-maker titles (e.g., CFO, CTO) for Stripe's product",
+          "Composition of buying committees for B2B purchases of Stripe",
+          "Purchase triggers for adopting Stripe",
+          "Evaluation criteria used by potential buyers"
+        ],
+        "metadata": {
+          "iterations": 3,
+          "searches": 14,
+          "pages_fetched": 24,
+          "pages_failed": 0,
+          "evidence_sources_used": 24,
+          "evidence_passages_count": 17,
+          "avg_source_score": 0.881,
+          "total_evidence_chars": 12000,
+          "model_used": "Alibaba-NLP/Tongyi-DeepResearch-30B-A3B",
+          "verification_applied": true,
+          "page_fetch_enabled": true
+        }
+      },
+      "use_cases": {
+        "company": "Stripe",
+        "variable_id": "use_cases",
+        "variable_name": "Use Cases",
+        "concise": "Stripe handles payments, subscriptions, and in-person sales with tools for SaaS billing and fraud.",
+        "comprehensive": "<synthesis_json>\n{\n  \"comprehensive_markdown\": \"Stripe enables businesses to solve core payment challenges through multiple specialized use cases. For **simple payments**, startups can process one-time transactions via prebuilt solutions like Checkout or custom payment forms [S1][S4]. **Subscription models** support SaaS businesses with recurring billing, usage-based pricing (e.g., AI startups), multi-entity billing, and Salesforce integrations [S2][S5]. **In-person payments** are facilitated through point-of-sale systems for brick-and-mortar retailers [S1]. **Invoice-based collections** allow businesses to send and manage payments via Stripe's invoicing tools [S1].\",\n\n  \"key_workflows\": \"Stripe's testing environments enable developers to simulate transactions using test credit cards and Postman collections without financial impact [S3]. The platform supports diverse payment methods including cards, wallets, bank transfers, and buy-now-pay-later options [S4][S6]. **Unified commerce** capabilities integrate online, in-person, and mobile payments under a single dashboard [S4]. **Platform businesses** leverage tools for global creator payouts and marketplace operations [S5]. Fraud prevention is handled through Stripe Radar, which identifies threats with machine learning and reduces declines via adaptive optimization [S4].\",\n  \"industry_applications\": \"Stripe's billing solutions cater to SaaS, B2B sales, and multi-entity organizations [S2]. The platform supports cryptocurrency integration for blockchain businesses [S5]. Testing workflows include simulating payment authorizations, captures, and disputes without real transactions [S3].\",\n  \"integration_use_cases\": \"Stripe integrates with Salesforce workflows, SAP systems, and custom APIs through prebuilt UIs or API-only solutions [S5][S2]. Businesses can use mobile SDKs for iOS/Android applications and automatic currency conversion for international transactions [S4].\"\n},\n  \"claims\": [\n    {\n      \"text\": \"Stripe supports startups accepting one-time payments through prebuilt solutions like Checkout and custom payment forms\",\n      \"source_ids\": [\"S1\", \"S4\"],\n      \"confidence\": \"high\"\n    },\n    {\n      \"text\": \"Subscription models enable SaaS businesses with recurring billing, usage-based pricing, multi-entity billing, and Salesforce integrations\",\n      \"source_ids\": [\"S2\", \"S5\"],\n      \"confidence\": \"high\"\n    },\n    {\n      \"text\": \"Testing environments allow simulation of transactions using test credit cards and Postman collections without financial impact\",\n      \"source_ids\": [\"S3\"],\n      \"confidence\": \"high\"\n    },\n    {\n      \"text\": \"Stripe Radar uses machine learning to identify fraud threats and reduces payment declines through adaptive optimization\",\n      \"source_ids\": [\"S4\"],\n      \"confidence\": \"high\"\n    },\n    {\n      \"text\": \"The platform supports cryptocurrency integration for blockchain businesses\",\n      \"source_ids\": [\"S5\"],\n      \"confidence\": \"medium\"\n    }\n  ],\n  \"gaps\": [\n    \"Limited specific industry use cases beyond SaaS and retail\",\n    \"No detailed examples of enterprise-level B2B contract billing workflows\",\n    \"Insufficient information about geographic-specific compliance requirements\",\n    \"Limited data on performance metrics for different use cases\"\n  ]\n}\n</synthesis_json>",
+        "sources": [
+          {
+            "title": "2023/2024 US verification requirements updates for Custom platforms",
+            "url": "https://support.stripe.com/questions/2023-2024-us-verification-requirements-updates-for-custom-platforms-reviewing-connected-accounts",
+            "snippet": "You can now see which of your accounts, if any, need to provide updated business information in your Stripe Dashboard and via the Accounts API.",
+            "query": "Stripe official documentation use cases 2024",
+            "domain": "support.stripe.com",
+            "source_score": 0.97,
+            "is_official": true
+          },
+          {
+            "title": "[PDF] Stripe Annual Letter 2024",
+            "url": "https://assets.stripeassets.com/fzn2n1nzq965/2pt3yIHthraqR1KwXgr98U/b6301040587a62d5b6ef7b76c904032d/Stripe-annual-letter-2024.pdf",
+            "snippet": "Businesses on Stripe generated $1.4 trillion in total payment volume in 2024, up 38% from the prior year, and reaching a scale equivalent to ...",
+            "query": "Stripe official documentation use cases 2024",
+            "domain": "assets.stripeassets.com",
+            "source_score": 0.97,
+            "is_official": true
+          },
+          {
+            "title": "[PDF] Creative destruction and reconstruction The AI economy Vertical SaaS",
+            "url": "https://assets.stripeassets.com/fzn2n1nzq965/4oKUptrHRWY03cFFaczVTP/2cfb17d888dd12188d25e77579f9da97/Stripe-annual-letter-2024-mobile.pdf",
+            "snippet": "Stripe was profitable in 2024, and we expect to be so in 2025 and beyond. Durable profitability allows us to plow back much of our operating.",
+            "query": "Stripe case studies problems solved 2024",
+            "domain": "assets.stripeassets.com",
+            "source_score": 0.97,
+            "is_official": true
+          },
+          {
+            "title": "[PDF] Stripe Annual Letter 2024",
+            "url": "https://assets.stripeassets.com/fzn2n1nzq965/2pt3yIHthraqR1KwXgr98U/2d69cad44de990455e9ec8744933a446/Stripe-annual-letter-2024.pdf",
+            "snippet": "Businesses on Stripe generated $1.4 trillion in total payment volume in 2024, up 38% from the prior year, and reaching a scale equivalent to ...",
+            "query": "Stripe industry-specific applications 2024",
+            "domain": "assets.stripeassets.com",
+            "source_score": 0.97,
+            "is_official": true
+          },
+          {
+            "title": "Dashboard update: May 2024",
+            "url": "https://support.stripe.com/questions/dashboard-update-may-2024",
+            "snippet": "We made some important updates to streamline the Dashboard navigation and simplify your workflows. You now have easy access to your transactions…",
+            "query": "Stripe checkout subscription workflow tasks 2024",
+            "domain": "support.stripe.com",
+            "source_score": 0.97,
+            "is_official": true
+          },
+          {
+            "title": "Common use cases | Stripe Documentation",
+            "url": "https://docs.stripe.com/get-started/use-cases",
+            "snippet": "",
+            "query": "",
+            "domain": "docs.stripe.com",
+            "source_score": 0.95,
+            "is_official": true
+          },
+          {
+            "title": "Subscription use cases | Stripe Documentation",
+            "url": "https://docs.stripe.com/billing/subscriptions/use-cases",
+            "snippet": "",
+            "query": "",
+            "domain": "docs.stripe.com",
+            "source_score": 0.95,
+            "is_official": true
+          },
+          {
+            "title": "Testing use cases | Stripe Documentation",
+            "url": "https://docs.stripe.com/testing-use-cases",
+            "snippet": "",
+            "query": "",
+            "domain": "docs.stripe.com",
+            "source_score": 0.95,
+            "is_official": true
+          },
+          {
+            "title": "Use cases | Stripe Documentation",
+            "url": "https://docs.stripe.com/billing/subscriptions/usage-based-v1/use-cases",
+            "snippet": "Learn about common uses cases for usage-based billing. ; Pay as you go, Charge customers according to how much they consume on your platform. ; Flat fee and ...",
+            "query": "Stripe official documentation use cases 2024",
+            "domain": "docs.stripe.com",
+            "source_score": 0.95,
+            "is_official": true
+          },
+          {
+            "title": "Use cases for expanding responses - Stripe Documentation",
+            "url": "https://docs.stripe.com/expand/use-cases",
+            "snippet": "Expand API responses to return common payment details. · See the Stripe fee for a given payment · See the charges included in a payout.",
+            "query": "Stripe official documentation use cases 2024",
+            "domain": "docs.stripe.com",
+            "source_score": 0.95,
+            "is_official": true
+          }
+        ],
+        "confidence": "medium",
+        "iterations": 3,
+        "total_searches": 14,
+        "timestamp": "2026-01-29T01:01:19.613125",
+        "error": null,
+        "claims": [],
+        "gaps": [],
+        "metadata": {
+          "iterations": 3,
+          "searches": 14,
+          "pages_fetched": 24,
+          "pages_failed": 0,
+          "evidence_sources_used": 24,
+          "evidence_passages_count": 17,
+          "avg_source_score": 0.919,
+          "total_evidence_chars": 11843,
+          "model_used": "Alibaba-NLP/Tongyi-DeepResearch-30B-A3B",
+          "verification_applied": true,
+          "page_fetch_enabled": true
+        }
+      },
+      "key_features": {
+        "company": "Stripe",
+        "variable_id": "key_features",
+        "variable_name": "Key Features",
+        "concise": "API with 100+ global payment methods and business tools.",
+        "comprehensive": "Stripe's core product features focus on enabling businesses to accept and manage payments efficiently. The top capabilities include:\n\n1. **Stripe Elements**: Prebuilt UI components for building secure payment flows, tokenizing sensitive data client-side and supporting over 100 global payment methods including Apple Pay. This reduces PCI compliance requirements for merchants [S2][S10].\n\n2. **Payments API**: Foundational integration layer supporting both Checkout Sessions API (for prebuilt payment pages) and Payment Intents API (for granular control over payment flows). Enables online/in-person payments, subscription billing, and cryptocurrency transactions [S3][S11][S19].\n\n3. **Platform and Marketplace Capabilities**: Tools for managing connected accounts, including capability configuration for payment processing, payout functionality, and compliance requirements. Supports both Express and Custom account types [S4][S12].\n\n4. **Product and Pricing Management**: System for creating products and defining pricing structures with multiple price points, currencies, and billing cycles. Enables tiered offerings and subscription models [S5][S6][S13][S14].\n\n5. **Entitlement Management**: Feature-based monetization system allowing businesses to create and manage monetizable capabilities tied to products. Features can be assigned to products and automatically granted to customers upon purchase [S1][S9][S17].\n\n6. **Financial Connections**: API that enables permissioned access to users' financial account data, facilitating services like automated tax processing and payment verification [S3][S11].",
+        "sources": [
+          {
+            "title": "Dashboard update: May 2024",
+            "url": "https://support.stripe.com/questions/dashboard-update-may-2024",
+            "snippet": "Dashboard update: May 2024 ... New Products section: Complete tasks and view insights from the Stripe products you already use and discover and add new features.",
+            "query": "Stripe \"features\" site:stripe.com 2024",
+            "domain": "support.stripe.com",
+            "source_score": 0.97,
+            "is_official": true
+          },
+          {
+            "title": "Stripe Annual Letter 2024",
+            "url": "https://assets.stripeassets.com/fzn2n1nzq965/2pt3yIHthraqR1KwXgr98U/2d69cad44de990455e9ec8744933a446/Stripe-annual-letter-2024.pdf",
+            "snippet": "Businesses on Stripe generated $1.4 trillion in total payment volume in 2024, up 38% from the prior year, and reaching a scale equivalent to ...",
+            "query": "Stripe payment platform features analyst report 2024",
+            "domain": "assets.stripeassets.com",
+            "source_score": 0.97,
+            "is_official": true
+          },
+          {
+            "title": "Feature | Stripe API Reference",
+            "url": "https://docs.stripe.com/api/entitlements/feature",
+            "snippet": "",
+            "query": "",
+            "domain": "docs.stripe.com",
+            "source_score": 0.95,
+            "is_official": true
+          },
+          {
+            "title": "Stripe Web Elements | Stripe Documentation",
+            "url": "https://docs.stripe.com/payments/elements",
+            "snippet": "",
+            "query": "",
+            "domain": "docs.stripe.com",
+            "source_score": 0.95,
+            "is_official": true
+          },
+          {
+            "title": "Payments | Stripe Documentation",
+            "url": "https://docs.stripe.com/payments",
+            "snippet": "",
+            "query": "",
+            "domain": "docs.stripe.com",
+            "source_score": 0.95,
+            "is_official": true
+          },
+          {
+            "title": "Account capabilities and configurations | Stripe Documentation",
+            "url": "https://docs.stripe.com/connect/account-capabilities",
+            "snippet": "",
+            "query": "",
+            "domain": "docs.stripe.com",
+            "source_score": 0.95,
+            "is_official": true
+          },
+          {
+            "title": "Products | Stripe API Reference",
+            "url": "https://docs.stripe.com/api/products",
+            "snippet": "",
+            "query": "",
+            "domain": "docs.stripe.com",
+            "source_score": 0.95,
+            "is_official": true
+          },
+          {
+            "title": "How products and prices work | Stripe Documentation",
+            "url": "https://docs.stripe.com/products-prices/how-products-and-prices-work",
+            "snippet": "",
+            "query": "",
+            "domain": "docs.stripe.com",
+            "source_score": 0.95,
+            "is_official": true
+          },
+          {
+            "title": "How subscriptions work",
+            "url": "https://docs.stripe.com/billing/subscriptions/overview",
+            "snippet": "Manage recurring payments through subscription lifecycles including creation, trials, invoice generation, payment collection, updates, and cancellations.",
+            "query": "Stripe features",
+            "domain": "docs.stripe.com",
+            "source_score": 0.95,
+            "is_official": true
+          },
+          {
+            "title": "How Checkout works",
+            "url": "https://docs.stripe.com/payments/checkout/how-checkout-works",
+            "snippet": "Checkout is a low-code payment integration that creates a customizable form for collecting payments. Checkout supports more than 40 payment methods.",
+            "query": "Stripe features",
+            "domain": "docs.stripe.com",
+            "source_score": 0.95,
+            "is_official": true
+          }
+        ],
+        "confidence": "medium",
+        "iterations": 3,
+        "total_searches": 14,
+        "timestamp": "2026-01-29T01:02:58.431915",
+        "error": null,
+        "claims": [
+          {
+            "text": "Stripe Elements provides prebuilt UI components for building payment flows with client-side tokenization of sensitive data",
+            "source_ids": [
+              "S2"
+            ],
+            "confidence": "high"
+          },
+          {
+            "text": "Stripe supports over 100 global payment methods including digital wallets like Apple Pay",
+            "source_ids": [
+              "S2"
+            ],
+            "confidence": "high"
+          },
+          {
+            "text": "The Payments API includes both Checkout Sessions API and Payment Intents API for different integration approaches",
+            "source_ids": [
+              "S3"
+            ],
+            "confidence": "high"
+          },
+          {
+            "text": "Platform capabilities enable management of connected accounts with functionality for payment processing and payouts",
+            "source_ids": [
+              "S4"
+            ],
+            "confidence": "high"
+          },
+          {
+            "text": "Products can be created with multiple price points, currencies, and billing cycles",
+            "source_ids": [
+              "S5"
+            ],
+            "confidence": "high"
+          },
+          {
+            "text": "Features represent monetizable capabilities that can be assigned to products and automatically granted to customers",
+            "source_ids": [
+              "S1"
+            ],
+            "confidence": "high"
+          },
+          {
+            "text": "Financial Connections enables permissioned access to users' financial account data",
+            "source_ids": [
+              "S3"
+            ],
+            "confidence": "medium"
+          }
+        ],
+        "gaps": [
+          "Specific performance metrics for payment processing",
+          "Detailed breakdown of supported currencies",
+          "Exact number of platform capabilities available",
+          "Pricing structure details"
+        ],
+        "metadata": {
+          "iterations": 3,
+          "searches": 14,
+          "pages_fetched": 24,
+          "pages_failed": 0,
+          "evidence_sources_used": 24,
+          "evidence_passages_count": 16,
+          "avg_source_score": 0.938,
+          "total_evidence_chars": 12000,
+          "model_used": "Alibaba-NLP/Tongyi-DeepResearch-30B-A3B",
+          "verification_applied": true,
+          "page_fetch_enabled": true
+        }
+      },
+      "advanced_features": {
+        "company": "Stripe",
+        "variable_id": "advanced_features",
+        "variable_name": "Advanced Features",
+        "concise": "Processes 250M+ API requests daily with 99.999% uptime, enterprise billing, and 50+ payment methods.",
+        "comprehensive": "Stripe offers enterprise-grade features designed for large organizations, including global payment processing across 47 countries, 50+ payment methods, and 135 currencies [S1]. Key capabilities include **enterprise billing systems** that manage invoices, payments, and customer accounts with advanced security and compliance mechanisms for multinational operations [S2][S4]. Stripe achieves **99.999% service uptime** and processes **250M+ API requests daily**, supporting 50+ category leaders processing over $1B annually [S1][S3].\n\nAdvanced payment features include **A/B testing for payment methods** (boosting revenue by 11.9% via conversion improvements), **automated dispute management**, and tools like **Stripe Reader S700** for custom POS integrations [S3]. For developers, Stripe provides **API-driven account configurations**, **usage-based billing engines**, and **multiprocessor support** to handle complex entity structures and payout workflows [S4][S5][S6].",
+        "sources": [
+          {
+            "title": "August 2025 pricing updates for Revenue Recognition",
+            "url": "https://support.stripe.com/questions/august-2025-subscription-pricing-updates-for-revenue-recognition",
+            "snippet": "Starting August 20, 2025, you can transition from pay-as-you-go pricing to subscription-based pricing for Revenue Recognition, our accrual ...",
+            "query": "Stripe enterprise pricing features 2025",
+            "domain": "support.stripe.com",
+            "source_score": 1.0,
+            "is_official": true
+          },
+          {
+            "title": "[PDF] Stripe Services Agreement - United States - Document Center",
+            "url": "https://lfportal.everettwa.gov/WebLink/0/edoc/1793483/Stripe,%20Inc.%201292024.pdf",
+            "snippet": "Only businesses (including sole proprietors) and non-profit organizations located in the United. States are eligible to apply for a Stripe ...",
+            "query": "Stripe enterprise SLAs custom contracts 2024",
+            "domain": "lfportal.everettwa.gov",
+            "source_score": 1.0,
+            "is_official": false
+          },
+          {
+            "title": "Account capabilities and configurations | Stripe Documentation",
+            "url": "https://docs.stripe.com/connect/account-capabilities",
+            "snippet": "",
+            "query": "",
+            "domain": "docs.stripe.com",
+            "source_score": 0.95,
+            "is_official": true
+          },
+          {
+            "title": "Build an advanced payments integration | Stripe Documentation",
+            "url": "https://docs.stripe.com/payments/advanced",
+            "snippet": "",
+            "query": "",
+            "domain": "docs.stripe.com",
+            "source_score": 0.95,
+            "is_official": true
+          },
+          {
+            "title": "Advanced usage-based billing | Stripe Documentation",
+            "url": "https://docs.stripe.com/billing/subscriptions/usage-based-v2/overview",
+            "snippet": "",
+            "query": "",
+            "domain": "docs.stripe.com",
+            "source_score": 0.95,
+            "is_official": true
+          },
+          {
+            "title": "Advanced usage-based billing",
+            "url": "https://docs.stripe.com/billing/subscriptions/usage-based/advanced/compare",
+            "snippet": "Pay as you go for many prices or meters; Flat fee and overages; Credit burndown with automatic top-ups. If the features and compatibility described on this page ...",
+            "query": "Stripe advanced capabilities",
+            "domain": "docs.stripe.com",
+            "source_score": 0.95,
+            "is_official": true
+          },
+          {
+            "title": "Build an advanced integration",
+            "url": "https://docs.stripe.com/payments/quickstart",
+            "snippet": "Advanced integrations. Custom payment flows. Flexible acquiring. Multiprocessor orchestration. Beyond payments. Incorporate your company. Crypto. Agentic ...",
+            "query": "Stripe advanced capabilities",
+            "domain": "docs.stripe.com",
+            "source_score": 0.95,
+            "is_official": true
+          },
+          {
+            "title": "Feature | Stripe API Reference",
+            "url": "https://docs.stripe.com/api/entitlements/feature",
+            "snippet": "A feature represents a monetizable ability or functionality in your system. Features can be assigned to products, and when those products are purchased, Stripe ...",
+            "query": "Stripe API features",
+            "domain": "docs.stripe.com",
+            "source_score": 0.95,
+            "is_official": true
+          },
+          {
+            "title": "Stripe API Reference",
+            "url": "https://docs.stripe.com/api",
+            "snippet": "The Stripe API is organized around REST. Our API has predictable resource-oriented URLs, accepts form-encoded request bodies, returns JSON-encoded responses.",
+            "query": "Stripe API features",
+            "domain": "docs.stripe.com",
+            "source_score": 0.95,
+            "is_official": true
+          },
+          {
+            "title": "Stripe's APIs - Stripe Documentation",
+            "url": "https://docs.stripe.com/apis",
+            "snippet": "Stripe provides a unified set of REST APIs, comprised of two namespaces, for accepting payments, managing billing and subscriptions, sending payouts, ...",
+            "query": "Stripe API features",
+            "domain": "docs.stripe.com",
+            "source_score": 0.95,
+            "is_official": true
+          }
+        ],
+        "confidence": "low",
+        "iterations": 3,
+        "total_searches": 13,
+        "timestamp": "2026-01-29T01:02:27.515208",
+        "error": null,
+        "claims": [
+          {
+            "text": "Stripe supports 47 countries, 50+ payment methods, and 135 currencies for enterprises.",
+            "source_ids": [
+              "S1"
+            ],
+            "confidence": "high"
+          },
+          {
+            "text": "Enterprise billing systems include security/compliance mechanisms for multinational businesses.",
+            "source_ids": [
+              "S2"
+            ],
+            "confidence": "high"
+          },
+          {
+            "text": "Stripe achieves 99.999% service uptime and processes 250M+ API requests daily.",
+            "source_ids": [
+              "S1",
+              "S3"
+            ],
+            "confidence": "high"
+          },
+          {
+            "text": "A/B testing for payment methods increases revenue by 11.9%.",
+            "source_ids": [
+              "S3"
+            ],
+            "confidence": "high"
+          },
+          {
+            "text": "Stripe offers multiprocessor support for complex entity structures.",
+            "source_ids": [
+              "S3"
+            ],
+            "confidence": "high"
+          },
+          {
+            "text": "Usage-based billing engines enable subscription management.",
+            "source_ids": [
+              "S6"
+            ],
+            "confidence": "medium"
+          }
+        ],
+        "gaps": [
+          "Specific enterprise pricing tiers or cost structures",
+          "Detailed compliance certifications (e.g., PCI DSS Level 1 details)",
+          "Customization depth for niche industry use cases"
+        ],
+        "metadata": {
+          "iterations": 3,
+          "searches": 13,
+          "pages_fetched": 24,
+          "pages_failed": 0,
+          "evidence_sources_used": 24,
+          "evidence_passages_count": 13,
+          "avg_source_score": 0.919,
+          "total_evidence_chars": 12000,
+          "model_used": "Alibaba-NLP/Tongyi-DeepResearch-30B-A3B",
+          "verification_applied": true,
+          "page_fetch_enabled": true
+        }
+      },
+      "integrations": {
+        "company": "Stripe",
+        "variable_id": "integrations",
+        "variable_name": "Integrations",
+        "concise": "Integrates via no-code Payment Links, full API with webhooks, and the Stripe Apps framework for third-party applications.",
+        "comprehensive": "Stripe offers a robust integration ecosystem through multiple channels:\n\n**Native Integrations**: Stripe provides several integration approaches with varying coding requirements. These include Payment Links (no code), Stripe-hosted pages (low code), embedded forms/components (low code), and advanced UI integration (more coding) [S1][S7]. The specific payment methods available depend on currency, country, and integrated products [S1].\n\n**API & Webhook Capabilities**: Stripe's API supports command-line integration (cURL examples shown) and provides webhooks for event-driven architectures [S1][S4]. The Stripe Apps framework enables developers to build integrations using OAuth 2.0 authentication, restricted API keys, and server-side logic [S3][S9].\n\n**Marketplace**: Stripe maintains an Apps Marketplace where third-party developers can publish and distribute applications. The publishing process includes app review against Stripe standards [S3][S4][S9][S15].\n\n**Strategic Partnerships**: Stripe Connect enables multiparty payment processing for platforms and marketplaces, supporting complex marketplace models [S5][S6][S11][S12][S17][S18]. The platform handles onboarding, risk management, and disbursements for connected accounts [S2][S5].\n\nThe documentation doesn't specify exact numbers of integrations or partners, nor does it provide a comprehensive list of specific third-party partnerships.",
+        "sources": [
+          {
+            "title": "[PDF] Stripe Annual Letter 2024",
+            "url": "https://assets.stripeassets.com/fzn2n1nzq965/2pt3yIHthraqR1KwXgr98U/df10795aac0205789956c89e0dfc4f1a/Stripe-annual-letter-2024.pdf",
+            "snippet": "Businesses on Stripe generated $1.4 trillion in total payment volume in 2024, up 38% from the prior year, and reaching a scale equivalent to ...",
+            "query": "Stripe integration count 2024",
+            "domain": "assets.stripeassets.com",
+            "source_score": 0.97,
+            "is_official": true
+          },
+          {
+            "title": "Payment method integration options | Stripe Documentation",
+            "url": "https://docs.stripe.com/payments/payment-methods/integration-options",
+            "snippet": "",
+            "query": "",
+            "domain": "docs.stripe.com",
+            "source_score": 0.95,
+            "is_official": true
+          },
+          {
+            "title": "Design an advanced Connect integration using the Accounts v1 API | Stripe Documentation",
+            "url": "https://docs.stripe.com/connect/design-an-integration",
+            "snippet": "",
+            "query": "",
+            "domain": "docs.stripe.com",
+            "source_score": 0.95,
+            "is_official": true
+          },
+          {
+            "title": "Stripe Apps | Stripe Documentation",
+            "url": "https://docs.stripe.com/stripe-apps",
+            "snippet": "",
+            "query": "",
+            "domain": "docs.stripe.com",
+            "source_score": 0.95,
+            "is_official": true
+          },
+          {
+            "title": "How to publish an app to the Stripe App Marketplace | Stripe Documentation",
+            "url": "https://docs.stripe.com/stripe-apps/publish-app",
+            "snippet": "",
+            "query": "",
+            "domain": "docs.stripe.com",
+            "source_score": 0.95,
+            "is_official": true
+          },
+          {
+            "title": "How Connect works | Stripe Documentation",
+            "url": "https://docs.stripe.com/connect/how-connect-works",
+            "snippet": "",
+            "query": "",
+            "domain": "docs.stripe.com",
+            "source_score": 0.95,
+            "is_official": true
+          },
+          {
+            "title": "Platforms and marketplaces with Stripe Connect | Stripe Documentation",
+            "url": "https://docs.stripe.com/connect",
+            "snippet": "",
+            "query": "",
+            "domain": "docs.stripe.com",
+            "source_score": 0.95,
+            "is_official": true
+          },
+          {
+            "title": "Third-party integrations",
+            "url": "https://support.stripe.com/topics/third-party-integrations",
+            "snippet": "If you are looking to integrate a plug-in or third-party service with Stripe, you can find more information below as well as in our Stripe Partner directory.",
+            "query": "Stripe integrations",
+            "domain": "support.stripe.com",
+            "source_score": 0.95,
+            "is_official": true
+          },
+          {
+            "title": "Help with third-party integrations",
+            "url": "https://support.stripe.com/questions/help-with-third-party-integrations",
+            "snippet": "Stripe has limited support for issues involving third-party integrations, applications, and plugins. refer to the support documentation of the platform/plugin ...",
+            "query": "Stripe integrations",
+            "domain": "support.stripe.com",
+            "source_score": 0.95,
+            "is_official": true
+          },
+          {
+            "title": "Set up your integration",
+            "url": "https://docs.stripe.com/terminal/payments/setup-integration",
+            "snippet": "Set up your integration to connect to a physical reader and collect in-person payments. You can use the Stripe API, Terminal SDK, JavaScript SDK, iOS SDK, ...",
+            "query": "Stripe integrations",
+            "domain": "docs.stripe.com",
+            "source_score": 0.95,
+            "is_official": true
+          }
+        ],
+        "confidence": "high",
+        "iterations": 3,
+        "total_searches": 14,
+        "timestamp": "2026-01-29T01:04:08.762076",
+        "error": null,
+        "claims": [
+          {
+            "text": "Stripe provides multiple integration approaches with varying coding requirements including Payment Links (no code), Stripe-hosted pages (low code), embedded forms/components (low code), and advanced UI integration (more coding)",
+            "source_ids": [
+              "S1",
+              "S7"
+            ],
+            "confidence": "high"
+          },
+          {
+            "text": "The specific payment methods available depend on currency, country, and integrated products",
+            "source_ids": [
+              "S1"
+            ],
+            "confidence": "high"
+          },
+          {
+            "text": "Stripe Apps allows developers to build integrations using OAuth 2.0 authentication and restricted API keys",
+            "source_ids": [
+              "S3",
+              "S9"
+            ],
+            "confidence": "high"
+          },
+          {
+            "text": "Third-party developers can publish apps to the Stripe Apps Marketplace which undergoes a review process",
+            "source_ids": [
+              "S3",
+              "S4",
+              "S9",
+              "S15"
+            ],
+            "confidence": "high"
+          },
+          {
+            "text": "Stripe Connect enables multiparty payment processing for platforms and marketplaces",
+            "source_ids": [
+              "S5",
+              "S6",
+              "S11",
+              "S12",
+              "S17",
+              "S18"
+            ],
+            "confidence": "high"
+          },
+          {
+            "text": "The platform handles onboarding, risk management, and disbursements for connected accounts",
+            "source_ids": [
+              "S2",
+              "S5"
+            ],
+            "confidence": "high"
+          }
+        ],
+        "gaps": [
+          "Exact number of integrations",
+          "Specific list of key integration partners",
+          "Comprehensive details about API/webhook capabilities beyond what's mentioned in integration options",
+          "Specific examples of strategic partnerships beyond Connect platform functionality"
+        ],
+        "metadata": {
+          "iterations": 3,
+          "searches": 14,
+          "pages_fetched": 18,
+          "pages_failed": 6,
+          "evidence_sources_used": 18,
+          "evidence_passages_count": 15,
+          "avg_source_score": 0.95,
+          "total_evidence_chars": 11939,
+          "model_used": "Alibaba-NLP/Tongyi-DeepResearch-30B-A3B",
+          "verification_applied": true,
+          "page_fetch_enabled": true
+        }
+      },
+      "technology_stack": {
+        "company": "Stripe",
+        "variable_id": "technology_stack",
+        "variable_name": "Technology Stack",
+        "concise": "Uses AWS microservices, Terraform, and AI agents for scalable, safe financial infrastructure with low-latency services and workflow automation.",
+        "comprehensive": "Stripe's technology stack focuses on scalable infrastructure and developer productivity. The company utilizes **AWS** as a primary cloud provider, implementing microservice architectures for critical components like subscription management [S5]. Their infrastructure includes **Terraform** for infrastructure-as-code management, with documented use of AI agents to author Terraform configurations for safer Stripe operations [S5]. Stripe's engineering team builds **low-latency microservices**, **large-scale data pipelines**, and **machine learning models** as part of their core technology platform [S3]. The company employs **visual workflow automation** through Stripe Workflows, which enables event-driven financial operations without managing underlying infrastructure [S5]. Their system supports **real-time analytics** for billing operations [S1], and they manage **currencies and payment methods** across global markets [S6].",
+        "sources": [
+          {
+            "title": "Dashboard update: May 2024",
+            "url": "https://support.stripe.com/questions/dashboard-update-may-2024",
+            "snippet": "We made some important updates to streamline the Dashboard navigation and simplify your workflows. You now have easy access to your transactions…",
+            "query": "Stripe runs on\" site:stripe.com 2024",
+            "domain": "support.stripe.com",
+            "source_score": 0.97,
+            "is_official": true
+          },
+          {
+            "title": "Link: The consumer network built by all of us | Stripe Sessions",
+            "url": "https://stripe.com/sessions/2025/link-the-consumer-network-built-by-all-of-us",
+            "snippet": "Link is built on connection: hundreds of thousands of businesses, tens of millions of customers, and billions of payments processed, each a step toward a ...",
+            "query": "Stripe built with",
+            "domain": "stripe.com",
+            "source_score": 0.95,
+            "is_official": true
+          },
+          {
+            "title": "Our top product updates from Sessions 2025",
+            "url": "https://stripe.com/blog/top-product-updates-sessions-2025",
+            "snippet": "This post recaps the top announcements and product releases. For a more detailed list of what's new since Sessions last year, see our changelog.",
+            "query": "Stripe engineering blog tech stack 2025",
+            "domain": "stripe.com",
+            "source_score": 0.95,
+            "is_official": true
+          },
+          {
+            "title": "Developer keynote",
+            "url": "https://stripe.com/it-si/sessions/2025/developer-keynote?__previewId",
+            "snippet": "We're ensuring Stripe works in a much more integrated way with your existing tech stack. And we've heard from Michael and throughout the morning about how ...",
+            "query": "Stripe engineering blog tech stack 2025",
+            "domain": "stripe.com",
+            "source_score": 0.95,
+            "is_official": true
+          },
+          {
+            "title": "Developer keynote | Stripe Sessions",
+            "url": "https://stripe.com/ae/sessions/2025/developer-keynote",
+            "snippet": "Great developer tools help you ship faster and reduce overhead. In this keynote, see how Stripe is evolving to make your development more ...",
+            "query": "Stripe engineers conference talk technology 2024",
+            "domain": "stripe.com",
+            "source_score": 0.95,
+            "is_official": true
+          },
+          {
+            "title": "Opening keynote: The future of commerce | Stripe Sessions",
+            "url": "https://stripe.com/sessions/2025/opening-keynote",
+            "snippet": "In this keynote, Patrick and John Collison discuss the state of the internet economy, how breakout businesses on Stripe are growing at record speeds.",
+            "query": "Stripe engineers conference talk technology 2024",
+            "domain": "stripe.com",
+            "source_score": 0.95,
+            "is_official": true
+          },
+          {
+            "title": "Developer keynote | Stripe Sessions",
+            "url": "https://stripe.com/en-mx/sessions/2025/developer-keynote",
+            "snippet": "Great developer tools help you ship faster and reduce overhead. In this keynote, see how Stripe is evolving to make your development more ...",
+            "query": "Stripe engineering blog programming languages 2024",
+            "domain": "stripe.com",
+            "source_score": 0.95,
+            "is_official": true
+          },
+          {
+            "title": "tm2110013-11_s1a - block - 17.4532195s",
+            "url": "https://www.sec.gov/Archives/edgar/data/1852771/000110465921083524/tm2110013-11_s1a.htm",
+            "snippet": "As filed with the U.S. Securities and Exchange Commission on June 21, 2021. Registration No. 333-256171​. ​. ​. UNITED STATES",
+            "query": "Stripe S-1 filing technology infrastructure details",
+            "domain": "sec.gov",
+            "source_score": 0.95,
+            "is_official": false
+          },
+          {
+            "title": "S-1/A",
+            "url": "https://www.sec.gov/Archives/edgar/data/1533523/000119312519236798/d781982ds1a.htm",
+            "snippet": "As filed with the Securities and Exchange Commission on September 3, 2019. Registration No. 333-233259. UNITED STATES.",
+            "query": "Stripe S-1 filing technology infrastructure details",
+            "domain": "sec.gov",
+            "source_score": 0.95,
+            "is_official": false
+          },
+          {
+            "title": "S-1/A",
+            "url": "https://www.sec.gov/Archives/edgar/data/1512673/000119312515369092/d937622ds1a.htm",
+            "snippet": "We derive substantially all of our revenue from payments services. Our efforts to expand our product portfolio and market reach may not succeed and may reduce ...",
+            "query": "Stripe S-1 filing technology infrastructure details",
+            "domain": "sec.gov",
+            "source_score": 0.95,
+            "is_official": false
+          }
+        ],
+        "confidence": "low",
+        "iterations": 3,
+        "total_searches": 14,
+        "timestamp": "2026-01-29T01:03:30.472314",
+        "error": null,
+        "claims": [
+          {
+            "text": "Stripe uses AWS as a primary cloud provider and implements microservice architectures",
+            "source_ids": [
+              "S5"
+            ],
+            "confidence": "high"
+          },
+          {
+            "text": "Stripe utilizes Terraform for infrastructure-as-code management",
+            "source_ids": [
+              "S5"
+            ],
+            "confidence": "high"
+          },
+          {
+            "text": "Stripe builds low-latency microservices, large-scale data pipelines, and machine learning models",
+            "source_ids": [
+              "S3"
+            ],
+            "confidence": "high"
+          },
+          {
+            "text": "Stripe employs visual workflow automation through Stripe Workflows for event-driven financial operations",
+            "source_ids": [
+              "S5"
+            ],
+            "confidence": "medium"
+          },
+          {
+            "text": "Stripe has real-time analytics capabilities for billing operations",
+            "source_ids": [
+              "S1"
+            ],
+            "confidence": "medium"
+          }
+        ],
+        "gaps": [
+          "Specific programming languages used (though evidence suggests likely use of Java, Python, Go)",
+          "Database technologies",
+          "Specific messaging systems",
+          "Frontend technologies",
+          "Internal tooling beyond Workflows"
+        ],
+        "metadata": {
+          "iterations": 3,
+          "searches": 14,
+          "pages_fetched": 24,
+          "pages_failed": 0,
+          "evidence_sources_used": 24,
+          "evidence_passages_count": 18,
+          "avg_source_score": 0.85,
+          "total_evidence_chars": 12000,
+          "model_used": "Alibaba-NLP/Tongyi-DeepResearch-30B-A3B",
+          "verification_applied": true,
+          "page_fetch_enabled": true
+        }
+      },
+      "product_roadmap": {
+        "company": "Stripe",
+        "variable_id": "product_roadmap",
+        "variable_name": "Product Roadmap",
+        "concise": "Focuses on enhanced payments infrastructure and revenue management, with recent ML authentication cutting fraud by 8% [S3].",
+        "comprehensive": "Stripe's 2024-2025 product roadmap focuses on enhancing payments infrastructure, expanding revenue management capabilities, and improving operational efficiency. Recent releases include an upgraded ML-based authentication engine that reduced 3DS challenges while cutting fraud by 8% [S3]. The company introduced Stripe Orchestration, enabling businesses to route payments across multiple processors with unified dashboard visibility [S1][S3]. For revenue management, Stripe launched a rate card editor allowing no-code usage-based pricing models [S2], and expanded Stripe Tax coverage to 100+ countries with 600+ product types [S2][S8]. Strategic initiatives include the acquisition of Lemon Squeezy to power Stripe Managed Payments for digital goods [S1], and partnerships with Taxually for automated tax filings [S2]. Upcoming features include expanded dispute handling capabilities with 13% higher chargeback recovery rates in pilot programs [S1], and support for events/ticketing verticals by year-end [S2]. The company emphasizes interoperability solutions and AI-driven payment optimizations across its platform.",
+        "sources": [
+          {
+            "title": "Stripe User Terms Update - November 18, 2025",
+            "url": "https://support.stripe.com/questions/stripe-user-terms-update-november-18-2025",
+            "snippet": "We updated our Stripe Services Agreement on November 18, 2025. As part of this update, we've also updated the Stripe Connected Account Agreement ...",
+            "query": "Stripe whats new",
+            "domain": "support.stripe.com",
+            "source_score": 1.0,
+            "is_official": true
+          },
+          {
+            "title": "Dashboard update: May 2024",
+            "url": "https://support.stripe.com/questions/dashboard-update-may-2024",
+            "snippet": "We made some important updates to streamline the Dashboard navigation and simplify your workflows. You now have easy access to your transactions, products, and ...",
+            "query": "Stripe new features 2024",
+            "domain": "support.stripe.com",
+            "source_score": 0.97,
+            "is_official": true
+          },
+          {
+            "title": "Product roadmap: Payments",
+            "url": "https://stripe.com/sessions/2025/product-roadmap-payments",
+            "snippet": "",
+            "query": "",
+            "domain": "stripe.com",
+            "source_score": 0.95,
+            "is_official": true
+          },
+          {
+            "title": "Product roadmap: Revenue (Billing, Tax, and Data) | Stripe Sessions",
+            "url": "https://stripe.com/sessions/2025/product-roadmap-revenue-billing-tax-and-data",
+            "snippet": "",
+            "query": "",
+            "domain": "stripe.com",
+            "source_score": 0.95,
+            "is_official": true
+          },
+          {
+            "title": "Update a product | Stripe API Reference",
+            "url": "https://docs.stripe.com/api/products/update",
+            "snippet": "",
+            "query": "",
+            "domain": "docs.stripe.com",
+            "source_score": 0.95,
+            "is_official": true
+          },
+          {
+            "title": "Our top product updates from Sessions 2025",
+            "url": "https://stripe.com/blog/top-product-updates-sessions-2025",
+            "snippet": "",
+            "query": "",
+            "domain": "stripe.com",
+            "source_score": 0.95,
+            "is_official": true
+          },
+          {
+            "title": "2024 updates to US verification requirements FAQ",
+            "url": "https://support.stripe.com/questions/2024-updates-to-us-verification-requirements-faq",
+            "snippet": "Stripe is updating how we collect, validate, and verify business information for US businesses accepting card payments.",
+            "query": "Stripe new features 2024",
+            "domain": "support.stripe.com",
+            "source_score": 0.95,
+            "is_official": true
+          },
+          {
+            "title": "Changelog",
+            "url": "https://docs.stripe.com/changelog",
+            "snippet": "Connect enhancements · Elements enhancements · Checkout enhancements · Billing enhancements · Enhancements to payments and payment methods · Terminal enhancements.",
+            "query": "Stripe product updates",
+            "domain": "docs.stripe.com",
+            "source_score": 0.95,
+            "is_official": true
+          },
+          {
+            "title": "API upgrades",
+            "url": "https://docs.stripe.com/upgrades",
+            "snippet": "You can safely upgrade to a new monthly release without breaking any existing code. To upgrade your API version, follow these steps.",
+            "query": "Stripe product updates",
+            "domain": "docs.stripe.com",
+            "source_score": 0.95,
+            "is_official": true
+          },
+          {
+            "title": "Stripe launches new products to drive stablecoins and agentic ...",
+            "url": "https://stripe.com/newsroom/news/tour-newyork-2025",
+            "snippet": "Today, Stripe announced that it's also working with early partners including Microsoft Copilot, Anthropic, Perplexity, Vercel, Lovable, Replit, ...",
+            "query": "Stripe whats new",
+            "domain": "stripe.com",
+            "source_score": 0.95,
+            "is_official": true
+          }
+        ],
+        "confidence": "high",
+        "iterations": 3,
+        "total_searches": 14,
+        "timestamp": "2026-01-29T01:04:10.230074",
+        "error": null,
+        "claims": [
+          {
+            "text": "Stripe reduced fraud by 8% and decreased 3DS challenges through an upgraded ML-based authentication engine",
+            "source_ids": [
+              "S3"
+            ],
+            "confidence": "high"
+          },
+          {
+            "text": "Stripe Orchestration allows businesses to manage multiple processors through a single dashboard",
+            "source_ids": [
+              "S1",
+              "S3"
+            ],
+            "confidence": "high"
+          },
+          {
+            "text": "Stripe's rate card editor enables no-code usage-based pricing models",
+            "source_ids": [
+              "S2"
+            ],
+            "confidence": "high"
+          },
+          {
+            "text": "Stripe Tax covers 100+ countries with 600+ product types",
+            "source_ids": [
+              "S2"
+            ],
+            "confidence": "high"
+          },
+          {
+            "text": "Pilot programs with Vimeo and Squarespace achieved 13% higher chargeback recovery rates",
+            "source_ids": [
+              "S1"
+            ],
+            "confidence": "high"
+          },
+          {
+            "text": "Stripe acquired Lemon Squeezy to enhance Managed Payments for digital goods",
+            "source_ids": [
+              "S1"
+            ],
+            "confidence": "high"
+          },
+          {
+            "text": "Stripe partnered with Taxually for automated tax filing through the App Marketplace",
+            "source_ids": [
+              "S2"
+            ],
+            "confidence": "high"
+          },
+          {
+            "text": "Stripe's Advanced Payments Engine improved authorization rates by over 3% for early adopters",
+            "source_ids": [
+              "S3",
+              "S4"
+            ],
+            "confidence": "high"
+          }
+        ],
+        "gaps": [
+          "Exact timeline for full rollout of Stripe Orchestration",
+          "Specific implementation details of the rate card editor",
+          "Detailed performance metrics beyond pilot programs",
+          "Complete list of all 2025 revenue management features"
+        ],
+        "metadata": {
+          "iterations": 3,
+          "searches": 14,
+          "pages_fetched": 18,
+          "pages_failed": 6,
+          "evidence_sources_used": 18,
+          "evidence_passages_count": 13,
+          "avg_source_score": 0.94,
+          "total_evidence_chars": 12000,
+          "model_used": "Alibaba-NLP/Tongyi-DeepResearch-30B-A3B",
+          "verification_applied": true,
+          "page_fetch_enabled": true
+        }
+      },
+      "business_models": {
+        "company": "Stripe",
+        "variable_id": "business_models",
+        "variable_name": "Business Models",
+        "concise": "Generates revenue primarily through transaction-based fees and subscription services, with heavy R&D investment in AI driving growth [S2][S4].",
+        "comprehensive": "Stripe's primary revenue streams are **transaction-based fees** and **subscription services**. The company generates income through per-transaction pricing on payments processed via its platform [S2]. Additionally, Stripe offers subscription-based services, enabling businesses to create recurring revenue models with predictable cash flows [S1]. Their monetization strategy focuses on providing integrated financial infrastructure, including payments, billing, invoicing, tax management, and accounting solutions [S2]. Stripe supports various pricing models including usage-based billing for AI services and premium subscriptions for infrastructure providers [S3]. The company reinvests heavily in R&D, particularly in AI, which drives revenue growth for both existing and new customers [S4].",
+        "sources": [
+          {
+            "title": "July 2024 Stripe Billing Announcement",
+            "url": "https://support.stripe.com/questions/july-2024-stripe-billing-announcement",
+            "snippet": "Starting June 1, 2024, UK businesses will be charged a 1.5% international transaction fee when customers pay with a European bank-based payment ...",
+            "query": "Stripe transaction fees 2024",
+            "domain": "support.stripe.com",
+            "source_score": 0.97,
+            "is_official": true
+          },
+          {
+            "title": "[PDF] Stripe Annual Letter 2024",
+            "url": "https://assets.stripeassets.com/fzn2n1nzq965/2pt3yIHthraqR1KwXgr98U/2d69cad44de990455e9ec8744933a446/Stripe-annual-letter-2024.pdf",
+            "snippet": "Businesses on Stripe generated $1.4 trillion in total payment volume in 2024, up 38% from the prior year, and reaching a scale equivalent to ...",
+            "query": "Stripe monetization strategy report 2024",
+            "domain": "assets.stripeassets.com",
+            "source_score": 0.97,
+            "is_official": true
+          },
+          {
+            "title": "Revenue | Stripe Documentation",
+            "url": "https://docs.stripe.com/revenue",
+            "snippet": "",
+            "query": "",
+            "domain": "docs.stripe.com",
+            "source_score": 0.95,
+            "is_official": true
+          },
+          {
+            "title": "Recurring pricing models",
+            "url": "https://docs.stripe.com/products-prices/pricing-models",
+            "snippet": "Pricing models are patterns that represent your business on Stripe and consists of the products or services you sell, how much they cost, what currency you ...",
+            "query": "Stripe pricing model",
+            "domain": "docs.stripe.com",
+            "source_score": 0.95,
+            "is_official": true
+          },
+          {
+            "title": "Changes to the Stripe Billing Starter and Scale plans",
+            "url": "https://support.stripe.com/questions/changes-to-the-stripe-billing-starter-and-scale-plans",
+            "snippet": "Existing customers (prior to July 10, 2024) will pay a promotional price of 0.50% until June 30, 2025.",
+            "query": "Stripe subscription pricing model 2024",
+            "domain": "support.stripe.com",
+            "source_score": 0.95,
+            "is_official": true
+          },
+          {
+            "title": "Stripe Invoicing pricing",
+            "url": "https://support.stripe.com/questions/stripe-invoicing-pricing",
+            "snippet": "Stripe Invoicing offers two pricing tiers: Invoicing Starter at 0.4% per paid invoice for businesses with simpler invoicing needs and Invoicing Plus at 0.5% ...",
+            "query": "Stripe subscription pricing model 2024",
+            "domain": "support.stripe.com",
+            "source_score": 0.95,
+            "is_official": true
+          },
+          {
+            "title": "Monetizing payments with Stripe Connect : Stripe: Help & Support",
+            "url": "https://support.stripe.com/questions/monetizing-payments-with-stripe-connect",
+            "snippet": "Yes, check out our guide on monetizing payments for SaaS platforms and our best practices for launching and scaling platform payments report.",
+            "query": "Stripe monetization strategy report 2024",
+            "domain": "support.stripe.com",
+            "source_score": 0.95,
+            "is_official": true
+          },
+          {
+            "title": "Understanding IC+ Fees",
+            "url": "https://support.stripe.com/questions/understanding-ic-fees",
+            "snippet": "Using the example pricing structure above, for a card payment of $60.00, the subtotal would be $0.27 (60 x 0.0045). To see the amount assessed for the ...",
+            "query": "Stripe interchange plus pricing model 2025",
+            "domain": "support.stripe.com",
+            "source_score": 0.95,
+            "is_official": true
+          },
+          {
+            "title": "Understand the Visa Commercial Enhanced Data Program ...",
+            "url": "https://support.stripe.com/questions/understand-the-visa-commercial-enhanced-data-program-%28cedp%29",
+            "snippet": "Impacts businesses using interchange+ (IC+) pricing model for cards. As of November 2025, Visa has paused verifying new businesses for CEDP.",
+            "query": "Stripe interchange plus pricing model 2025",
+            "domain": "support.stripe.com",
+            "source_score": 0.95,
+            "is_official": true
+          },
+          {
+            "title": "Stripe's total payment volume reaches $1.4T, fueled by long-standing investments in AI",
+            "url": "https://stripe.com/newsroom/news/stripe-2024-update",
+            "snippet": "",
+            "query": "",
+            "domain": "stripe.com",
+            "source_score": 0.92,
+            "is_official": true
+          }
+        ],
+        "confidence": "low",
+        "iterations": 3,
+        "total_searches": 14,
+        "timestamp": "2026-01-29T01:05:17.825574",
+        "error": null,
+        "claims": [
+          {
+            "text": "Stripe's primary revenue streams include transaction-based fees and subscription services",
+            "source_ids": [
+              "S1",
+              "S2"
+            ],
+            "confidence": "high"
+          },
+          {
+            "text": "Stripe supports usage-based billing for AI services and premium subscriptions for infrastructure providers",
+            "source_ids": [
+              "S3"
+            ],
+            "confidence": "high"
+          },
+          {
+            "text": "Stripe processes payment volumes in trillions of dollars annually",
+            "source_ids": [
+              "S4"
+            ],
+            "confidence": "high"
+          },
+          {
+            "text": "Stripe reinvests a significantly higher proportion of earnings in R&D compared to comparable companies",
+            "source_ids": [
+              "S4"
+            ],
+            "confidence": "high"
+          },
+          {
+            "text": "Subscription models provide businesses with steady revenue streams and recurring cash flows",
+            "source_ids": [
+              "S1",
+              "S3"
+            ],
+            "confidence": "medium"
+          }
+        ],
+        "gaps": [
+          "Specific transaction fee percentages are not provided in the evidence",
+          "Detailed unit economics metrics are not available",
+          "Breakdown of revenue between different service types is not specified"
+        ],
+        "metadata": {
+          "iterations": 3,
+          "searches": 14,
+          "pages_fetched": 24,
+          "pages_failed": 0,
+          "evidence_sources_used": 24,
+          "evidence_passages_count": 14,
+          "avg_source_score": 0.909,
+          "total_evidence_chars": 12000,
+          "model_used": "Alibaba-NLP/Tongyi-DeepResearch-30B-A3B",
+          "verification_applied": true,
+          "page_fetch_enabled": true
+        }
+      },
+      "pricing_strategy": {
+        "company": "Stripe",
+        "variable_id": "pricing_strategy",
+        "variable_name": "Pricing Strategy",
+        "concise": "Charges 2.9% plus 30 cents per transaction with no hidden fees [S2], and offers custom pricing for high-volume clients [S2].",
+        "comprehensive": "Stripe employs a transparent, pay-as-you-go pricing model for its core payment processing services. The standard pricing is **2.9% plus 30 cents per successful transaction for domestic card payments**, with **no setup fees, monthly fees, or hidden fees** [S2]. Additional fees apply for specific scenarios: **1% for currency conversion**, **2.6% plus 30 cents for Instant Bank Payments**, and **5.99% plus 30 cents for Klarna** [S2]. For businesses with large payment volumes or unique business models, Stripe offers **custom pricing through direct sales contacts**, which includes volume discounts and multi-product discounts [S2]. There is no free tier or trial period mentioned for core services; pricing is purely transaction-based [S2]. The strategy emphasizes cost predictability and scalability, avoiding complex tiered structures and hidden costs [S2, S3].",
+        "sources": [
+          {
+            "title": "April 2024 pricing update for businesses on standard ...",
+            "url": "https://support.stripe.com/questions/april-2024-pricing-update-for-businesses-on-standard-pricing-in-australia",
+            "snippet": "Starting April 1, 2024, we will decrease our domestic card processing fees for Australian businesses on standard pricing from 1.75% + A$0.30 to 1.70% + A$0.30.",
+            "query": "Stripe enterprise custom pricing 2024",
+            "domain": "support.stripe.com",
+            "source_score": 0.97,
+            "is_official": true
+          },
+          {
+            "title": "June 2024 pricing update for SEPA Direct Debit",
+            "url": "https://support.stripe.com/questions/june-2024-pricing-update-for-sepa-direct-debit",
+            "snippet": "Starting June 1, 2024, disputes and failed payments will have separate fees. The dispute fee will increase and the failed payment fee will decrease.",
+            "query": "Stripe enterprise custom pricing 2024",
+            "domain": "support.stripe.com",
+            "source_score": 0.97,
+            "is_official": true
+          },
+          {
+            "title": "Prices | Stripe API Reference",
+            "url": "https://docs.stripe.com/api/prices",
+            "snippet": "",
+            "query": "",
+            "domain": "docs.stripe.com",
+            "source_score": 0.95,
+            "is_official": true
+          },
+          {
+            "title": "Understand how charges work in a Connect integration | Stripe Documentation",
+            "url": "https://docs.stripe.com/connect/charges",
+            "snippet": "",
+            "query": "",
+            "domain": "docs.stripe.com",
+            "source_score": 0.95,
+            "is_official": true
+          },
+          {
+            "title": "Fees report | Stripe Documentation",
+            "url": "https://docs.stripe.com/reports/all-fees",
+            "snippet": "",
+            "query": "",
+            "domain": "docs.stripe.com",
+            "source_score": 0.95,
+            "is_official": true
+          },
+          {
+            "title": "Plans | Stripe API Reference",
+            "url": "https://docs.stripe.com/api/plans",
+            "snippet": "",
+            "query": "",
+            "domain": "docs.stripe.com",
+            "source_score": 0.95,
+            "is_official": true
+          },
+          {
+            "title": "Understanding IC+ Fees : Stripe: Help & Support",
+            "url": "https://support.stripe.com/questions/understanding-ic-fees",
+            "snippet": "There are two fee categories: Stripe fees (denoting fees set by Stripe) and Network Costs (denoting fees set by a payment network).",
+            "query": "Stripe cost",
+            "domain": "support.stripe.com",
+            "source_score": 0.95,
+            "is_official": true
+          },
+          {
+            "title": "Create invoice payment plans",
+            "url": "https://docs.stripe.com/invoicing/payment-plans",
+            "snippet": "Invoice payment plans let you break up an invoice's total amount into separate payments with different due dates. This can expand your billing flexibility.",
+            "query": "Stripe plans",
+            "domain": "docs.stripe.com",
+            "source_score": 0.95,
+            "is_official": true
+          },
+          {
+            "title": "Build a subscriptions integration",
+            "url": "https://docs.stripe.com/billing/subscriptions/build-subscriptions",
+            "snippet": "To build the pricing model, create products (what you sell) and prices (how much and how often to charge for your products).",
+            "query": "Stripe plans",
+            "domain": "docs.stripe.com",
+            "source_score": 0.95,
+            "is_official": true
+          },
+          {
+            "title": "Create a plan | Stripe API Reference",
+            "url": "https://docs.stripe.com/api/plans/create",
+            "snippet": "You can now model subscriptions more flexibly using the Prices API. It replaces the Plans API and is backwards compatible to simplify your migration.",
+            "query": "Stripe plans",
+            "domain": "docs.stripe.com",
+            "source_score": 0.95,
+            "is_official": true
+          }
+        ],
+        "confidence": "high",
+        "iterations": 3,
+        "total_searches": 14,
+        "timestamp": "2026-01-29T01:07:15.538848",
+        "error": null,
+        "claims": [
+          {
+            "text": "Standard pricing is 2.9% plus 30 cents per successful domestic card transaction",
+            "source_ids": [
+              "S2"
+            ],
+            "confidence": "high"
+          },
+          {
+            "text": "Additional fees include 1% for currency conversion, 2.6% plus 30 cents for Instant Bank Payments, and 5.99% plus 30 cents for Klarna",
+            "source_ids": [
+              "S2"
+            ],
+            "confidence": "high"
+          },
+          {
+            "text": "No setup fees, monthly fees, or hidden fees are charged",
+            "source_ids": [
+              "S2"
+            ],
+            "confidence": "high"
+          },
+          {
+            "text": "Custom pricing is available for large businesses or unique business models through direct sales contacts",
+            "source_ids": [
+              "S2"
+            ],
+            "confidence": "high"
+          },
+          {
+            "text": "Volume discounts and multi-product discounts are part of the custom pricing offering",
+            "source_ids": [
+              "S2"
+            ],
+            "confidence": "high"
+          },
+          {
+            "text": "There is no free tier or trial period for core services",
+            "source_ids": [
+              "S2"
+            ],
+            "confidence": "high"
+          },
+          {
+            "text": "The pricing model is transparent and pay-as-you-go",
+            "source_ids": [
+              "S2",
+              "S3"
+            ],
+            "confidence": "high"
+          }
+        ],
+        "gaps": [
+          "Detailed breakdown of other potential fees (e.g., chargeback fees, refund fees)",
+          "Specific psychological pricing tactics beyond transparency and pay-as-you-go",
+          "Trial period availability for core services"
+        ],
+        "metadata": {
+          "iterations": 3,
+          "searches": 14,
+          "pages_fetched": 21,
+          "pages_failed": 3,
+          "evidence_sources_used": 21,
+          "evidence_passages_count": 13,
+          "avg_source_score": 0.929,
+          "total_evidence_chars": 12000,
+          "model_used": "Alibaba-NLP/Tongyi-DeepResearch-30B-A3B",
+          "verification_applied": true,
+          "page_fetch_enabled": true
+        }
+      },
+      "market_share": {
+        "company": "Stripe",
+        "variable_id": "market_share",
+        "variable_name": "Market Share",
+        "concise": "Holds an estimated 20.8% to 29% global market share and roughly 45% of the U.S. domestic market [S2].",
+        "comprehensive": "Stripe's market share varies significantly by region and measurement methodology. According to industry studies cited in [S2], Stripe held an estimated 20.8% to 29% share of the global online payment processing market in 2025, while commanding approximately 45% of the U.S. domestic market. This significant U.S. dominance reflects Stripe's regional business distribution, where North America accounts for 70.2% of its global operations, with the U.S. alone representing about 45% market share [S2].\n\nStripe processed $1.4 trillion in payment volume during 2024, representing 38% year-over-year growth [S4][S11]. The company is used by substantial portions of major business categories, including half of the Fortune 100 companies, 80% of the Forbes Cloud 100, and 78% of the Forbes AI 50 [S4]. Despite its strong position, Stripe's global market share exists within a competitive landscape where PayPal held 43.4% of the global market in 2025 [S2].",
+        "sources": [
+          {
+            "title": "Stripe Annual Letter 2024",
+            "url": "https://assets.stripeassets.com/fzn2n1nzq965/2pt3yIHthraqR1KwXgr98U/df10795aac0205789956c89e0dfc4f1a/Stripe-annual-letter-2024.pdf",
+            "snippet": "Businesses on Stripe generated $1.4 trillion in total payment volume in 2024, up 38% from the prior year, and reaching a scale equivalent to ...",
+            "query": "Stripe market share 2024 analyst report",
+            "domain": "assets.stripeassets.com",
+            "source_score": 0.97,
+            "is_official": true
+          },
+          {
+            "title": "[PDF] Stripe Annual Letter 2024",
+            "url": "https://assets.stripeassets.com/fzn2n1nzq965/2pt3yIHthraqR1KwXgr98U/b6301040587a62d5b6ef7b76c904032d/Stripe-annual-letter-2024.pdf",
+            "snippet": "Businesses on Stripe generated $1.4 trillion in total payment volume in 2024, up 38% from the prior year, and reaching a scale equivalent to ...",
+            "query": "Stripe global payment volume ranking 2024",
+            "domain": "assets.stripeassets.com",
+            "source_score": 0.97,
+            "is_official": true
+          },
+          {
+            "title": "Stripe Annual Letter 2024",
+            "url": "https://assets.stripeassets.com/fzn2n1nzq965/2pt3yIHthraqR1KwXgr98U/2d69cad44de990455e9ec8744933a446/Stripe-annual-letter-2024.pdf",
+            "snippet": "Businesses on Stripe generated $1.4 trillion in total payment volume in 2024, up 38% from the prior year, and reaching a scale equivalent to ...",
+            "query": "Stripe US online payment processing share 2024",
+            "domain": "assets.stripeassets.com",
+            "source_score": 0.97,
+            "is_official": true
+          },
+          {
+            "title": "Stripe named Leader by Gartner for its Billing product for second year",
+            "url": "https://stripe.com/newsroom/news/stripe-named-a-leader-by-gartner-2025",
+            "snippet": "",
+            "query": "",
+            "domain": "stripe.com",
+            "source_score": 0.95,
+            "is_official": true
+          },
+          {
+            "title": "Stripe Atlas startups in 2025: Year in review",
+            "url": "https://stripe.com/blog/stripe-atlas-startups-in-2025-year-in-review",
+            "snippet": "Europe saw the largest year-over-year increase in its share of Atlas incorporations in 2025, with European founder incorporations growing 48%.",
+            "query": "Stripe\" \"market share\" 2025 payments",
+            "domain": "stripe.com",
+            "source_score": 0.95,
+            "is_official": true
+          },
+          {
+            "title": "The Forrester Wave™: Recurring Billing Solutions, Q1 2025",
+            "url": "https://go.stripe.global/forrester-wave-billing-2025",
+            "snippet": "Forrester has named Stripe a Leader in recurring billing. Stripe received the highest possible scores in 10 evaluation criteria and above average feedback ...",
+            "query": "Stripe Forrester Wave market share 2025",
+            "domain": "go.stripe.global",
+            "source_score": 0.95,
+            "is_official": true
+          },
+          {
+            "title": "Product roadmap: Revenue (Billing, Tax, and Data)",
+            "url": "https://stripe.com/sessions/2025/product-roadmap-revenue-billing-tax-and-data",
+            "snippet": "While we're honored to have been recognized as a leader in billing by Gartner and Forrester as part of the Forrester wave, as well as a leader in tax by IDC ...",
+            "query": "Stripe Forrester Wave market share 2025",
+            "domain": "stripe.com",
+            "source_score": 0.95,
+            "is_official": true
+          },
+          {
+            "title": "Stripe's total payment volume reaches $1.4T, fueled by long-standing investments in AI",
+            "url": "https://stripe.com/newsroom/news/stripe-2024-update",
+            "snippet": "",
+            "query": "",
+            "domain": "stripe.com",
+            "source_score": 0.92,
+            "is_official": true
+          },
+          {
+            "title": "Payment industry ecosystem: A guide for businesses | Stripe",
+            "url": "https://stripe.com/resources/more/the-payment-industry-ecosystem-explained",
+            "snippet": "",
+            "query": "",
+            "domain": "stripe.com",
+            "source_score": 0.9,
+            "is_official": true
+          },
+          {
+            "title": "How to determine market positioning for your startup | Stripe",
+            "url": "https://stripe.com/resources/more/how-to-determine-market-positioning-for-your-startup",
+            "snippet": "",
+            "query": "",
+            "domain": "stripe.com",
+            "source_score": 0.9,
+            "is_official": true
+          }
+        ],
+        "confidence": "low",
+        "iterations": 3,
+        "total_searches": 14,
+        "timestamp": "2026-01-29T01:05:30.406008",
+        "error": null,
+        "claims": [
+          {
+            "text": "Stripe held an estimated 20.8% to 29% share of the global online payment processing market in 2025",
+            "source_ids": [
+              "S2"
+            ],
+            "confidence": "high"
+          },
+          {
+            "text": "Stripe commanded approximately 45% of the U.S. domestic payment processing market",
+            "source_ids": [
+              "S2"
+            ],
+            "confidence": "high"
+          },
+          {
+            "text": "North America represents 70.2% of Stripe's global business",
+            "source_ids": [
+              "S2"
+            ],
+            "confidence": "high"
+          },
+          {
+            "text": "Stripe processed $1.4 trillion in payment volume during 2024",
+            "source_ids": [
+              "S4",
+              "S11"
+            ],
+            "confidence": "high"
+          },
+          {
+            "text": "PayPal held 43.4% of the global payment processing market in 2025",
+            "source_ids": [
+              "S2"
+            ],
+            "confidence": "high"
+          }
+        ],
+        "gaps": [
+          "No direct competitor ranking beyond PayPal's share mentioned",
+          "Methodology details for market share calculations are limited",
+          "No specific data on market share for specific segments (e-commerce vs. broader payments)"
+        ],
+        "metadata": {
+          "iterations": 3,
+          "searches": 14,
+          "pages_fetched": 21,
+          "pages_failed": 3,
+          "evidence_sources_used": 21,
+          "evidence_passages_count": 13,
+          "avg_source_score": 0.796,
+          "total_evidence_chars": 11855,
+          "model_used": "Alibaba-NLP/Tongyi-DeepResearch-30B-A3B",
+          "verification_applied": true,
+          "page_fetch_enabled": true
+        }
+      },
+      "market_size": {
+        "company": "Stripe",
+        "variable_id": "market_size",
+        "variable_name": "Market Size",
+        "concise": "Processed $1.4 trillion in payment volume in 2024, representing a 38% year-on-year increase and approximately 1.3% of global GDP [S1][P1].",
+        "comprehensive": "Stripe operates within the global digital payment processing market. In 2024, Stripe processed $1.4 trillion in total payment volume (TPV), representing a 38% year-on-year increase and approximately 1.3% of global GDP [S1][P1]. This TPV figure reflects the scale of transactions handled by Stripe's platform [S1][P1]. Financial performance indicates significant growth, with Stripe's revenue reportedly exceeding $18 billion in 2024 [S2][P3]. The company's valuation was estimated at $91.5 billion in a secondary share sale in 2025 [S2][P2]. While Stripe's mission is to 'increase the GDP of the internet,' specific figures for the Total Addressable Market (TAM), Serviceable Addressable Market (SAM), or broader industry growth rates and forecasts are not provided in the available evidence. Reports on the global digital payment market (S5, S10, S15) are referenced but lack specific data points within the provided excerpts.",
+        "sources": [
+          {
+            "title": "Stripe Annual Letter 2024",
+            "url": "https://assets.stripeassets.com/fzn2n1nzq965/2pt3yIHthraqR1KwXgr98U/df10795aac0205789956c89e0dfc4f1a/Stripe-annual-letter-2024.pdf",
+            "snippet": "Businesses on Stripe generated $1.4 trillion in total payment volume in 2024, up 38% from the prior year, and reaching a scale equivalent to ...",
+            "query": "Stripe market size",
+            "domain": "assets.stripeassets.com",
+            "source_score": 0.97,
+            "is_official": true
+          },
+          {
+            "title": "Stripe Annual Letter 2024",
+            "url": "https://assets.stripeassets.com/fzn2n1nzq965/2pt3yIHthraqR1KwXgr98U/2d69cad44de990455e9ec8744933a446/Stripe-annual-letter-2024.pdf",
+            "snippet": "Businesses on Stripe generated $1.4 trillion in total payment volume in 2024, up 38% from the prior year, and reaching a scale equivalent to ...",
+            "query": "Stripe investor presentation TAM 2024",
+            "domain": "assets.stripeassets.com",
+            "source_score": 0.97,
+            "is_official": true
+          },
+          {
+            "title": "Stripe Atlas startups in 2025: Year in review",
+            "url": "https://stripe.com/blog/stripe-atlas-startups-in-2025-year-in-review",
+            "snippet": "The share of Atlas startups charging their first customer within 30 days hit an all-time high of 20% in 2025, up from 8% in 2020. Blog > Atlas ...",
+            "query": "Stripe market share forecast 2025 report",
+            "domain": "stripe.com",
+            "source_score": 0.95,
+            "is_official": true
+          },
+          {
+            "title": "Startup industry trends for 2025: What founders need to know",
+            "url": "https://stripe.com/ie/resources/more/startup-industry-trends-for-2025-what-founders-need-to-know",
+            "snippet": "In 2025, startups focused on climate technology and sustainable consumer goods could see major growth as environmental concerns become even more ...",
+            "query": "Stripe market share forecast 2025 report",
+            "domain": "stripe.com",
+            "source_score": 0.95,
+            "is_official": true
+          },
+          {
+            "title": "Product roadmap: Revenue (Billing, Tax, and Data) | Stripe Sessions",
+            "url": "https://stripe.com/sessions/2025/product-roadmap-revenue-billing-tax-and-data",
+            "snippet": "Discover how Stripe's Revenue product can help you generate more revenue, expand into new markets with confidence, and automate financial operations across ...",
+            "query": "Stripe TAM SAM 2025 analyst report",
+            "domain": "stripe.com",
+            "source_score": 0.95,
+            "is_official": true
+          },
+          {
+            "title": "Scaling vertical SaaS: From $1 to $1B processed",
+            "url": "https://stripe.com/sessions/2025/scaling-vertical-saas",
+            "snippet": "Processing over $1 billion in payments annually is an exciting milestone in any SaaS platform's growth story. Hear from vertical SaaS leaders who've done it ...",
+            "query": "Stripe serviceable addressable market 2025",
+            "domain": "stripe.com",
+            "source_score": 0.95,
+            "is_official": true
+          },
+          {
+            "title": "The Forrester Wave™: Recurring Billing Solutions, Q1 2025",
+            "url": "https://go.stripe.global/forrester-wave-billing-2025",
+            "snippet": "Discover why Stripe was named a Leader in the 2025 Forrester Wave report on recurring billing solutions.",
+            "query": "Stripe serviceable addressable market 2025",
+            "domain": "go.stripe.global",
+            "source_score": 0.95,
+            "is_official": true
+          },
+          {
+            "title": "Stripe's total payment volume reaches $1.4T, fueled by long-standing investments in AI",
+            "url": "https://stripe.com/newsroom/news/stripe-2024-update",
+            "snippet": "",
+            "query": "",
+            "domain": "stripe.com",
+            "source_score": 0.92,
+            "is_official": true
+          },
+          {
+            "title": "Technical Account Manager",
+            "url": "https://stripe.com/jobs/listing/technical-account-manager/6458492",
+            "snippet": "",
+            "query": "",
+            "domain": "stripe.com",
+            "source_score": 0.9,
+            "is_official": true
+          },
+          {
+            "title": "Technical Account Manager",
+            "url": "https://stripe.com/jobs/listing/technical-account-manager/6613516",
+            "snippet": "",
+            "query": "",
+            "domain": "stripe.com",
+            "source_score": 0.9,
+            "is_official": true
+          }
+        ],
+        "confidence": "low",
+        "iterations": 3,
+        "total_searches": 14,
+        "timestamp": "2026-01-29T01:06:40.416186",
+        "error": null,
+        "claims": [
+          {
+            "text": "Stripe processed $1.4 trillion in total payment volume (TPV) in 2024",
+            "source_ids": [
+              "S1"
+            ],
+            "confidence": "high"
+          },
+          {
+            "text": "Stripe's TPV increased by 38% year-on-year in 2024",
+            "source_ids": [
+              "S1"
+            ],
+            "confidence": "high"
+          },
+          {
+            "text": "Stripe's 2024 TPV was equivalent to around 1.3% of global GDP",
+            "source_ids": [
+              "S1"
+            ],
+            "confidence": "high"
+          },
+          {
+            "text": "Stripe's revenue reportedly exceeded $18 billion in 2024",
+            "source_ids": [
+              "S2"
+            ],
+            "confidence": "medium"
+          },
+          {
+            "text": "Stripe's valuation was estimated at $91.5 billion in 2025",
+            "source_ids": [
+              "S2"
+            ],
+            "confidence": "high"
+          }
+        ],
+        "gaps": [
+          "Total Addressable Market (TAM) size for Stripe's industry",
+          "Serviceable Addressable Market (SAM) for Stripe",
+          "Specific market growth rates or CAGR for the digital payments market",
+          "Detailed industry forecasts from analyst reports (e.g., MarketsandMarkets)"
+        ],
+        "metadata": {
+          "iterations": 3,
+          "searches": 14,
+          "pages_fetched": 15,
+          "pages_failed": 9,
+          "evidence_sources_used": 15,
+          "evidence_passages_count": 14,
+          "avg_source_score": 0.754,
+          "total_evidence_chars": 12000,
+          "model_used": "Alibaba-NLP/Tongyi-DeepResearch-30B-A3B",
+          "verification_applied": true,
+          "page_fetch_enabled": true
+        }
+      },
+      "estimated_revenue": {
+        "company": "Stripe",
+        "variable_id": "estimated_revenue",
+        "variable_name": "Estimated Revenue",
+        "concise": "Stripe's revenue is not publicly disclosed; the company is profitable and reinvests heavily, but no specific revenue figures are available.",
+        "comprehensive": "Based on the provided evidence, Stripe's **total payment volume (TPV)** is reported to have reached a significant scale [S2][S6]. This represents the aggregate value of transactions processed through Stripe's platform. However, the evidence does **not** contain any specific figure for Stripe's own **revenue** (the income the company generates from its services). While the documents confirm Stripe is profitable [S2][S6] and reinvests significantly in R&D, no actual revenue numbers are disclosed. The TPV figure is often used as a proxy or basis for estimating a payment processor's revenue, but without knowing Stripe's average revenue per transaction or fee percentage, a direct conversion isn't possible from this data alone. References to customer revenue growth and the company's profitability [S2][S6] provide context but not the specific metric requested.",
+        "sources": [
+          {
+            "title": "Stripe Annual Letter 2024",
+            "url": "https://assets.stripeassets.com/fzn2n1nzq965/2pt3yIHthraqR1KwXgr98U/2d69cad44de990455e9ec8744933a446/Stripe-annual-letter-2024.pdf",
+            "snippet": "Businesses on Stripe generated $1.4 trillion in total payment volume in 2024, up 38% from the prior year, and reaching a scale equivalent to ...",
+            "query": "Stripe earnings",
+            "domain": "assets.stripeassets.com",
+            "source_score": 0.97,
+            "is_official": true
+          },
+          {
+            "title": "[PDF] Stripe Annual Letter 2024",
+            "url": "https://assets.stripeassets.com/fzn2n1nzq965/2pt3yIHthraqR1KwXgr98U/df10795aac0205789956c89e0dfc4f1a/Stripe-annual-letter-2024.pdf",
+            "snippet": "Businesses on Stripe generated $1.4 trillion in total payment volume in 2024, up 38% from the prior year, and reaching a scale equivalent to ...",
+            "query": "Stripe annual revenue estimate 2024 2025",
+            "domain": "assets.stripeassets.com",
+            "source_score": 0.97,
+            "is_official": true
+          },
+          {
+            "title": "Revenue | Stripe Documentation",
+            "url": "https://docs.stripe.com/revenue",
+            "snippet": "",
+            "query": "",
+            "domain": "docs.stripe.com",
+            "source_score": 0.95,
+            "is_official": true
+          },
+          {
+            "title": "Stripe reporting | Stripe Documentation",
+            "url": "https://docs.stripe.com/stripe-reports",
+            "snippet": "",
+            "query": "",
+            "domain": "docs.stripe.com",
+            "source_score": 0.95,
+            "is_official": true
+          },
+          {
+            "title": "Revenue reporting",
+            "url": "https://docs.stripe.com/revenue-reporting",
+            "snippet": "Stripe Revenue Reporting provides automated, interactive revenue metrics and reports to help you understand your business performance and your month-end close ...",
+            "query": "Stripe revenue report private company",
+            "domain": "docs.stripe.com",
+            "source_score": 0.95,
+            "is_official": true
+          },
+          {
+            "title": "Revenue Recognition reports",
+            "url": "https://docs.stripe.com/revenue-recognition/reports",
+            "snippet": "Revenue Recognition automatically generates reports that you can view in the Stripe Dashboard and export as CSV files.",
+            "query": "Stripe revenue report private company",
+            "domain": "docs.stripe.com",
+            "source_score": 0.95,
+            "is_official": true
+          },
+          {
+            "title": "How revenue recognition works",
+            "url": "https://docs.stripe.com/revenue-recognition/methodology",
+            "snippet": "Revenue recognition automatically calculates all transactions that happen within Stripe, including subscriptions, invoices, one-time payments, refunds, disputes ...",
+            "query": "Stripe revenue report private company",
+            "domain": "docs.stripe.com",
+            "source_score": 0.95,
+            "is_official": true
+          },
+          {
+            "title": "Revenue Recognition | Stripe Documentation",
+            "url": "https://docs.stripe.com/revenue-recognition",
+            "snippet": "Stripe Revenue Recognition helps you simplify the process of recognizing revenue. This feature includes: Recognized and deferred revenue summaries; Downloadable ...",
+            "query": "Stripe revenue report private company",
+            "domain": "docs.stripe.com",
+            "source_score": 0.95,
+            "is_official": true
+          },
+          {
+            "title": "Stripe Atlas startups in 2025: Year in review",
+            "url": "https://stripe.com/blog/stripe-atlas-startups-in-2025-year-in-review",
+            "snippet": "Revenue is growing faster because it's easier for new companies to start monetizing. Modern developer tools allow developers to ship faster.",
+            "query": "Stripe\" revenue figures latest funding",
+            "domain": "stripe.com",
+            "source_score": 0.95,
+            "is_official": true
+          },
+          {
+            "title": "Stripe's total payment volume reaches $1.4T, fueled by long-standing investments in AI",
+            "url": "https://stripe.com/newsroom/news/stripe-2024-update",
+            "snippet": "",
+            "query": "",
+            "domain": "stripe.com",
+            "source_score": 0.92,
+            "is_official": true
+          }
+        ],
+        "confidence": "low",
+        "iterations": 3,
+        "total_searches": 14,
+        "timestamp": "2026-01-29T01:06:52.365383",
+        "error": null,
+        "claims": [
+          {
+            "text": "Stripe's total payment volume (TPV) reached $1.4 trillion in 2024",
+            "source_ids": [
+              "S2",
+              "S6"
+            ],
+            "confidence": "high"
+          },
+          {
+            "text": "Stripe is profitable and reinvests significant earnings into R&D",
+            "source_ids": [
+              "S2"
+            ],
+            "confidence": "high"
+          },
+          {
+            "text": "Businesses using Stripe grow revenue 27 percentage points faster after accepting financing through Stripe Capital",
+            "source_ids": [
+              "S9",
+              "S14"
+            ],
+            "confidence": "high"
+          }
+        ],
+        "gaps": [
+          "Stripe's specific annual revenue figure is not provided in the evidence.",
+          "The average revenue per transaction or fee percentage for Stripe is not disclosed.",
+          "No analyst estimates or funding announcements with revenue hints are included in the provided sources."
+        ],
+        "metadata": {
+          "iterations": 3,
+          "searches": 14,
+          "pages_fetched": 14,
+          "pages_failed": 8,
+          "evidence_sources_used": 14,
+          "evidence_passages_count": 21,
+          "avg_source_score": 0.926,
+          "total_evidence_chars": 12000,
+          "model_used": "Alibaba-NLP/Tongyi-DeepResearch-30B-A3B",
+          "verification_applied": true,
+          "page_fetch_enabled": true
+        }
+      }
+    }
+  },
+  "metadata": {
+    "total_cells": 20,
+    "successful_cells": 20,
+    "failed_cells": 0,
+    "elapsed_seconds": 672.237143278122,
+    "concurrency": 3,
+    "fast_mode": false
+  }
+}
