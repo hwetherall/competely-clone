@@ -330,6 +330,7 @@ class ResearchAgent:
         Evaluate if gathered information is sufficient.
         
         Uses LLM to analyze the search results against the research goal.
+        Tries reasoning model first, falls back to fast model.
         
         Args:
             state: Current research state
@@ -340,34 +341,22 @@ class ResearchAgent:
         if not state.search_results:
             return {"sufficient": False, "confidence": "low", "missing": "No search results yet"}
         
-        try:
-            prompt = EVALUATION_PROMPT.format(
-                company=state.company,
-                variable_name=state.variable.name,
-                research_prompt=state.variable.research_prompt.format(company=state.company),
-                search_results=format_search_results_for_evaluation(state.search_results[-3:]),  # Last 3 searches
-            )
-            
-            # Use FAST model for evaluation - reasoning models waste tokens on
-            # "thinking" and often return empty content. Evaluation is a
-            # structured task that doesn't need deep reasoning.
-            response = await self.llm_client.complete_simple(
-                prompt=prompt,
-                system_prompt=RESEARCH_SYSTEM_PROMPT,
-                temperature=0.3,  # Lower temperature for more consistent evaluation
-                max_tokens=1000,  # Evaluation responses are short
-                model_override=SUMMARIZE_MODEL,  # Use fast model, NOT reasoning model
-            )
-            
-            # Parse structured response
+        prompt = EVALUATION_PROMPT.format(
+            company=state.company,
+            variable_name=state.variable.name,
+            research_prompt=state.variable.research_prompt.format(company=state.company),
+            search_results=format_search_results_for_evaluation(state.search_results[-3:]),  # Last 3 searches
+        )
+        
+        # Helper to parse response
+        def parse_evaluation(response_text: str) -> Dict[str, Any]:
             result = {
                 "sufficient": False,
                 "confidence": "low",
                 "missing": "",
                 "suggested_queries": [],
             }
-            
-            for line in response.strip().split("\n"):
+            for line in response_text.strip().split("\n"):
                 line = line.strip()
                 if line.upper().startswith("SUFFICIENT:"):
                     value = line.split(":", 1)[1].strip().lower()
@@ -382,11 +371,46 @@ class ResearchAgent:
                     queries = line.split(":", 1)[1].strip()
                     if queries.lower() != "none":
                         result["suggested_queries"] = [q.strip() for q in queries.split(",")]
-            
             return result
+
+        # Try 1: Reasoning Model (Professor)
+        try:
+            print(f"  ? Evaluating results (Reasoning Model)...", end="\r")
+            response = await self.llm_client.complete_simple(
+                prompt=prompt,
+                system_prompt=RESEARCH_SYSTEM_PROMPT,
+                temperature=0.3,
+                max_tokens=16000,  # Reduced from 100k to avoid 400 Bad Request
+                model_override=RESEARCH_MODEL,
+            )
             
-        except LLMError as e:
-            logger.warning(f"LLM evaluation failed: {e}. Assuming insufficient.")
+            if response and response.strip():
+                print(f"  ✓ Evaluation complete (Reasoning Model)   ")
+                return parse_evaluation(response)
+                
+            print(f"  ! Reasoning model returned empty. Switching to Fast Model...")
+            logger.warning("Reasoning model returned empty evaluation. Falling back to fast model.")
+            
+        except Exception as e:
+            print(f"  ! Reasoning model failed. Switching to Fast Model...")
+            logger.warning(f"Reasoning model evaluation failed: {e}. Falling back to fast model.")
+
+        # Try 2: Fast Model (Assistant) - Fallback
+        try:
+            print(f"  > Evaluating results (Fast Model)...", end="\r")
+            response = await self.llm_client.complete_simple(
+                prompt=prompt,
+                system_prompt=RESEARCH_SYSTEM_PROMPT,
+                temperature=0.3,
+                max_tokens=10000,
+                model_override=SUMMARIZE_MODEL,
+            )
+            print(f"  ✓ Evaluation complete (Fast Model)        ")
+            return parse_evaluation(response)
+            
+        except Exception as e:
+            print(f"  x Evaluation failed completely.")
+            logger.warning(f"Fast model evaluation failed: {e}. Assuming insufficient.")
             return {"sufficient": False, "confidence": "low", "missing": "Evaluation failed"}
     
     async def _synthesize(self, state: ResearchState) -> str:
@@ -394,6 +418,7 @@ class ResearchAgent:
         Synthesize gathered information into a comprehensive answer.
         
         Uses LLM to write a structured answer based on all gathered information.
+        Tries reasoning model first, falls back to fast model.
         
         Args:
             state: Current research state
@@ -404,40 +429,58 @@ class ResearchAgent:
         if not state.gathered_info:
             return f"Unable to find sufficient information about {state.variable.name} for {state.company}."
         
+        prompt = SYNTHESIS_PROMPT.format(
+            company=state.company,
+            variable_name=state.variable.name,
+            research_prompt=state.variable.research_prompt.format(company=state.company),
+            gathered_information=format_gathered_info_for_synthesis(state.gathered_info),
+        )
+        
+        # Try 1: Reasoning Model (Professor)
         try:
-            prompt = SYNTHESIS_PROMPT.format(
-                company=state.company,
-                variable_name=state.variable.name,
-                research_prompt=state.variable.research_prompt.format(company=state.company),
-                gathered_information=format_gathered_info_for_synthesis(state.gathered_info),
-            )
-            
-            # Use research model for synthesis - needs more tokens for deep reasoning
-            # Falls back to summarize model if research model is unavailable
+            print(f"  ? Synthesizing answer (Reasoning Model)...", end="\r")
             response = await self.llm_client.complete_simple(
                 prompt=prompt,
                 system_prompt=RESEARCH_SYSTEM_PROMPT,
                 temperature=0.5,
-                max_tokens=4000,  # More tokens for comprehensive synthesis
+                max_tokens=16000,  # Reduced from 100k to avoid 400 Bad Request
                 model_override=RESEARCH_MODEL,
-                fallback_model=SUMMARIZE_MODEL,
             )
             
-            # Handle empty response
+            if response and response.strip():
+                print(f"  ✓ Synthesis complete (Reasoning Model)    ")
+                return response.strip()
+                
+            print(f"  ! Reasoning model returned empty. Switching to Fast Model...")
+            logger.warning("Reasoning model returned empty synthesis. Falling back to fast model.")
+            
+        except Exception as e:
+            print(f"  ! Reasoning model failed. Switching to Fast Model...")
+            logger.warning(f"Reasoning model synthesis failed: {e}. Falling back to fast model.")
+
+        # Try 2: Fast Model (Assistant) - Fallback
+        try:
+            print(f"  > Synthesizing answer (Fast Model)...", end="\r")
+            response = await self.llm_client.complete_simple(
+                prompt=prompt,
+                system_prompt=RESEARCH_SYSTEM_PROMPT,
+                temperature=0.5,
+                max_tokens=2000,
+                model_override=SUMMARIZE_MODEL,
+            )
+            
             if not response or not response.strip():
-                logger.warning("LLM returned empty synthesis. Using fallback.")
+                print(f"  ! Fast model returned empty. Using snippet fallback.")
+                logger.warning("Fast model returned empty synthesis. Using snippet fallback.")
                 snippets = [info.get("snippet", "") for info in state.gathered_info[:5]]
                 return f"Research on {state.variable.name} for {state.company}:\n\n" + "\n\n".join(snippets)
             
+            print(f"  ✓ Synthesis complete (Fast Model)         ")
             return response.strip()
             
-        except LLMError as e:
-            logger.error(f"LLM synthesis failed: {e}")
-            # Fallback: return raw snippets
-            snippets = [info.get("snippet", "") for info in state.gathered_info[:5]]
-            return f"Research on {state.variable.name} for {state.company}:\n\n" + "\n\n".join(snippets)
         except Exception as e:
-            logger.error(f"Unexpected error in synthesis: {e}")
+            print(f"  x Synthesis failed completely.")
+            logger.error(f"Fast model synthesis failed: {e}")
             snippets = [info.get("snippet", "") for info in state.gathered_info[:5]]
             return f"Research on {state.variable.name} for {state.company}:\n\n" + "\n\n".join(snippets)
     

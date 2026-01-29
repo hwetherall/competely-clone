@@ -33,6 +33,7 @@ from config.variables import VARIABLES, get_all_variable_ids
 DEFAULT_COMPANIES = ["Stripe", "PayPal", "Venmo", "Apple Pay", "Cash App"]
 
 # Configure logging
+# Set to DEBUG to see query generation details, WARNING for quiet output
 logging.basicConfig(
     level=logging.WARNING,
     format="%(asctime)s - %(levelname)s - %(message)s"
