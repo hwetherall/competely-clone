@@ -21,6 +21,7 @@ load_dotenv(PROJECT_ROOT / ".env")
 SERPER_API_KEY: str = os.getenv("SERPER_API_KEY", "")
 OPENROUTER_API_KEY: str = os.getenv("OPENROUTER_API_KEY", "")
 ATLASCLOUD_API_KEY: str = os.getenv("ATLAS_CLOUD_API", "")
+JINA_READER_API_KEY: str = os.getenv("JINA_READER_API_KEY", "")
 
 # =============================================================================
 # Serper API Configuration
@@ -92,6 +93,13 @@ MAX_PAGES_PER_CELL: int = int(os.getenv("MAX_PAGES_PER_CELL", "8"))
 PAGE_FETCH_TIMEOUT: int = int(os.getenv("PAGE_FETCH_TIMEOUT", "15"))
 MAX_CONCURRENT_PAGE_FETCHES: int = int(os.getenv("MAX_CONCURRENT_PAGE_FETCHES", "5"))
 
+# Jina Reader Configuration
+# Jina Reader extracts clean content from web pages
+# Docs: https://jina.ai/reader/
+JINA_READER_BASE_URL: str = os.getenv("JINA_READER_BASE_URL", "https://r.jina.ai/")
+JINA_READER_TIMEOUT: int = int(os.getenv("JINA_READER_TIMEOUT", "30"))
+JINA_READER_MAX_CONTENT_LENGTH: int = int(os.getenv("JINA_READER_MAX_CONTENT_LENGTH", "50000"))
+
 # Source scoring
 MIN_SOURCE_SCORE: float = float(os.getenv("MIN_SOURCE_SCORE", "0.35"))
 
@@ -154,6 +162,9 @@ def get_config_info() -> dict:
         "openrouter_api_key_set": bool(OPENROUTER_API_KEY),
         "openrouter_api_key_prefix": OPENROUTER_API_KEY[:10] + "..." if OPENROUTER_API_KEY else None,
         "serper_api_key_set": bool(SERPER_API_KEY),
+        "jina_reader_api_key_set": bool(JINA_READER_API_KEY),
+        "jina_reader_base_url": JINA_READER_BASE_URL,
+        "enable_page_fetch": ENABLE_PAGE_FETCH,
         "cache_enabled": CACHE_ENABLED,
         "llm_timeout": LLM_TIMEOUT,
     }

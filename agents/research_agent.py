@@ -45,7 +45,7 @@ from agents.schemas import (
     ResearchMetadata,
     PageContent,
 )
-from agents.page_reader import PageReader, get_page_reader
+from agents.page_reader import PageReader, get_page_reader, create_page_reader
 from agents.passage_selector import select_passages_for_variable, merge_passages
 from agents.source_scoring import score_url, rank_urls, extract_domain
 from agents.verification import (
@@ -337,6 +337,9 @@ class ResearchAgent:
         """
         Fetch top pages and build evidence pack.
         
+        Uses Jina Reader (when available) to extract clean content from web pages,
+        which provides better quality text than raw HTML parsing.
+        
         Args:
             state: Current research state
         """
@@ -362,11 +365,21 @@ class ResearchAgent:
         if not urls_to_fetch:
             return
         
+        # Log fetch mode
+        fetch_mode = self.page_reader.fetch_mode if hasattr(self.page_reader, 'fetch_mode') else 'unknown'
+        logger.info(f"Fetching {len(urls_to_fetch)} pages (mode: {fetch_mode})")
+        print(f"  ? Fetching {len(urls_to_fetch)} web pages for evidence...", end="\r")
+        
         # Fetch pages concurrently
         page_contents = await self.page_reader.fetch_batch(
             [item.url for item in urls_to_fetch],
             max_concurrent=settings.MAX_CONCURRENT_PAGE_FETCHES,
         )
+        
+        # Log fetch results
+        success_count = sum(1 for p in page_contents if p.is_success)
+        total_chars = sum(len(p.text) for p in page_contents if p.is_success)
+        print(f"  + Fetched {success_count}/{len(urls_to_fetch)} pages ({total_chars:,} chars total)   ")
         
         # Build evidence sources and passages
         source_counter = len(state.evidence_sources) + 1
@@ -507,7 +520,7 @@ class ResearchAgent:
                 )
                 
                 if response and response.strip():
-                    print(f"  ✓ Evaluation complete ({model_name} Model)   ")
+                    print(f"  + Evaluation complete ({model_name} Model)   ")
                     return self._parse_evaluation_json(response)
                 
                 if model == RESEARCH_MODEL:
@@ -606,7 +619,7 @@ class ResearchAgent:
                 )
                 
                 if response and response.strip():
-                    print(f"  ✓ Synthesis complete ({model_name} Model)    ")
+                    print(f"  + Synthesis complete ({model_name} Model)    ")
                     return self._parse_synthesis_json(response)
                 
                 if model == RESEARCH_MODEL:

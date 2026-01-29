@@ -2,9 +2,11 @@
 Page fetching and HTML extraction for evidence-grounded research.
 
 This module provides async page fetching with:
+- Jina Reader integration for clean content extraction (primary method)
+- Direct HTML fetching as fallback
 - Retry/backoff for transient errors
 - Caching to data/cache/pages/
-- HTML text extraction using BeautifulSoup
+- HTML text extraction using BeautifulSoup (for fallback)
 """
 
 import asyncio
@@ -14,7 +16,7 @@ import logging
 import re
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Optional, List, Dict, Any
+from typing import Optional, List, Dict, Any, Literal
 
 import httpx
 from tenacity import (
@@ -28,6 +30,9 @@ from agents.schemas import PageContent
 from config import settings
 
 logger = logging.getLogger(__name__)
+
+# Jina Reader mode options
+FetchMode = Literal["jina", "direct", "auto"]
 
 # Try to import BeautifulSoup
 try:
@@ -67,7 +72,11 @@ class PermanentFetchError(Exception):
 
 class PageReader:
     """
-    Async page fetcher with caching and HTML extraction.
+    Async page fetcher with Jina Reader integration and HTML extraction.
+    
+    Jina Reader is the primary method for fetching clean content from web pages.
+    It handles JavaScript rendering, removes boilerplate, and extracts the main content.
+    Direct fetching with BeautifulSoup is available as a fallback.
     """
     
     def __init__(
@@ -76,6 +85,7 @@ class PageReader:
         cache_enabled: bool = True,
         timeout: int = 30,
         max_retries: int = 3,
+        fetch_mode: FetchMode = "auto",
     ):
         """
         Initialize the PageReader.
@@ -85,15 +95,32 @@ class PageReader:
             cache_enabled: Whether to use caching
             timeout: Request timeout in seconds
             max_retries: Maximum retry attempts
+            fetch_mode: How to fetch pages:
+                - "jina": Always use Jina Reader
+                - "direct": Always use direct HTTP fetch with BeautifulSoup
+                - "auto": Use Jina Reader if available, fall back to direct
         """
         self.cache_dir = cache_dir or (settings.CACHE_DIR / "pages")
         self.cache_enabled = cache_enabled
         self.timeout = timeout
         self.max_retries = max_retries
+        self.fetch_mode = fetch_mode
+        
+        # Jina Reader configuration
+        self.jina_base_url = settings.JINA_READER_BASE_URL
+        self.jina_api_key = settings.JINA_READER_API_KEY
+        self.jina_timeout = settings.JINA_READER_TIMEOUT
+        self.jina_max_content_length = settings.JINA_READER_MAX_CONTENT_LENGTH
         
         # Ensure cache directory exists
         if self.cache_enabled:
             self.cache_dir.mkdir(parents=True, exist_ok=True)
+        
+        # Log configuration
+        if self.fetch_mode == "jina" or (self.fetch_mode == "auto" and self.jina_api_key):
+            logger.info(f"PageReader initialized with Jina Reader (API key: {'set' if self.jina_api_key else 'not set'})")
+        else:
+            logger.info("PageReader initialized with direct fetch mode")
     
     def _get_cache_key(self, url: str) -> str:
         """Generate MD5 hash of URL for cache key."""
@@ -275,6 +302,132 @@ class PageReader:
         else:
             return self._extract_text_fallback(html)
     
+    async def _fetch_url_jina(self, url: str, client: httpx.AsyncClient) -> PageContent:
+        """
+        Fetch a URL using Jina Reader for clean content extraction.
+        
+        Jina Reader handles:
+        - JavaScript-rendered content
+        - Boilerplate removal (headers, footers, ads)
+        - Clean markdown/text extraction
+        
+        Args:
+            url: The URL to fetch
+            client: httpx AsyncClient instance
+            
+        Returns:
+            PageContent with extracted data
+        """
+        # Jina Reader URL format: https://r.jina.ai/{url}
+        jina_url = f"{self.jina_base_url}{url}"
+        
+        headers = {
+            "Accept": "application/json",  # Request JSON response
+        }
+        
+        # Add API key if available (enables higher rate limits)
+        if self.jina_api_key:
+            headers["Authorization"] = f"Bearer {self.jina_api_key}"
+        
+        try:
+            response = await client.get(
+                jina_url,
+                headers=headers,
+                timeout=self.jina_timeout,
+            )
+            
+            # Check for transient errors
+            if response.status_code in (429, 500, 502, 503, 504):
+                raise TransientFetchError(f"Jina Reader HTTP {response.status_code} for {url}")
+            
+            # Check for permanent errors
+            if response.status_code in (401, 403, 404, 410):
+                return PageContent(
+                    url=url,
+                    status=response.status_code,
+                    fetched_at=datetime.now(timezone.utc).isoformat(),
+                    error=f"Jina Reader HTTP {response.status_code}",
+                )
+            
+            # Parse response - Jina Reader can return JSON or plain text
+            content_type = response.headers.get("content-type", "")
+            
+            if "application/json" in content_type:
+                # JSON response format
+                try:
+                    data = response.json()
+                    
+                    # Handle Jina's JSON response structure
+                    # It typically has: {data: {url, title, content, ...}}
+                    result_data = data.get("data", data)
+                    
+                    title = result_data.get("title", "")
+                    text = result_data.get("content", "") or result_data.get("text", "")
+                    final_url = result_data.get("url", url)
+                    
+                    # Truncate if too long
+                    if len(text) > self.jina_max_content_length:
+                        text = text[:self.jina_max_content_length] + "..."
+                    
+                    # Create excerpt
+                    excerpt = text[:500].strip()
+                    if len(text) > 500:
+                        last_period = excerpt.rfind(".")
+                        if last_period > 200:
+                            excerpt = excerpt[:last_period + 1]
+                        else:
+                            excerpt += "..."
+                    
+                    return PageContent(
+                        url=url,
+                        final_url=final_url,
+                        status=200,
+                        title=title,
+                        text=text,
+                        excerpt=excerpt,
+                        fetched_at=datetime.now(timezone.utc).isoformat(),
+                        content_type="text/markdown",  # Jina returns markdown
+                    )
+                    
+                except (json.JSONDecodeError, KeyError) as e:
+                    logger.warning(f"Failed to parse Jina JSON response: {e}")
+                    # Fall through to plain text handling
+            
+            # Plain text/markdown response
+            text = response.text
+            
+            # Try to extract title from markdown (first # heading)
+            title_match = re.search(r'^#\s+(.+)$', text, re.MULTILINE)
+            title = title_match.group(1) if title_match else ""
+            
+            # Truncate if too long
+            if len(text) > self.jina_max_content_length:
+                text = text[:self.jina_max_content_length] + "..."
+            
+            # Create excerpt
+            excerpt = text[:500].strip()
+            if len(text) > 500:
+                excerpt += "..."
+            
+            return PageContent(
+                url=url,
+                final_url=url,
+                status=200,
+                title=title,
+                text=text,
+                excerpt=excerpt,
+                fetched_at=datetime.now(timezone.utc).isoformat(),
+                content_type="text/markdown",
+            )
+            
+        except httpx.TimeoutException:
+            raise TransientFetchError(f"Jina Reader timeout fetching {url}")
+        except httpx.ConnectError as e:
+            raise TransientFetchError(f"Jina Reader connection error: {e}")
+        except Exception as e:
+            logger.warning(f"Jina Reader error for {url}: {e}")
+            raise TransientFetchError(f"Jina Reader error: {e}")
+    
     @retry(
         retry=retry_if_exception_type(TransientFetchError),
         stop=stop_after_attempt(3),
@@ -360,13 +513,19 @@ class PageReader:
                 error=str(e),
             )
     
-    async def fetch(self, url: str, use_cache: bool = True) -> PageContent:
+    async def fetch(
+        self,
+        url: str,
+        use_cache: bool = True,
+        force_mode: Optional[FetchMode] = None,
+    ) -> PageContent:
         """
-        Fetch a single URL.
+        Fetch a single URL using Jina Reader (primary) or direct fetch (fallback).
         
         Args:
             url: The URL to fetch
             use_cache: Whether to use/update cache
+            force_mode: Override the default fetch mode for this request
             
         Returns:
             PageContent with fetched data
@@ -377,27 +536,70 @@ class PageReader:
             if cached is not None:
                 return cached
         
-        # Fetch the URL
+        # Determine which fetch mode to use
+        mode = force_mode or self.fetch_mode
+        
+        # For "auto" mode, prefer Jina Reader
+        use_jina = mode == "jina" or (mode == "auto")
+        use_direct = mode == "direct"
+        
+        result = None
+        
         async with httpx.AsyncClient(
             headers={"User-Agent": USER_AGENT},
             follow_redirects=True,
         ) as client:
-            try:
-                result = await self._fetch_url(url, client)
-            except TransientFetchError as e:
-                logger.warning(f"Failed to fetch {url} after retries: {e}")
-                result = PageContent(
-                    url=url,
-                    fetched_at=datetime.now(timezone.utc).isoformat(),
-                    error=str(e),
-                )
-            except Exception as e:
-                logger.error(f"Unexpected error fetching {url}: {e}")
-                result = PageContent(
-                    url=url,
-                    fetched_at=datetime.now(timezone.utc).isoformat(),
-                    error=str(e),
-                )
+            # Try Jina Reader first (unless direct mode is forced)
+            if use_jina and not use_direct:
+                try:
+                    result = await self._fetch_url_jina(url, client)
+                    if result.is_success:
+                        logger.debug(f"Jina Reader success for {url[:50]}... ({len(result.text)} chars)")
+                    else:
+                        logger.warning(f"Jina Reader returned error for {url[:50]}...: {result.error}")
+                        # Reset result to try fallback
+                        if mode == "auto":
+                            result = None
+                except TransientFetchError as e:
+                    logger.warning(f"Jina Reader transient error for {url[:50]}...: {e}")
+                    if mode == "auto":
+                        result = None  # Try fallback
+                    else:
+                        result = PageContent(
+                            url=url,
+                            fetched_at=datetime.now(timezone.utc).isoformat(),
+                            error=f"Jina Reader error: {e}",
+                        )
+                except Exception as e:
+                    logger.warning(f"Jina Reader unexpected error for {url[:50]}...: {e}")
+                    if mode == "auto":
+                        result = None  # Try fallback
+                    else:
+                        result = PageContent(
+                            url=url,
+                            fetched_at=datetime.now(timezone.utc).isoformat(),
+                            error=f"Jina Reader error: {e}",
+                        )
+            
+            # Fallback to direct fetch if Jina failed or direct mode is set
+            if result is None or (not result.is_success and mode == "auto"):
+                logger.debug(f"Using direct fetch for {url[:50]}...")
+                try:
+                    result = await self._fetch_url(url, client)
+                except TransientFetchError as e:
+                    logger.warning(f"Failed to fetch {url} after retries: {e}")
+                    result = PageContent(
+                        url=url,
+                        fetched_at=datetime.now(timezone.utc).isoformat(),
+                        error=str(e),
+                    )
+                except Exception as e:
+                    logger.error(f"Unexpected error fetching {url}: {e}")
+                    result = PageContent(
+                        url=url,
+                        fetched_at=datetime.now(timezone.utc).isoformat(),
+                        error=str(e),
+                    )
         
         # Cache the result (even failures, to avoid repeated attempts)
         if use_cache and self.cache_enabled:
@@ -410,6 +612,7 @@ class PageReader:
         urls: List[str],
         max_concurrent: int = 5,
         use_cache: bool = True,
+        force_mode: Optional[FetchMode] = None,
     ) -> List[PageContent]:
         """
         Fetch multiple URLs concurrently with bounded concurrency.
@@ -418,6 +621,7 @@ class PageReader:
             urls: List of URLs to fetch
             max_concurrent: Maximum concurrent requests
             use_cache: Whether to use/update cache
+            force_mode: Override the default fetch mode for all requests
             
         Returns:
             List of PageContent results (same order as input)
@@ -426,7 +630,7 @@ class PageReader:
         
         async def fetch_with_semaphore(url: str) -> PageContent:
             async with semaphore:
-                return await self.fetch(url, use_cache=use_cache)
+                return await self.fetch(url, use_cache=use_cache, force_mode=force_mode)
         
         tasks = [fetch_with_semaphore(url) for url in urls]
         results = await asyncio.gather(*tasks, return_exceptions=True)
@@ -443,31 +647,74 @@ class PageReader:
             else:
                 processed_results.append(result)
         
+        # Log batch summary
+        success_count = sum(1 for r in processed_results if r.is_success)
+        logger.info(f"Batch fetch complete: {success_count}/{len(urls)} successful")
+        
         return processed_results
     
-    def fetch_sync(self, url: str, use_cache: bool = True) -> PageContent:
+    def fetch_sync(
+        self,
+        url: str,
+        use_cache: bool = True,
+        force_mode: Optional[FetchMode] = None,
+    ) -> PageContent:
         """
         Synchronous wrapper for fetch().
         
         Args:
             url: The URL to fetch
             use_cache: Whether to use/update cache
+            force_mode: Override the default fetch mode
             
         Returns:
             PageContent with fetched data
         """
-        return asyncio.run(self.fetch(url, use_cache=use_cache))
+        return asyncio.run(self.fetch(url, use_cache=use_cache, force_mode=force_mode))
 
 
 # Singleton instance
 _page_reader: Optional[PageReader] = None
 
 
-def get_page_reader() -> PageReader:
-    """Get or create the singleton PageReader instance."""
+def get_page_reader(fetch_mode: FetchMode = "auto") -> PageReader:
+    """
+    Get or create the singleton PageReader instance.
+    
+    Args:
+        fetch_mode: Default fetch mode ("jina", "direct", or "auto")
+        
+    Returns:
+        PageReader instance
+    """
     global _page_reader
     if _page_reader is None:
         _page_reader = PageReader(
             cache_enabled=settings.CACHE_ENABLED,
+            timeout=settings.PAGE_FETCH_TIMEOUT,
+            fetch_mode=fetch_mode,
         )
     return _page_reader
+
+
+def create_page_reader(
+    cache_enabled: bool = True,
+    fetch_mode: FetchMode = "auto",
+) -> PageReader:
+    """
+    Create a new PageReader instance (not singleton).
+    
+    Use this when you need a PageReader with custom settings.
+    
+    Args:
+        cache_enabled: Whether to enable caching
+        fetch_mode: Fetch mode ("jina", "direct", or "auto")
+        
+    Returns:
+        New PageReader instance
+    """
+    return PageReader(
+        cache_enabled=cache_enabled,
+        timeout=settings.PAGE_FETCH_TIMEOUT,
+        fetch_mode=fetch_mode,
+    )
