@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Competitive Analysis Process Flow</title>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #f8f9fa;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 30px;
+        }
+        .main-container {
+            width: 100%;
+            max-width: 1400px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        /* Tabs */
+        .tabs {
+            display: flex;
+            background-color: #f1f3f5;
+            border-bottom: 1px solid #e9ecef;
+        }
+        .tab-btn {
+            padding: 15px 25px;
+            border: none;
+            background: none;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            color: #666;
+            transition: all 0.2s;
+        }
+        .tab-btn:hover {
+            background-color: #e9ecef;
+            color: #333;
+        }
+        .tab-btn.active {
+            background-color: white;
+            color: #0066cc;
+            border-bottom: 3px solid #0066cc;
+        }
+        
+        /* Content Areas */
+        .tab-content {
+            display: none;
+            padding: 30px;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        
+        /* Chart Styles */
+        .chart-container {
+            width: 100%;
+            overflow-x: auto;
+        }
+        .legend {
+            margin-top: 20px;
+            display: flex;
+            gap: 20px;
+            font-size: 0.9em;
+            color: #666;
+            justify-content: center;
+        }
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+
+        /* Trace Styles */
+        .trace-container {
+            font-family: "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+        .trace-header {
+            background-color: #e3f2fd;
+            border-left: 5px solid #2196f3;
+            padding: 15px;
+            margin-bottom: 25px;
+            border-radius: 4px;
+        }
+        .trace-header h2 {
+            margin: 0 0 5px 0;
+            color: #0d47a1;
+            font-size: 1.2em;
+        }
+        
+        /* Iteration Sections */
+        .iteration-block {
+            border: 2px dashed #e0e0e0;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 40px;
+            position: relative;
+        }
+        .iteration-label {
+            position: absolute;
+            top: -15px;
+            left: 20px;
+            background: white;
+            padding: 0 10px;
+            font-weight: 700;
+            color: #757575;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .loop-arrow {
+            text-align: center;
+            margin: -20px 0 20px 0;
+            color: #f57c00;
+            font-weight: bold;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+        }
+        .loop-arrow::before {
+            content: '↓';
+            font-size: 24px;
+        }
+        
+        .trace-step {
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            margin-bottom: 25px;
+            overflow: hidden;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            background: white;
+        }
+        .step-header {
+            background-color: #f5f5f5;
+            padding: 12px 20px;
+            border-bottom: 1px solid #e0e0e0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .step-title {
+            font-weight: 700;
+            color: #333;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .step-badge {
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 0.8em;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        .step-badge.eval { background-color: #fff9c4; color: #7f6000; }
+        .step-badge.query { background-color: #e3f2fd; color: #0277bd; }
+        .step-badge.synth { background-color: #e8f5e9; color: #2e7d32; }
+        .step-badge.summ { background-color: #f3e5f5; color: #7b1fa2; }
+        
+        .step-content {
+            padding: 20px;
+        }
+        
+        /* Expandable Sections */
+        details {
+            margin-bottom: 15px;
+            border: 1px solid #eee;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        details[open] {
+            border-color: #ccc;
+        }
+        summary {
+            padding: 10px 15px;
+            background-color: #fafafa;
+            cursor: pointer;
+            font-weight: 600;
+            color: #555;
+            user-select: none;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        summary:hover {
+            background-color: #f0f0f0;
+        }
+        summary::after {
+            content: '+';
+            font-size: 1.2em;
+            font-weight: bold;
+        }
+        details[open] summary::after {
+            content: '-';
+        }
+        
+        .details-content {
+            padding: 15px;
+            background-color: white;
+            border-top: 1px solid #eee;
+        }
+
+        .prompt-text {
+            white-space: pre-wrap;
+            font-family: "Consolas", "Monaco", monospace;
+            font-size: 0.85em;
+            color: #444;
+            background-color: #f8f9fa;
+            padding: 10px;
+            border-radius: 4px;
+            border: 1px solid #e9ecef;
+        }
+
+        .reasoning-text {
+            white-space: pre-wrap;
+            font-family: "Consolas", "Monaco", monospace;
+            font-size: 0.9em;
+            color: #333;
+            background-color: #fffde7;
+            padding: 15px;
+            border-radius: 4px;
+            border: 1px solid #fff59d;
+            margin-bottom: 10px;
+        }
+
+        .json-block {
+            background-color: #282c34;
+            color: #abb2bf;
+            padding: 15px;
+            border-radius: 4px;
+            overflow-x: auto;
+            font-family: "Consolas", "Monaco", monospace;
+            font-size: 0.9em;
+        }
+        .json-key { color: #e06c75; }
+        .json-string { color: #98c379; }
+        .json-number { color: #d19a66; }
+        .json-boolean { color: #56b6c2; }
+        
+        .highlight-box {
+            background-color: #ffebee;
+            border-left: 4px solid #f44336;
+            padding: 10px 15px;
+            margin: 10px 0;
+            color: #b71c1c;
+        }
+        .highlight-box.success {
+            background-color: #e8f5e9;
+            border-left-color: #4caf50;
+            color: #1b5e20;
+        }
+    </style>
+</head>
+<body>
+    <h1>Competitive Analysis System Architecture</h1>
+    
+    <div class="main-container">
+        <div class="tabs">
+            <button class="tab-btn active" onclick="openTab('diagram')">System Diagram</button>
+            <button class="tab-btn" onclick="openTab('trace')">Iterative Research Trace</button>
+        </div>
+
+        <!-- TAB 1: DIAGRAM -->
+        <div id="diagram" class="tab-content active">
+            <div class="chart-container">
+                <div class="mermaid">
+                    graph TD
+                        %% Styles
+                        classDef user fill:#e1f5fe,stroke:#01579b,stroke-width:2px
+                        classDef system fill:#f3e5f5,stroke:#4a148c,stroke-width:2px
+                        classDef orchestrator fill:#fff3e0,stroke:#e65100,stroke-width:2px
+                        classDef external fill:#e0f7fa,stroke:#006064,stroke-width:2px
+                        classDef data fill:#e8f5e9,stroke:#1b5e20,stroke-width:2px
+                        classDef decision fill:#fff9c4,stroke:#fbc02d,stroke-width:2px
+
+                        %% Nodes
+                        Start([User Command]) -->|python main.py| Config[Configuration & Setup]
+                        
+                        subgraph System ["System Layer"]
+                            Config -->|Init| TaskManager[Task Manager]
+                            TaskManager -->|Spawn| Worker1[Worker 1]
+                            TaskManager -->|Spawn| Worker2[Worker 2]
+                            TaskManager -->|Spawn| Worker3[Worker 3]
+                        end
+
+                        subgraph Orchestrator ["Tongyi Orchestrator (DeepResearch-30B)"]
+                            direction TB
+                            
+                            %% State Management
+                            State[Context: Company + Variable]
+                            
+                            %% Step 1: Planning
+                            Worker1 --> State
+                            State -->|Analyze Gaps| Plan["Thinking: Query Generation"]
+                            
+                            %% Step 2: Execution
+                            Plan -->|Generate Queries| SearchExec[Execute Search]
+                            
+                            %% Step 3: Reading
+                            SearchExec -->|Rank Results| Fetch[Fetch & Read Pages]
+                            
+                            %% Step 4: Evaluation Loop
+                            Fetch -->|Extract Evidence| Eval{"Thinking: Is Evidence Sufficient?"}
+                            
+                            Eval -->|No - Missing Info| Plan
+                            Eval -->|Yes - Ready| Synthesis["Thinking: Synthesis & Verification"]
+                            
+                            %% Step 5: Final Output
+                            Synthesis -->|Draft Answer| Verify[Verify Claims]
+                            Verify -->|Finalize| Result[Research Result]
+                        end
+
+                        subgraph External_Tools ["External Tools"]
+                            SearchExec -.->|API Call| Serper["Serper / Google Search"]
+                            Fetch -.->|Scrape| Jina["Jina Reader / Web Scraper"]
+                        end
+
+                        %% Data Flow
+                        Result -->|Collect| Aggregator[Result Aggregator]
+                        Aggregator -->|Save| JSON[JSON Data]
+                        JSON -->|Render| HTML[HTML Report]
+
+                        %% Styling
+                        class Start user
+                        class Config,TaskManager,Worker1,Worker2,Worker3,Aggregator system
+                        class State,Plan,SearchExec,Fetch,Synthesis,Verify,Result orchestrator
+                        class Eval decision
+                        class Serper,Jina external
+                        class JSON,HTML data
+                </div>
+            </div>
+
+            <div class="legend">
+                <div class="legend-item"><div class="dot" style="background:#e1f5fe; border:1px solid #01579b"></div>User Input</div>
+                <div class="legend-item"><div class="dot" style="background:#f3e5f5; border:1px solid #4a148c"></div>System Infrastructure</div>
+                <div class="legend-item"><div class="dot" style="background:#fff3e0; border:1px solid #e65100"></div>Tongyi Orchestrator Logic</div>
+                <div class="legend-item"><div class="dot" style="background:#fff9c4; border:1px solid #fbc02d"></div>Decision Points</div>
+                <div class="legend-item"><div class="dot" style="background:#e0f7fa; border:1px solid #006064"></div>External Tools</div>
+            </div>
+        </div>
+
+        <!-- TAB 2: TRACE -->
+        <div id="trace" class="tab-content">
+            <div class="trace-container">
+                <div class="trace-header">
+                    <h2>Iterative Research Trace: Stripe - Unique Value Proposition</h2>
+                    <p>Observe how the AI Orchestrator loops through research cycles when initial evidence is insufficient.</p>
+                </div>
+
+                <!-- ITERATION 1 -->
+                <div class="iteration-block">
+                    <span class="iteration-label">Iteration 1</span>
+                    
+                    <!-- Step 1.1: Evaluation -->
+                    <div class="trace-step">
+                        <div class="step-header">
+                            <div class="step-title">Step 1: Evaluation (Thinking)</div>
+                            <span class="step-badge eval">Reasoning Model</span>
+                        </div>
+                        <div class="step-content">
+                            <p>The model evaluates initial search results (general "Stripe" queries).</p>
+                            
+                            <details>
+                                <summary>Input Prompt</summary>
+                                <div class="details-content">
+                                    <div class="prompt-text">Evaluate whether the evidence provides sufficient information to answer the research question.
+Research Goal: Identify Stripe's primary unique value proposition.
+
+Evidence Gathered:
+[S1] How to write a positioning statement... (Instructional)
+[S4] Financial Infrastructure to Grow Your Revenue... (Tagline)</div>
+                                </div>
+                            </details>
+
+                            <details open>
+                                <summary>AI Reasoning & Output</summary>
+                                <div class="details-content">
+                                    <div class="reasoning-box">**Explanation:**
+The gathered evidence primarily consists of instructional content and tangential pages. While S4 hints at a tagline, it lacks context and fails to address the explicit core promise or key differentiators from competitors. No investor materials or direct competitor comparisons were found.</div>
+                                    <div class="json-block">
+{
+  <span class="json-key">"sufficient"</span>: <span class="json-boolean">false</span>,
+  <span class="json-key">"missing"</span>: [
+    <span class="json-string">"Explicit comparison with competitors"</span>,
+    <span class="json-string">"Direct customer testimonials highlighting benefits"</span>
+  ]
+}
+                                    </div>
+                                </div>
+                            </details>
+                            
+                            <div class="highlight-box">
+                                <strong>Decision:</strong> INSUFFICIENT. Triggering new research loop.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="loop-arrow">
+                    <span>Gaps Detected &rarr; Starting Loop 2</span>
+                </div>
+
+                <!-- ITERATION 2 -->
+                <div class="iteration-block">
+                    <span class="iteration-label">Iteration 2 (The Loop)</span>
+
+                    <!-- Step 2.1: Query Generation -->
+                    <div class="trace-step">
+                        <div class="step-header">
+                            <div class="step-title">Step 2: Query Generation (Thinking)</div>
+                            <span class="step-badge query">Reasoning Model</span>
+                        </div>
+                        <div class="step-content">
+                            <p>The model generates new, targeted queries based <strong>specifically</strong> on the missing info from Iteration 1.</p>
+                            
+                            <details open>
+                                <summary>AI Reasoning & Output</summary>
+                                <div class="details-content">
+                                    <div class="prompt-text">Missing information:
+- Explicit comparison with competitors
+- Direct customer testimonials highlighting benefits</div>
+                                    <div class="reasoning-box">I need to find direct comparisons. I will search for "vs" queries and specific customer stories.</div>
+                                    <div class="json-block">
+<span class="json-key">"queries"</span>: [
+  <span class="json-string">"Stripe vs PayPal vs Adyen key differences"</span>,
+  <span class="json-string">"Stripe customer case study revenue growth"</span>,
+  <span class="json-string">"Why developers choose Stripe over PayPal"</span>
+]
+                                    </div>
+                                </div>
+                            </details>
+                        </div>
+                    </div>
+
+                    <!-- Step 2.2: Execution (Simulated) -->
+                    <div class="trace-step">
+                        <div class="step-header">
+                            <div class="step-title">Step 3: Execution & Reading</div>
+                            <span class="step-badge">System</span>
+                        </div>
+                        <div class="step-content">
+                            <p><em>(System executes searches and reads 5 new pages...)</em></p>
+                            <ul>
+                                <li>Found: [S8] "Stripe vs PayPal: Which is best?" (NerdWallet)</li>
+                                <li>Found: [S9] "Cloudbeds Case Study" (Stripe.com)</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- Step 2.3: Evaluation -->
+                    <div class="trace-step">
+                        <div class="step-header">
+                            <div class="step-title">Step 4: Evaluation (Thinking)</div>
+                            <span class="step-badge eval">Reasoning Model</span>
+                        </div>
+                        <div class="step-content">
+                            <p>The model evaluates the <strong>combined</strong> evidence from Loop 1 and Loop 2.</p>
+                            
+                            <details open>
+                                <summary>AI Reasoning & Output</summary>
+                                <div class="details-content">
+                                    <div class="reasoning-box">**Explanation:**
+We now have direct competitor comparisons ([S8] highlights Stripe's superior API customization vs PayPal) and quantitative proof points ([S9] Cloudbeds +15% revenue). This addresses the gaps identified in Iteration 1.</div>
+                                    <div class="json-block">
+{
+  <span class="json-key">"sufficient"</span>: <span class="json-boolean">true</span>,
+  <span class="json-key">"confidence"</span>: <span class="json-string">"high"</span>
+}
+                                    </div>
+                                </div>
+                            </details>
+                            
+                            <div class="highlight-box success">
+                                <strong>Decision:</strong> SUFFICIENT. Proceeding to Synthesis.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- FINAL OUTPUT -->
+                <div class="iteration-block" style="border-style: solid; border-color: #4caf50;">
+                    <span class="iteration-label" style="color: #2e7d32;">Final Output</span>
+
+                    <!-- Step 5: Synthesis -->
+                    <div class="trace-step">
+                        <div class="step-header">
+                            <div class="step-title">Step 5: Synthesis (Drafting)</div>
+                            <span class="step-badge synth">Reasoning Model</span>
+                        </div>
+                        <div class="step-content">
+                            <p>The model synthesizes the final answer using evidence from all iterations.</p>
+                            
+                            <details open>
+                                <summary>AI Output</summary>
+                                <div class="details-content">
+                                    <div class="json-block">
+{
+  <span class="json-key">"comprehensive_markdown"</span>: <span class="json-string">"Stripe's core value proposition is **developer-centric financial infrastructure** that drives revenue growth. Unlike competitors like PayPal which focus on consumer wallets, Stripe differentiates via deep API customizability [S8] and reliability. Case studies confirm this impact, with Cloudbeds reporting a **15% revenue increase** after switching [S9]..."</span>
+}
+                                    </div>
+                                </div>
+                            </details>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <script>
+        mermaid.initialize({ 
+            startOnLoad: true,
+            theme: 'default',
+            flowchart: {
+                curve: 'basis',
+                padding: 20
+            }
+        });
+
+        function openTab(tabId) {
+            const contents = document.querySelectorAll('.tab-content');
+            contents.forEach(content => content.classList.remove('active'));
+
+            const buttons = document.querySelectorAll('.tab-btn');
+            buttons.forEach(btn => btn.classList.remove('active'));
+
+            document.getElementById(tabId).classList.add('active');
+
+            const activeBtn = Array.from(buttons).find(btn => btn.getAttribute('onclick').includes(tabId));
+            if (activeBtn) {
+                activeBtn.classList.add('active');
+            }
+        }
+    </script>
+</body>
+</html>
