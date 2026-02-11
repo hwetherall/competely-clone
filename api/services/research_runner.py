@@ -9,17 +9,44 @@ import asyncio
 import time
 from pathlib import Path
 from datetime import datetime, timezone
-from typing import List
+from typing import List, Optional, Dict, Any
 
 # Ensure project root is in path
 project_root = Path(__file__).parent.parent.parent
 sys.path.insert(0, str(project_root))
 
 from agents.research_agent import ResearchAgent, ResearchResult
-from config.variables import VARIABLES, get_variable
+from config.variables import VARIABLES, get_variable, VariableDefinition
 
 # Results directory
 RESULTS_DIR = project_root / "data" / "results"
+
+
+def _build_variable_lookup(
+    variable_ids: List[str],
+    dynamic_variables: Optional[List[Dict[str, Any]]] = None,
+) -> Dict[str, VariableDefinition]:
+    """Build variable_id -> VariableDefinition from static config and optional dynamic definitions."""
+    lookup: Dict[str, VariableDefinition] = {}
+    dynamic_by_id = {d["id"]: d for d in (dynamic_variables or [])}
+    for var_id in variable_ids:
+        if var_id in dynamic_by_id:
+            d = dynamic_by_id[var_id]
+            lookup[var_id] = VariableDefinition(
+                id=d["id"],
+                name=d["name"],
+                category=d["category"],
+                research_prompt=d["research_prompt"],
+                example_queries=list(d.get("example_queries", [])),
+                answer_spec=list(d.get("answer_spec", [])),
+                preferred_source_types=list(d.get("preferred_source_types", [])),
+                key_terms=list(d.get("key_terms", [])),
+                max_concise_chars=int(d.get("max_concise_chars", 200)),
+                tier="dynamic",
+            )
+        else:
+            lookup[var_id] = get_variable(var_id)
+    return lookup
 
 
 class ResearchRunner:
@@ -42,6 +69,7 @@ class ResearchRunner:
         run_id: str,
         companies: List[str],
         variables: List[str],
+        dynamic_variables: Optional[List[Dict[str, Any]]] = None,
         concurrency: int = 3,
         fast_mode: bool = False,
     ):
@@ -52,6 +80,7 @@ class ResearchRunner:
             run_id=run_id,
             companies=companies,
             variables=variables,
+            dynamic_variables=dynamic_variables,
             concurrency=concurrency,
             fast_mode=fast_mode,
         ))
@@ -110,11 +139,12 @@ class ResearchRunner:
         agent: ResearchAgent,
         company: str,
         variable_id: str,
+        variable_lookup: Dict[str, VariableDefinition],
     ) -> tuple:
         """Execute a single research task with progress updates."""
         async with semaphore:
             # Update progress with current task
-            variable = get_variable(variable_id)
+            variable = variable_lookup[variable_id]
             self._update_progress(
                 status="running",
                 current={
@@ -175,16 +205,18 @@ class ResearchRunner:
         run_id: str,
         companies: List[str],
         variables: List[str],
+        dynamic_variables: Optional[List[Dict[str, Any]]] = None,
         concurrency: int = 3,
         fast_mode: bool = False,
     ):
         """
         Run research across companies and variables with progress tracking.
-        
+
         Args:
             run_id: Unique identifier for this run
             companies: List of company names
             variables: List of variable IDs
+            dynamic_variables: Optional list of full definitions for dynamic (Tier 3) variables
             concurrency: Max concurrent tasks
             fast_mode: Use fast mode (single iteration)
         """
@@ -194,20 +226,27 @@ class ResearchRunner:
         self.completed_count = 0
         self.total_count = len(companies) * len(variables)
         self.recent_activity = []
-        
+
+        variable_lookup = _build_variable_lookup(variables, dynamic_variables)
+
         # Initialize progress
         self._update_progress(status="running")
-        
+
         try:
-            # Create agent
+            # Create agent with variable lookup so dynamic variables are resolved
             if fast_mode:
-                agent = ResearchAgent(max_iterations=1, min_iterations=1, skip_evaluation=True)
+                agent = ResearchAgent(
+                    max_iterations=1,
+                    min_iterations=1,
+                    skip_evaluation=True,
+                    variable_lookup=variable_lookup,
+                )
             else:
-                agent = ResearchAgent()
-            
+                agent = ResearchAgent(variable_lookup=variable_lookup)
+
             # Create semaphore for rate limiting
             semaphore = asyncio.Semaphore(concurrency)
-            
+
             # Create all tasks
             tasks = []
             for company in companies:
@@ -217,6 +256,7 @@ class ResearchRunner:
                         agent=agent,
                         company=company,
                         variable_id=var_id,
+                        variable_lookup=variable_lookup,
                     )
                     tasks.append(task)
             
@@ -238,12 +278,21 @@ class ResearchRunner:
                 if research_result.error:
                     errors.append(f"{company}/{variable_id}: {research_result.error}")
             
-            # Build output
+            # Build output; include variable_definitions for dynamic variables so UI can display names
             elapsed_time = time.time() - self.start_time
+            variable_definitions = {
+                var_id: {
+                    "id": v.id,
+                    "name": v.name,
+                    "category": v.category,
+                }
+                for var_id, v in variable_lookup.items()
+            }
             output = {
                 "timestamp": datetime.now(timezone.utc).isoformat(),
                 "companies": companies,
                 "variables": variables,
+                "variable_definitions": variable_definitions,
                 "grid": grid,
                 "metadata": {
                     "total_cells": self.total_count,

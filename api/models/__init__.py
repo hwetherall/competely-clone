@@ -1,6 +1,10 @@
 from .schemas import (
     VariableResponse,
     VariableCategoryResponse,
+    GenerateVariablesRequest,
+    Tier2RecommendationSchema,
+    DynamicVariableDefinition,
+    VariableGenerationResponse,
     RunListItem,
     RunDetailResponse,
     RunCreateRequest,
@@ -19,6 +23,10 @@ from .schemas import (
 __all__ = [
     "VariableResponse",
     "VariableCategoryResponse",
+    "GenerateVariablesRequest",
+    "Tier2RecommendationSchema",
+    "DynamicVariableDefinition",
+    "VariableGenerationResponse",
     "RunListItem",
     "RunDetailResponse",
     "RunCreateRequest",

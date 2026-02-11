@@ -2,11 +2,162 @@
 
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
+import type {
+  VariableGenerationResponse,
+  DynamicVariableDefinition,
+} from "@/lib/types";
 
-// Variable definitions matching the backend
+interface SmartVariableSelectorProps {
+  data: VariableGenerationResponse;
+  selectedVariableIds: string[];
+  onSelectionChange: (
+    variableIds: string[],
+    dynamicDefs: DynamicVariableDefinition[]
+  ) => void;
+  className?: string;
+}
+
+export function SmartVariableSelector({
+  data,
+  selectedVariableIds,
+  onSelectionChange,
+  className,
+}: SmartVariableSelectorProps) {
+  const toggleTier2 = (variableId: string) => {
+    const next = selectedVariableIds.includes(variableId)
+      ? selectedVariableIds.filter((id) => id !== variableId)
+      : [...selectedVariableIds, variableId];
+    updateSelection(next);
+  };
+
+  const toggleGenerated = (variableId: string) => {
+    const next = selectedVariableIds.includes(variableId)
+      ? selectedVariableIds.filter((id) => id !== variableId)
+      : [...selectedVariableIds, variableId];
+    updateSelection(next);
+  };
+
+  function updateSelection(ids: string[]) {
+    const dynamicDefs = data.generated_variables.filter((g) => ids.includes(g.id));
+    onSelectionChange(ids, dynamicDefs);
+  }
+
+  const totalSelected = selectedVariableIds.length;
+
+  return (
+    <div className={cn("space-y-6", className)}>
+      {data.industry_context && (
+        <p className="text-sm text-muted-foreground">
+          Detected context: <span className="font-medium">{data.industry_context}</span>
+        </p>
+      )}
+
+      <div className="text-sm font-medium">
+        {totalSelected} parameters selected (always + contextual + industry-specific)
+      </div>
+
+      {/* Tier 1: Always included */}
+      <Card>
+        <CardHeader className="py-3 px-4">
+          <CardTitle className="text-sm font-semibold text-muted-foreground">
+            Always included
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="py-2 px-4">
+          <ul className="space-y-1.5">
+            {data.always_variables.map((v) => (
+              <li
+                key={v.id}
+                className="flex items-center gap-2 text-sm text-muted-foreground"
+              >
+                <span className="inline-block w-4 h-4 rounded border border-muted bg-muted/50" />
+                <span>{v.name}</span>
+              </li>
+            ))}
+          </ul>
+        </CardContent>
+      </Card>
+
+      {/* Tier 2: Contextual (AI-recommended toggles) */}
+      <Card>
+        <CardHeader className="py-3 px-4">
+          <CardTitle className="text-sm font-semibold">
+            Contextual parameters
+          </CardTitle>
+          <p className="text-xs text-muted-foreground">
+            Recommended based on your competitor set. You can override.
+          </p>
+        </CardHeader>
+        <CardContent className="py-2 px-4 space-y-2">
+          {data.tier2_recommendations.map((rec) => {
+            const isIncluded = rec.include;
+            const isSelected = selectedVariableIds.includes(rec.variable_id);
+            return (
+              <div
+                key={rec.variable_id}
+                className="flex items-start gap-2"
+              >
+                <Checkbox
+                  id={`t2-${rec.variable_id}`}
+                  checked={isSelected}
+                  onCheckedChange={() => toggleTier2(rec.variable_id)}
+                />
+                <div className="flex-1 min-w-0">
+                  <Label
+                    htmlFor={`t2-${rec.variable_id}`}
+                    className="text-sm font-normal cursor-pointer"
+                  >
+                    {rec.variable_id.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase())}
+                  </Label>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    {isIncluded ? "Included: " : "Excluded: "}
+                    {rec.reason}
+                  </p>
+                </div>
+              </div>
+            );
+          })}
+        </CardContent>
+      </Card>
+
+      {/* Tier 3: Industry-specific (generated) */}
+      <Card>
+        <CardHeader className="py-3 px-4">
+          <CardTitle className="text-sm font-semibold">
+            Industry-specific parameters
+          </CardTitle>
+          <p className="text-xs text-muted-foreground">
+            Generated for your competitor set. Toggle any you want to include.
+          </p>
+        </CardHeader>
+        <CardContent className="py-2 px-4 space-y-2">
+          {data.generated_variables.map((v) => (
+            <div
+              key={v.id}
+              className="flex items-center space-x-2"
+            >
+              <Checkbox
+                id={v.id}
+                checked={selectedVariableIds.includes(v.id)}
+                onCheckedChange={() => toggleGenerated(v.id)}
+              />
+              <Label
+                htmlFor={v.id}
+                className="text-sm font-normal cursor-pointer"
+              >
+                {v.name}
+              </Label>
+            </div>
+          ))}
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
+// Legacy export for any code that still expects the old categories (e.g. tests)
 const VARIABLE_CATEGORIES = {
   "Positioning & Value": [
     { id: "unique_value_proposition", name: "Unique Value Proposition" },
@@ -38,127 +189,4 @@ const VARIABLE_CATEGORIES = {
   ],
 };
 
-interface VariableSelectorProps {
-  selectedVariables: string[];
-  onChange: (variables: string[]) => void;
-  className?: string;
-}
-
-export function VariableSelector({
-  selectedVariables,
-  onChange,
-  className,
-}: VariableSelectorProps) {
-  const allVariables = Object.values(VARIABLE_CATEGORIES).flat();
-  const allVariableIds = allVariables.map((v) => v.id);
-  const allSelected = allVariableIds.every((id) => selectedVariables.includes(id));
-  const someSelected = selectedVariables.length > 0 && !allSelected;
-
-  const toggleVariable = (variableId: string) => {
-    if (selectedVariables.includes(variableId)) {
-      onChange(selectedVariables.filter((v) => v !== variableId));
-    } else {
-      onChange([...selectedVariables, variableId]);
-    }
-  };
-
-  const toggleAll = () => {
-    if (allSelected) {
-      onChange([]);
-    } else {
-      onChange(allVariableIds);
-    }
-  };
-
-  const toggleCategory = (categoryName: string) => {
-    const categoryVars = VARIABLE_CATEGORIES[categoryName as keyof typeof VARIABLE_CATEGORIES];
-    const categoryIds = categoryVars.map((v) => v.id);
-    const allCategorySelected = categoryIds.every((id) =>
-      selectedVariables.includes(id)
-    );
-
-    if (allCategorySelected) {
-      onChange(selectedVariables.filter((v) => !categoryIds.includes(v)));
-    } else {
-      const newSelection = [...selectedVariables];
-      categoryIds.forEach((id) => {
-        if (!newSelection.includes(id)) {
-          newSelection.push(id);
-        }
-      });
-      onChange(newSelection);
-    }
-  };
-
-  return (
-    <div className={cn("space-y-4", className)}>
-      {/* Select All Button */}
-      <div className="flex items-center justify-between">
-        <span className="text-sm font-medium">
-          {selectedVariables.length} of {allVariableIds.length} selected
-        </span>
-        <Button
-          type="button"
-          variant="outline"
-          size="sm"
-          onClick={toggleAll}
-        >
-          {allSelected ? "Deselect All" : "Select All"}
-        </Button>
-      </div>
-
-      {/* Category Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {Object.entries(VARIABLE_CATEGORIES).map(([categoryName, variables]) => {
-          const categoryIds = variables.map((v) => v.id);
-          const categorySelectedCount = categoryIds.filter((id) =>
-            selectedVariables.includes(id)
-          ).length;
-          const allCategorySelected = categorySelectedCount === categoryIds.length;
-
-          return (
-            <Card key={categoryName}>
-              <CardHeader className="py-3 px-4">
-                <div className="flex items-center justify-between">
-                  <CardTitle className="text-sm font-semibold">
-                    {categoryName}
-                  </CardTitle>
-                  <button
-                    type="button"
-                    onClick={() => toggleCategory(categoryName)}
-                    className="text-xs text-primary hover:underline"
-                  >
-                    {allCategorySelected ? "Deselect" : "Select all"}
-                  </button>
-                </div>
-              </CardHeader>
-              <CardContent className="py-2 px-4 space-y-2">
-                {variables.map((variable) => (
-                  <div
-                    key={variable.id}
-                    className="flex items-center space-x-2"
-                  >
-                    <Checkbox
-                      id={variable.id}
-                      checked={selectedVariables.includes(variable.id)}
-                      onCheckedChange={() => toggleVariable(variable.id)}
-                    />
-                    <Label
-                      htmlFor={variable.id}
-                      className="text-sm font-normal cursor-pointer"
-                    >
-                      {variable.name}
-                    </Label>
-                  </div>
-                ))}
-              </CardContent>
-            </Card>
-          );
-        })}
-      </div>
-    </div>
-  );
-}
-
-// Export variable categories for use elsewhere
 export { VARIABLE_CATEGORIES };

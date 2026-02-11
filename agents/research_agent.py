@@ -179,10 +179,11 @@ class ResearchAgent:
         skip_evaluation: bool = False,
         enable_page_fetch: Optional[bool] = None,
         enable_verification: Optional[bool] = None,
+        variable_lookup: Optional[Dict[str, VariableDefinition]] = None,
     ):
         """
         Initialize the research agent.
-        
+
         Args:
             search_client: SearchClient instance (creates new if not provided)
             llm_client: LLMClient instance (creates new if not provided)
@@ -192,6 +193,7 @@ class ResearchAgent:
             skip_evaluation: If True, skip LLM evaluation step
             enable_page_fetch: Override for page fetching (default from settings)
             enable_verification: Override for numeric verification (default from settings)
+            variable_lookup: Optional dict of variable_id -> VariableDefinition for dynamic variables
         """
         self.search_client = search_client or SearchClient()
         self.llm_client = llm_client or LLMClient()
@@ -201,6 +203,7 @@ class ResearchAgent:
         self.skip_evaluation = skip_evaluation
         self.enable_page_fetch = enable_page_fetch if enable_page_fetch is not None else settings.ENABLE_PAGE_FETCH
         self.enable_verification = enable_verification if enable_verification is not None else settings.ENABLE_NUMERIC_VERIFICATION
+        self.variable_lookup = variable_lookup
     
     async def research(
         self,
@@ -217,7 +220,10 @@ class ResearchAgent:
         Returns:
             ResearchResult with comprehensive and concise answers
         """
-        variable = get_variable(variable_id)
+        if self.variable_lookup and variable_id in self.variable_lookup:
+            variable = self.variable_lookup[variable_id]
+        else:
+            variable = get_variable(variable_id)
         state = ResearchState(company=company, variable=variable)
         
         logger.info(f"Starting research: {company} - {variable.name}")

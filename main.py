@@ -18,7 +18,7 @@ import time
 from pathlib import Path
 from datetime import datetime, timezone
 from collections import Counter
-from typing import List, Tuple, Optional
+from typing import List, Tuple, Optional, Dict
 
 # Add project root to path for imports
 project_root = Path(__file__).parent
@@ -26,8 +26,16 @@ sys.path.insert(0, str(project_root))
 
 import logging
 from agents.research_agent import ResearchAgent, ResearchResult
+from agents.variable_generator import generate_variables as generate_variables_impl
 from config.settings import validate_config
-from config.variables import VARIABLES, get_all_variable_ids
+from config.variables import (
+    VARIABLES,
+    VariableDefinition,
+    get_all_variable_ids,
+    get_always_variables,
+    get_sometimes_variables,
+    get_variable,
+)
 
 # Default companies for competitive analysis
 DEFAULT_COMPANIES = ["Stripe", "PayPal", "Venmo", "Apple Pay", "Cash App"]
@@ -63,6 +71,11 @@ def parse_args():
         action="store_true",
         help="Fast mode: single iteration, skip evaluation"
     )
+    parser.add_argument(
+        "--no-dynamic-vars",
+        action="store_true",
+        help="Use only static variables (skip AI-generated parameters for this competitor set)"
+    )
     return parser.parse_args()
 
 
@@ -94,6 +107,7 @@ async def research_with_semaphore(
     total_tasks: int,
     start_time: float,
     completed_count: List[int],  # Mutable list to track progress
+    variable_lookup: Optional[dict] = None,
 ) -> Tuple[str, str, ResearchResult]:
     """
     Execute a single research task with semaphore-based rate limiting.
@@ -123,7 +137,10 @@ async def research_with_semaphore(
         else:
             eta = ""
         
-        print(f"[{completed + 1:3}/{total_tasks}] {company} - {variable_id}...{eta}")
+        var_name = variable_id
+        if variable_lookup and variable_id in variable_lookup:
+            var_name = variable_lookup[variable_id].name
+        print(f"[{completed + 1:3}/{total_tasks}] {company} - {var_name}...{eta}")
         
         try:
             result = await agent.research(company, variable_id)
@@ -153,87 +170,118 @@ async def run_multi_company_analysis(
     companies: List[str],
     concurrency: int = 3,
     fast_mode: bool = False,
+    generate_vars: bool = True,
 ) -> dict:
     """
     Run competitive analysis across multiple companies.
-    
+
     Args:
         companies: List of company names to analyze
         concurrency: Maximum concurrent research tasks
         fast_mode: If True, use fast mode (single iteration, skip evaluation)
-        
+        generate_vars: If True and len(companies) >= 2, generate dynamic parameters via LLM
+
     Returns:
-        Dictionary with grid structure for JSON output
+        Tuple of (output dict, errors list)
     """
+    variable_ids: List[str] = []
+    variable_lookup: Optional[Dict[str, VariableDefinition]] = None
+    variable_definitions: Optional[dict] = None
+
+    if generate_vars and len(companies) >= 2:
+        print("\n  Analyzing competitor set and generating smart parameters...")
+        try:
+            gen_result = await generate_variables_impl(companies)
+            print(f"  Industry context: {gen_result.industry_context}")
+            always_ids = [v.id for v in get_always_variables()]
+            tier2_included = [r.variable_id for r in gen_result.tier2_recommendations if r.include]
+            generated_ids = [v.id for v in gen_result.generated_variables]
+            variable_ids = always_ids + tier2_included + generated_ids
+            variable_lookup = {}
+            for v in get_always_variables():
+                variable_lookup[v.id] = v
+            for var_id in tier2_included:
+                variable_lookup[var_id] = get_variable(var_id)
+            for v in gen_result.generated_variables:
+                variable_lookup[v.id] = v
+            variable_definitions = {vid: {"id": v.id, "name": v.name, "category": v.category} for vid, v in variable_lookup.items()}
+            print(f"  Parameters: {len(always_ids)} always + {len(tier2_included)} contextual + {len(generated_ids)} industry-specific = {len(variable_ids)} total")
+            for v in gen_result.generated_variables[:5]:
+                print(f"    - {v.name}")
+            if len(gen_result.generated_variables) > 5:
+                print(f"    ... and {len(gen_result.generated_variables) - 5} more")
+        except Exception as e:
+            logger.warning("Variable generation failed, using static variables: %s", e)
+            generate_vars = False
+
+    if not variable_ids:
+        variable_ids = get_all_variable_ids()
+        variable_definitions = {v.id: {"id": v.id, "name": v.name, "category": v.category} for v in VARIABLES}
+
     print("\n" + "=" * 70)
     print("  Multi-Company Competitive Analysis")
     print("=" * 70)
     print(f"\n  Companies: {', '.join(companies)}")
-    print(f"  Variables: {len(VARIABLES)}")
-    print(f"  Total cells: {len(companies) * len(VARIABLES)}")
+    print(f"  Variables: {len(variable_ids)}")
+    print(f"  Total cells: {len(companies) * len(variable_ids)}")
     print(f"  Concurrency: {concurrency}")
     print(f"  Mode: {'Fast' if fast_mode else 'Normal'}")
     print()
-    
-    # Create agent
+
     if fast_mode:
-        agent = ResearchAgent(max_iterations=1, min_iterations=1, skip_evaluation=True)
+        agent = ResearchAgent(
+            max_iterations=1,
+            min_iterations=1,
+            skip_evaluation=True,
+            variable_lookup=variable_lookup,
+        )
     else:
-        agent = ResearchAgent()
-    
-    # Create semaphore for rate limiting
+        agent = ResearchAgent(variable_lookup=variable_lookup)
+
     semaphore = asyncio.Semaphore(concurrency)
-    
-    # Track progress
     start_time = time.time()
-    completed_count = [0]  # Use list for mutability in async context
-    total_tasks = len(companies) * len(VARIABLES)
-    
-    # Create all tasks
+    completed_count = [0]
+    total_tasks = len(companies) * len(variable_ids)
+
     tasks = []
     task_index = 0
     for company in companies:
-        for variable in VARIABLES:
+        for var_id in variable_ids:
             task = research_with_semaphore(
                 semaphore=semaphore,
                 agent=agent,
                 company=company,
-                variable_id=variable.id,
+                variable_id=var_id,
                 task_index=task_index,
                 total_tasks=total_tasks,
                 start_time=start_time,
                 completed_count=completed_count,
+                variable_lookup=variable_lookup,
             )
             tasks.append(task)
             task_index += 1
-    
-    # Execute all tasks concurrently (with semaphore limiting actual parallelism)
+
     print("Starting research...\n")
     results = await asyncio.gather(*tasks, return_exceptions=True)
-    
+
     elapsed_time = time.time() - start_time
     print(f"\n  Completed in {format_time(elapsed_time)}")
-    
-    # Build grid structure
+
     grid = {company: {} for company in companies}
     errors = []
-    
     for result in results:
         if isinstance(result, Exception):
             errors.append(str(result))
             continue
-        
         company, variable_id, research_result = result
         grid[company][variable_id] = research_result.to_dict()
-        
         if research_result.error:
             errors.append(f"{company}/{variable_id}: {research_result.error}")
-    
-    # Build output structure
+
     output = {
         "timestamp": datetime.now(timezone.utc).isoformat(),
         "companies": companies,
-        "variables": get_all_variable_ids(),
+        "variables": variable_ids,
         "grid": grid,
         "metadata": {
             "total_cells": total_tasks,
@@ -242,9 +290,11 @@ async def run_multi_company_analysis(
             "elapsed_seconds": elapsed_time,
             "concurrency": concurrency,
             "fast_mode": fast_mode,
-        }
+        },
     }
-    
+    if variable_definitions is not None:
+        output["variable_definitions"] = variable_definitions
+
     return output, errors
 
 
@@ -329,6 +379,7 @@ async def main():
         companies=args.companies,
         concurrency=args.concurrency,
         fast_mode=args.fast,
+        generate_vars=not args.no_dynamic_vars,
     )
     
     # Save results

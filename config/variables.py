@@ -23,6 +23,7 @@ class VariableDefinition:
     preferred_source_types: List[str] = field(default_factory=list)  # e.g., "official", "regulatory", "tier1_news"
     key_terms: List[str] = field(default_factory=list)  # Keywords for passage selection
     max_concise_chars: int = 240  # Maximum characters for concise summary
+    tier: str = "always"       # "always" | "sometimes" | "dynamic"
 
 
 # =============================================================================
@@ -61,6 +62,7 @@ Summarize the core promise they make to customers in a clear, specific way.""",
         preferred_source_types=["official", "tier1_news"],
         key_terms=["value proposition", "mission", "why", "unique", "benefit", "promise", "choose"],
         max_concise_chars=180,
+        tier="always",
     ),
     
     VariableDefinition(
@@ -90,6 +92,7 @@ Look at marketing language, pricing strategy, and target audience signals.""",
         preferred_source_types=["official", "tier1_news", "analyst"],
         key_terms=["positioning", "market", "target", "segment", "enterprise", "SMB", "premium", "strategy"],
         max_concise_chars=180,
+        tier="always",
     ),
     
     VariableDefinition(
@@ -119,6 +122,7 @@ Focus on concrete differentiators, not just marketing claims.""",
         preferred_source_types=["official", "tier1_news", "analyst"],
         key_terms=["competitive", "vs", "comparison", "alternative", "advantage", "differentiator", "better"],
         max_concise_chars=150,
+        tier="sometimes",
     ),
     
     VariableDefinition(
@@ -149,6 +153,7 @@ Prioritize concrete, verifiable differences.""",
         preferred_source_types=["official", "tier1_news"],
         key_terms=["unique", "different", "feature", "capability", "patent", "exclusive", "only"],
         max_concise_chars=180,
+        tier="always",
     ),
     
     VariableDefinition(
@@ -177,6 +182,7 @@ Look at:
         preferred_source_types=["official"],
         key_terms=["promise", "mission", "vision", "values", "commitment", "tagline", "slogan"],
         max_concise_chars=150,
+        tier="sometimes",
     ),
     
     # -------------------------------------------------------------------------
@@ -210,6 +216,7 @@ Look at case studies, testimonials, and marketing targeting.""",
         preferred_source_types=["official", "tier1_news"],
         key_terms=["customer", "persona", "user", "case study", "testimonial", "industry", "vertical"],
         max_concise_chars=150,
+        tier="always",
     ),
     
     VariableDefinition(
@@ -238,6 +245,7 @@ Look for:
         preferred_source_types=["official"],
         key_terms=["segment", "tier", "enterprise", "SMB", "startup", "plan", "pricing"],
         max_concise_chars=180,
+        tier="sometimes",
     ),
     
     VariableDefinition(
@@ -265,6 +273,7 @@ Find:
         preferred_source_types=["official", "tier1_news", "regulatory"],
         key_terms=["users", "accounts", "active", "million", "growth", "statistics", "demographics"],
         max_concise_chars=160,
+        tier="always",
     ),
     
     VariableDefinition(
@@ -292,6 +301,7 @@ Identify:
         preferred_source_types=["official", "tier1_news"],
         key_terms=["buyer", "decision", "purchasing", "CFO", "CTO", "budget", "approval"],
         max_concise_chars=160,
+        tier="sometimes",
     ),
     
     VariableDefinition(
@@ -321,6 +331,7 @@ Look at documentation, case studies, and feature pages.""",
         preferred_source_types=["official"],
         key_terms=["use case", "solution", "workflow", "problem", "application", "how to"],
         max_concise_chars=150,
+        tier="always",
     ),
     
     # -------------------------------------------------------------------------
@@ -353,6 +364,7 @@ Use official product pages and feature lists.""",
         preferred_source_types=["official"],
         key_terms=["feature", "capability", "functionality", "product", "tool", "platform"],
         max_concise_chars=150,
+        tier="always",
     ),
     
     VariableDefinition(
@@ -381,6 +393,7 @@ Look for:
         preferred_source_types=["official"],
         key_terms=["enterprise", "advanced", "API", "security", "compliance", "custom", "pro"],
         max_concise_chars=150,
+        tier="sometimes",
     ),
     
     VariableDefinition(
@@ -409,6 +422,7 @@ Find:
         preferred_source_types=["official"],
         key_terms=["integration", "API", "connect", "partner", "marketplace", "ecosystem", "webhook"],
         max_concise_chars=180,
+        tier="sometimes",
     ),
     
     VariableDefinition(
@@ -437,6 +451,7 @@ Look for:
         preferred_source_types=["official", "tier1_news"],
         key_terms=["stack", "technology", "engineering", "infrastructure", "cloud", "language", "framework"],
         max_concise_chars=180,
+        tier="sometimes",
     ),
     
     VariableDefinition(
@@ -465,6 +480,7 @@ Look for:
         preferred_source_types=["official", "tier1_news"],
         key_terms=["roadmap", "release", "update", "new", "upcoming", "announcement", "launch"],
         max_concise_chars=150,
+        tier="sometimes",
     ),
     
     # -------------------------------------------------------------------------
@@ -495,6 +511,7 @@ Identify:
         preferred_source_types=["official", "tier1_news", "regulatory"],
         key_terms=["revenue", "business model", "monetization", "fees", "subscription", "transaction"],
         max_concise_chars=180,
+        tier="always",
     ),
     
     VariableDefinition(
@@ -523,6 +540,7 @@ Find:
         preferred_source_types=["official"],
         key_terms=["pricing", "cost", "fee", "plan", "tier", "free", "enterprise", "per"],
         max_concise_chars=150,
+        tier="always",
     ),
     
     VariableDefinition(
@@ -553,6 +571,7 @@ Include the source and methodology when available.""",
         preferred_source_types=["tier1_news", "analyst", "regulatory"],
         key_terms=["market share", "percent", "ranking", "leader", "position", "volume"],
         max_concise_chars=160,
+        tier="always",
     ),
     
     VariableDefinition(
@@ -582,6 +601,7 @@ Look for analyst reports, investor presentations, and industry publications.""",
         preferred_source_types=["tier1_news", "analyst"],
         key_terms=["TAM", "market size", "billion", "trillion", "CAGR", "growth", "forecast"],
         max_concise_chars=160,
+        tier="always",
     ),
     
     VariableDefinition(
@@ -615,6 +635,7 @@ Always note the time period and source.""",
         preferred_source_types=["regulatory", "tier1_news", "official"],
         key_terms=["revenue", "earnings", "billion", "million", "annual", "fiscal", "quarter"],
         max_concise_chars=150,
+        tier="always",
     ),
 ]
 
@@ -655,6 +676,32 @@ def get_variables_by_category() -> Dict[str, List[VariableDefinition]]:
             categories[var.category] = []
         categories[var.category].append(var)
     return categories
+
+
+def get_always_variables() -> List[VariableDefinition]:
+    """Get variables that are always included (tier='always')."""
+    return [var for var in VARIABLES if var.tier == "always"]
+
+
+def get_sometimes_variables() -> List[VariableDefinition]:
+    """Get variables that are context-dependent (tier='sometimes')."""
+    return [var for var in VARIABLES if var.tier == "sometimes"]
+
+
+def get_variables_by_tier() -> Dict[str, List[VariableDefinition]]:
+    """
+    Group variables by tier.
+    
+    Returns:
+        Dictionary mapping tier names ('always', 'sometimes', 'dynamic') to lists of variables
+    """
+    by_tier: Dict[str, List[VariableDefinition]] = {}
+    for var in VARIABLES:
+        t = var.tier
+        if t not in by_tier:
+            by_tier[t] = []
+        by_tier[t].append(var)
+    return by_tier
 
 
 def get_all_variable_ids() -> List[str]:

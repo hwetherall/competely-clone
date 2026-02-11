@@ -284,15 +284,18 @@ async def create_run(request: RunCreateRequest, background_tasks: BackgroundTask
     The research runs in the background and progress can be monitored
     via the /runs/{run_id}/status endpoint.
     """
-    # Validate variables exist
+    # Validate variables: each must be either a known static variable or provided in dynamic_variables
     from config.variables import get_all_variable_ids
-    valid_variables = get_all_variable_ids()
-    
-    invalid_vars = [v for v in request.variables if v not in valid_variables]
+    valid_static = set(get_all_variable_ids())
+    dynamic_ids = {d.id for d in (request.dynamic_variables or [])}
+    invalid_vars = [
+        v for v in request.variables
+        if v not in valid_static and v not in dynamic_ids
+    ]
     if invalid_vars:
         raise HTTPException(
-            status_code=400, 
-            detail=f"Invalid variables: {', '.join(invalid_vars)}"
+            status_code=400,
+            detail=f"Invalid or missing variable definitions: {', '.join(invalid_vars)}. Include dynamic_variables for generated variables."
         )
     
     # Generate run ID
@@ -317,12 +320,14 @@ async def create_run(request: RunCreateRequest, background_tasks: BackgroundTask
         json.dump(initial_progress, f, indent=2)
     
     # Start background task
+    dynamic_var_dicts = [d.model_dump() for d in request.dynamic_variables] if request.dynamic_variables else None
     runner = ResearchRunner()
     background_tasks.add_task(
         runner.run_research_sync,
         run_id=run_id,
         companies=request.companies,
         variables=request.variables,
+        dynamic_variables=dynamic_var_dicts,
         concurrency=request.concurrency,
         fast_mode=request.fast_mode,
     )

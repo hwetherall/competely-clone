@@ -50,6 +50,11 @@ OPENROUTER_BASE_URL: str = "https://openrouter.ai/api/v1"
 # Using OpenRouter for this model
 SUMMARIZE_MODEL: str = os.getenv("SUMMARIZE_MODEL", "deepseek/deepseek-v3.2")
 
+# Variable generator: Claude Opus 4.6 for strategic parameter generation (OpenRouter)
+VARIABLE_GENERATOR_MODEL: str = os.getenv(
+    "VARIABLE_GENERATOR_MODEL", "anthropic/claude-opus-4.6"
+)
+
 # Legacy alias for backward compatibility (defaults to RESEARCH_MODEL)
 TONGYI_MODEL: str = os.getenv("TONGYI_MODEL", RESEARCH_MODEL)
 

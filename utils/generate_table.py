@@ -35,16 +35,17 @@ def generate_html(data, output_path):
     companies = data.get("companies", [])
     variables = data.get("variables", [])
     grid = data.get("grid", {})
-    
-    # Get variable display names (from the first company's data)
+    variable_definitions = data.get("variable_definitions", {})
+
+    # Get variable display names: prefer variable_definitions (supports dynamic vars), else from first cell
     var_names = {}
-    first_company = companies[0]
-    if first_company in grid:
-        for var_id in variables:
-            if var_id in grid[first_company]:
-                var_names[var_id] = grid[first_company][var_id].get("variable_name", var_id)
-            else:
-                var_names[var_id] = var_id
+    for var_id in variables:
+        if var_id in variable_definitions:
+            var_names[var_id] = variable_definitions[var_id].get("name", var_id)
+        elif companies and companies[0] in grid and var_id in grid[companies[0]]:
+            var_names[var_id] = grid[companies[0]][var_id].get("variable_name", var_id)
+        else:
+            var_names[var_id] = var_id
 
     # Build modal data for JavaScript
     modal_data = {}

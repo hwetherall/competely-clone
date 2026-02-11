@@ -39,6 +39,45 @@ class VariableCategoryResponse(BaseModel):
     categories: Dict[str, List[VariableResponse]]
 
 
+class GenerateVariablesRequest(BaseModel):
+    """Request to generate smart parameters from a set of competitors."""
+    companies: List[str] = Field(..., min_length=2, description="List of company names (Set of Competitors)")
+
+
+class Tier2RecommendationSchema(BaseModel):
+    """Whether to include a 'sometimes' variable for this competitor set."""
+    variable_id: str
+    include: bool
+    reason: str
+
+
+class DynamicVariableDefinition(BaseModel):
+    """Full definition for a dynamically generated variable (Tier 3)."""
+    id: str
+    name: str
+    category: str
+    research_prompt: str
+    example_queries: List[str] = []
+    answer_spec: List[str] = []
+    preferred_source_types: List[str] = []
+    key_terms: List[str] = []
+    max_concise_chars: int = 200
+
+
+class VariableGenerationResponse(BaseModel):
+    """Response from POST /api/variables/generate."""
+    industry_context: str
+    always_variables: List[VariableResponse] = Field(
+        default_factory=list,
+        description="Tier 1 variables (always included) for display",
+    )
+    tier2_recommendations: List[Tier2RecommendationSchema] = []
+    generated_variables: List[DynamicVariableDefinition] = Field(
+        default_factory=list,
+        description="Tier 3 industry-specific variables with full definitions",
+    )
+
+
 # =============================================================================
 # Source Schemas
 # =============================================================================
@@ -115,6 +154,10 @@ class RunCreateRequest(BaseModel):
     """Request to create a new research run."""
     companies: List[str] = Field(..., min_length=1, description="List of company names to analyze")
     variables: List[str] = Field(..., min_length=1, description="List of variable IDs to research")
+    dynamic_variables: Optional[List[DynamicVariableDefinition]] = Field(
+        default=None,
+        description="Full definitions for dynamic (Tier 3) variables when selected",
+    )
     concurrency: int = Field(default=3, ge=1, le=10, description="Maximum concurrent tasks")
     fast_mode: bool = Field(default=False, description="Use fast mode (single iteration)")
 
