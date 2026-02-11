@@ -120,6 +120,18 @@ ENABLE_NUMERIC_VERIFICATION: bool = os.getenv("ENABLE_NUMERIC_VERIFICATION", "tr
 DEFAULT_MAX_CONCISE_CHARS: int = int(os.getenv("DEFAULT_MAX_CONCISE_CHARS", "240"))
 
 # =============================================================================
+# V2 Pipeline Configuration (Relational Competitive Intelligence Engine)
+# =============================================================================
+
+# Claude Opus 4.6 for synthesis and executive reasoning (OpenRouter)
+SYNTHESIS_MODEL: str = os.getenv("SYNTHESIS_MODEL", "anthropic/claude-opus-4.6")
+EXECUTIVE_MODEL: str = os.getenv("EXECUTIVE_MODEL", "anthropic/claude-opus-4.6")
+
+# Synthesis phase: max iterations of draft -> evaluate -> re-gather -> re-normalize
+MAX_SYNTHESIS_ITERATIONS: int = int(os.getenv("MAX_SYNTHESIS_ITERATIONS", "3"))
+MAX_REGATHERS_PER_PARAMETER: int = int(os.getenv("MAX_REGATHERS_PER_PARAMETER", "2"))
+
+# =============================================================================
 # Validation
 # =============================================================================
 
