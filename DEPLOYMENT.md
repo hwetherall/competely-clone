@@ -15,14 +15,11 @@ Deploy the backend first so you have its URL for the frontend.
 
 2. **Add a new service** from the repo. Railway will detect Python. Configure:
    - **Root Directory**: leave empty (repo root).
-   - **Install Command** (in Service → Settings → Build):
+   - **Install Command** (in Service → **Settings** → **Build**): **You must set this**, or the default will only install the root `requirements.txt` and **uvicorn will not be installed** (leading to `uvicorn: not found` and 502 Bad Gateway). Set:
      ```bash
      pip install -r requirements-backend.txt
      ```
-     Or use the default and add a single `requirements.txt` at root that includes both `requirements.txt` and `api/requirements.txt`; otherwise set:
-     ```bash
-     pip install -r requirements.txt -r api/requirements.txt
-     ```
+     If there is no Install Command field, add a **Variable** instead: `RAILPACK_INSTALL_COMMAND` = `pip install -r requirements-backend.txt`, then redeploy.
    - **Start Command**: already set in `railway.json`:
      ```bash
      uvicorn api.main:app --host 0.0.0.0 --port $PORT

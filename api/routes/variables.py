@@ -76,9 +76,9 @@ async def generate_variables(request: GenerateVariablesRequest):
     
     Requires OPENROUTER_API_KEY.
     """
-    print(f"[Variable generation] Request received for companies: {request.companies}")
+    print(f"[Variable generation] Request received for companies: {request.companies}, profiles: {request.company_profiles}")
     try:
-        result = await generate_variables_impl(request.companies)
+        result = await generate_variables_impl(request.companies, request.company_profiles)
         print(f"[Variable generation] Done. Industry: {result.industry_context}, generated {len(result.generated_variables)} variables.")
     except ValueError as e:
         print(f"[Variable generation] Validation error: {e}")

@@ -45,6 +45,16 @@ app.include_router(runs_router, prefix="/api/runs", tags=["runs"])
 app.include_router(variables_router, prefix="/api/variables", tags=["variables"])
 
 
+@app.get("/")
+async def root():
+    """Root: point to health and API docs."""
+    return {
+        "service": "CompetelyClone API",
+        "health": "/api/health",
+        "docs": "/docs",
+    }
+
+
 @app.get("/api/health")
 async def health_check():
     """Health check endpoint."""

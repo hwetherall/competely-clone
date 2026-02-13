@@ -13,6 +13,7 @@ import { Switch } from "@/components/ui/switch";
 import { useCreateRun, useGenerateVariables } from "@/lib/api";
 import type { VariableGenerationResponse, DynamicVariableDefinition } from "@/lib/types";
 import { Textarea } from "@/components/ui/textarea";
+import { cn } from "@/lib/utils";
 import {
   Play,
   Clock,
@@ -21,7 +22,12 @@ import {
   Loader2,
   Sparkles,
   Lightbulb,
+  Building2,
+  Rocket,
+  Factory,
+  TrendingUp,
 } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
 
 function getDefaultSelection(data: VariableGenerationResponse): string[] {
   const alwaysIds = data.always_variables.map((v) => v.id);
@@ -44,6 +50,7 @@ export default function NewRunPage() {
   const [fastMode, setFastMode] = useState(false);
   const [useV2, setUseV2] = useState(false);
   const [ventureContext, setVentureContext] = useState("");
+  const [companyProfiles, setCompanyProfiles] = useState<string[]>(["public_mature"]);
 
   const totalCells = companies.length * selectedVariableIds.length;
   const estimatedMinutes = Math.ceil(totalCells * (fastMode ? 0.3 : 0.5));
@@ -55,13 +62,24 @@ export default function NewRunPage() {
   const handleGenerate = async () => {
     if (!canGenerate) return;
     try {
-      const result = await generateVariables.mutateAsync(companies);
+      const result = await generateVariables.mutateAsync({
+        companies,
+        company_profiles: companyProfiles,
+      });
       setGeneratedData(result);
       setSelectedVariableIds(getDefaultSelection(result));
       setDynamicVariableDefs(result.generated_variables);
     } catch (error) {
       console.error("Failed to generate parameters:", error);
     }
+  };
+
+  const toggleProfile = (profile: string) => {
+    setCompanyProfiles((prev) =>
+      prev.includes(profile)
+        ? prev.filter((p) => p !== profile)
+        : [...prev, profile]
+    );
   };
 
   const handleSelectionChange = useCallback(
@@ -127,12 +145,117 @@ export default function NewRunPage() {
               Add at least 2 companies to analyze. Press Enter or click to add.
             </CardDescription>
           </CardHeader>
-          <CardContent>
+          <CardContent className="space-y-6">
             <CompanyInput
               companies={companies}
               onChange={setCompanies}
               placeholder="Enter company name..."
             />
+
+            <div className="space-y-3">
+              <Label>Company Profile (Select all that apply)</Label>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* Public / Mature */}
+                <div
+                  className={cn(
+                    "flex flex-col items-center justify-between rounded-md border-2 bg-popover p-4 hover:bg-accent hover:text-accent-foreground cursor-pointer transition-all",
+                    companyProfiles.includes("public_mature")
+                      ? "border-primary bg-primary/5"
+                      : "border-muted"
+                  )}
+                  onClick={() => toggleProfile("public_mature")}
+                >
+                  <div className="flex items-center justify-between w-full mb-2">
+                    <Building2 className="h-6 w-6 text-muted-foreground" />
+                    <Checkbox
+                      checked={companyProfiles.includes("public_mature")}
+                      onCheckedChange={() => toggleProfile("public_mature")}
+                    />
+                  </div>
+                  <div className="text-center w-full">
+                    <div className="font-semibold">Public / Mature</div>
+                    <div className="text-xs text-muted-foreground mt-1">
+                      Established enterprises (e.g. IBM, Toyota)
+                    </div>
+                  </div>
+                </div>
+
+                {/* Public / Emerging */}
+                <div
+                  className={cn(
+                    "flex flex-col items-center justify-between rounded-md border-2 bg-popover p-4 hover:bg-accent hover:text-accent-foreground cursor-pointer transition-all",
+                    companyProfiles.includes("public_emerging")
+                      ? "border-primary bg-primary/5"
+                      : "border-muted"
+                  )}
+                  onClick={() => toggleProfile("public_emerging")}
+                >
+                  <div className="flex items-center justify-between w-full mb-2">
+                    <TrendingUp className="h-6 w-6 text-blue-500" />
+                    <Checkbox
+                      checked={companyProfiles.includes("public_emerging")}
+                      onCheckedChange={() => toggleProfile("public_emerging")}
+                    />
+                  </div>
+                  <div className="text-center w-full">
+                    <div className="font-semibold">Public / Emerging</div>
+                    <div className="text-xs text-muted-foreground mt-1">
+                      Recent IPOs, high-growth tech (e.g. Figma, Klarna)
+                    </div>
+                  </div>
+                </div>
+
+                {/* Private / Venture */}
+                <div
+                  className={cn(
+                    "flex flex-col items-center justify-between rounded-md border-2 bg-popover p-4 hover:bg-accent hover:text-accent-foreground cursor-pointer transition-all",
+                    companyProfiles.includes("private_venture")
+                      ? "border-primary bg-primary/5"
+                      : "border-muted"
+                  )}
+                  onClick={() => toggleProfile("private_venture")}
+                >
+                  <div className="flex items-center justify-between w-full mb-2">
+                    <Rocket className="h-6 w-6 text-amber-500" />
+                    <Checkbox
+                      checked={companyProfiles.includes("private_venture")}
+                      onCheckedChange={() => toggleProfile("private_venture")}
+                    />
+                  </div>
+                  <div className="text-center w-full">
+                    <div className="font-semibold">Private / Venture</div>
+                    <div className="text-xs text-muted-foreground mt-1">
+                      Early-stage, pre-revenue to Series C (e.g Burnbot, Innovera)
+                    </div>
+                  </div>
+                </div>
+
+                {/* Private / Established */}
+                <div
+                  className={cn(
+                    "flex flex-col items-center justify-between rounded-md border-2 bg-popover p-4 hover:bg-accent hover:text-accent-foreground cursor-pointer transition-all",
+                    companyProfiles.includes("private_established")
+                      ? "border-primary bg-primary/5"
+                      : "border-muted"
+                  )}
+                  onClick={() => toggleProfile("private_established")}
+                >
+                  <div className="flex items-center justify-between w-full mb-2">
+                    <Factory className="h-6 w-6 text-slate-600" />
+                    <Checkbox
+                      checked={companyProfiles.includes("private_established")}
+                      onCheckedChange={() => toggleProfile("private_established")}
+                    />
+                  </div>
+                  <div className="text-center w-full">
+                    <div className="font-semibold">Private / Established</div>
+                    <div className="text-xs text-muted-foreground mt-1">
+                      SMEs, industrial, family-owned (e.g. Bosch, The Economist)
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
           </CardContent>
         </Card>
 

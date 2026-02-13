@@ -42,6 +42,10 @@ class VariableCategoryResponse(BaseModel):
 class GenerateVariablesRequest(BaseModel):
     """Request to generate smart parameters from a set of competitors."""
     companies: List[str] = Field(..., min_length=2, description="List of company names (Set of Competitors)")
+    company_profiles: List[str] = Field(
+        default=["public_mature"],
+        description="List of selected company profiles (e.g. 'public_mature', 'private_venture')",
+    )
 
 
 class Tier2RecommendationSchema(BaseModel):

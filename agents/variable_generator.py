@@ -49,10 +49,12 @@ SYSTEM_PROMPT = """You are a seasoned VC at A16Z or a Partner at BCG. Your task 
 
 The ultimate purpose of this analysis is to determine whether or not this space has any white space or availability for a new venture to enter it.
 
-Be precise and strategic. Avoid parameters that would be meaningless or absurd for the industry (e.g., "Technology Stack" for an airline is wrong; "Fleet Size" for a SaaS company is wrong). Focus on parameters that uncover competitive white space."""
+Be precise and strategic. Avoid parameters that would be meaningless or absurd for the industry (e.g., "Technology Stack" for an airline is wrong; "Fleet Size" for a SaaS company is wrong). Focus on parameters that uncover competitive white space.
+
+CRITICAL INSTRUCTION: You must strictly adhere to the provided Set of Competitors (SoC). Do NOT mention, use as examples, or allude to any companies that are NOT in the provided list. Your analysis and rationales must be based ONLY on the companies explicitly listed in the SoC."""
 
 
-def _build_user_prompt(companies: List[str]) -> str:
+def _build_user_prompt(companies: List[str], company_profiles: List[str] = ["public_mature"]) -> str:
     sometimes = get_sometimes_variables()
     sometimes_list = "\n".join(
         f"- {v.id} ({v.name})" for v in sometimes
@@ -63,7 +65,31 @@ def _build_user_prompt(companies: List[str]) -> str:
     )
     companies_list = ", ".join(companies)
 
+    profile_contexts = []
+    if "public_mature" in company_profiles:
+        profile_contexts.append("- Public / Mature: Focus on financials, market share, analyst ratings, regulatory risk.")
+    if "public_emerging" in company_profiles:
+        profile_contexts.append("- Public / Emerging: Focus on growth metrics, unit economics, path to profitability, market disruption.")
+    if "private_venture" in company_profiles:
+        profile_contexts.append("- Private / Venture: Focus on founder background, tech stack, hiring velocity, social signal, product velocity.")
+    if "private_established" in company_profiles:
+        profile_contexts.append("- Private / Established: Focus on patents, trade shows, supply chain, certifications, longevity, B2B reputation.")
+
+    profile_instruction = "\n".join(profile_contexts)
+    
+    mixed_instruction = ""
+    if len(company_profiles) > 1:
+        mixed_instruction = "The set includes a MIX of company profiles. Ensure parameters cover relevant signals for ALL types (e.g. financial transparency for public firms AND operational signals for private ones)."
+
     return f"""Set of Competitors (SoC): {companies_list}
+Company Profiles: {", ".join(company_profiles)}
+
+IMPORTANT: The companies in this set fit the following profiles:
+{profile_instruction}
+
+{mixed_instruction}
+
+CRITICAL: Restrict your entire response (including rationales, parameter contexts, and examples) ONLY to the companies listed above. Do NOT mention any other companies.
 
 ---
 
@@ -220,13 +246,14 @@ def _dict_to_variable_definition(d: Dict[str, Any]) -> VariableDefinition:
 # Main API
 # =============================================================================
 
-async def generate_variables(companies: List[str]) -> VariableGenerationResult:
+async def generate_variables(companies: List[str], company_profiles: List[str] = ["public_mature"]) -> VariableGenerationResult:
     """
     Analyze the Set of Competitors and return Tier 2 recommendations plus
     ~20 generated Tier 3 variable definitions.
 
     Args:
         companies: List of company names (e.g. ["United Airlines", "Delta", "Lufthansa"])
+        company_profiles: List of profiles (e.g. ["public_mature", "private_established"])
 
     Returns:
         VariableGenerationResult with tier2_recommendations, generated_variables, industry_context
@@ -239,7 +266,7 @@ async def generate_variables(companies: List[str]) -> VariableGenerationResult:
 
     client = LLMClient()
     model = settings.VARIABLE_GENERATOR_MODEL
-    prompt = _build_user_prompt(companies)
+    prompt = _build_user_prompt(companies, company_profiles)
 
     print(f"[Variable generation] Calling {model}...")
     logger.info("Calling variable generator model: %s", model)
