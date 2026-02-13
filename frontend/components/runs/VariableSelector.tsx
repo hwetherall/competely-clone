@@ -156,14 +156,6 @@ export function SmartVariableSelector({
                   >
                     {v.name}
                   </Label>
-                  {v.rationale && (
-                    <span
-                      className="inline-flex text-muted-foreground hover:text-foreground"
-                      title={v.rationale}
-                    >
-                      <Info className="h-3.5 w-3.5 shrink-0" aria-hidden />
-                    </span>
-                  )}
                 </div>
                 {v.rationale && (
                   <p className="text-xs text-muted-foreground mt-0.5">
