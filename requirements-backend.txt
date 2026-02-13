@@ -1,0 +1,6 @@
+# Combined backend dependencies for deployment (e.g. Railway).
+# Install with: pip install -r requirements-backend.txt
+# Or in Railway: set Install Command to: pip install -r requirements-backend.txt
+
+-r requirements.txt
+-r api/requirements.txt
