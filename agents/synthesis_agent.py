@@ -220,22 +220,36 @@ class SynthesisAgent:
         parameter_name: str,
         requested_gathers: List[Dict[str, Any]],
     ) -> Dict[str, IntelligenceDossier]:
-        """Run gather for each (company, query) in requested_gathers; return new dossiers by company."""
-        new_dossiers: Dict[str, IntelligenceDossier] = {}
-        for req in requested_gathers[:5]:
-            company = req.get("company", "").strip()
-            query = req.get("query", "").strip()
-            if not company or not query:
-                continue
+        """Run gather for each (company, query) in requested_gathers in parallel; return new dossiers by company."""
+        import asyncio
+
+        async def _single_gather(company: str, query: str) -> Optional[tuple]:
             try:
                 dossier = await self.gather_agent.gather(
                     company,
                     parameter_id,
                     initial_queries=[query],
                 )
-                new_dossiers[company] = dossier
+                return (company, dossier)
             except Exception as e:
                 logger.warning(f"Targeted re-gather failed for {company}: {e}")
+                return None
+
+        tasks = []
+        for req in requested_gathers[:5]:
+            company = req.get("company", "").strip()
+            query = req.get("query", "").strip()
+            if company and query:
+                tasks.append(_single_gather(company, query))
+
+        new_dossiers: Dict[str, IntelligenceDossier] = {}
+        if tasks:
+            results = await asyncio.gather(*tasks, return_exceptions=True)
+            for result in results:
+                if isinstance(result, tuple) and result is not None:
+                    new_dossiers[result[0]] = result[1]
+                elif isinstance(result, Exception):
+                    logger.warning(f"Re-gather task exception: {result}")
         return new_dossiers
 
     async def _re_normalize(
@@ -244,18 +258,57 @@ class SynthesisAgent:
         new_dossiers: Dict[str, IntelligenceDossier],
         research_prompt: str,
     ) -> NormalizedDataset:
-        """Merge new dossiers into existing and re-run normalization."""
-        from agents.v2_schemas import IntelligenceDossier as DossierClass
+        """Merge new dossiers into existing and re-run normalization.
+
+        For companies with both old and new dossiers, facts, key_metrics,
+        raw_passages, and sources are combined rather than replaced, so
+        the original gather data is preserved alongside the re-gather.
+        """
         existing = normalized.raw_dossiers
         merged: Dict[str, IntelligenceDossier] = {}
+
         for company, d_dict in existing.items():
+            old_dossier = IntelligenceDossier.from_dict(d_dict)
             if company in new_dossiers:
-                merged[company] = new_dossiers[company]
+                new = new_dossiers[company]
+                # Merge facts (deduplicate by claim text)
+                seen_claims = {f.claim for f in old_dossier.facts}
+                combined_facts = list(old_dossier.facts)
+                for f in new.facts:
+                    if f.claim not in seen_claims:
+                        combined_facts.append(f)
+                        seen_claims.add(f.claim)
+                # Merge key_metrics (new values override old for same key)
+                combined_metrics = {**old_dossier.key_metrics, **new.key_metrics}
+                # Merge sources (deduplicate by URL)
+                seen_urls = {s.url for s in old_dossier.sources}
+                combined_sources = list(old_dossier.sources)
+                for s in new.sources:
+                    if s.url not in seen_urls:
+                        combined_sources.append(s)
+                        seen_urls.add(s.url)
+                # Merge passages
+                combined_passages = list(old_dossier.raw_passages) + list(new.raw_passages)
+
+                merged[company] = IntelligenceDossier(
+                    company=company,
+                    parameter_id=old_dossier.parameter_id,
+                    parameter_name=old_dossier.parameter_name,
+                    facts=combined_facts,
+                    key_metrics=combined_metrics,
+                    raw_passages=combined_passages,
+                    sources=combined_sources,
+                    confidence=new.confidence if new.confidence != "none" else old_dossier.confidence,
+                    metadata={**old_dossier.metadata, "regathered": True},
+                )
             else:
-                merged[company] = DossierClass.from_dict(d_dict)
+                merged[company] = old_dossier
+
+        # Add any companies that were only in new_dossiers (shouldn't happen normally)
         for company, dossier in new_dossiers.items():
             if company not in merged:
                 merged[company] = dossier
+
         return await self.normalize_agent.normalize(
             normalized.parameter_id,
             normalized.parameter_name,

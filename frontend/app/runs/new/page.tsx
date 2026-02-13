@@ -12,6 +12,7 @@ import { Separator } from "@/components/ui/separator";
 import { Switch } from "@/components/ui/switch";
 import { useCreateRun, useGenerateVariables } from "@/lib/api";
 import type { VariableGenerationResponse, DynamicVariableDefinition } from "@/lib/types";
+import { Textarea } from "@/components/ui/textarea";
 import {
   Play,
   Clock,
@@ -19,6 +20,7 @@ import {
   AlertCircle,
   Loader2,
   Sparkles,
+  Lightbulb,
 } from "lucide-react";
 
 function getDefaultSelection(data: VariableGenerationResponse): string[] {
@@ -40,6 +42,8 @@ export default function NewRunPage() {
   const [selectedVariableIds, setSelectedVariableIds] = useState<string[]>([]);
   const [dynamicVariableDefs, setDynamicVariableDefs] = useState<DynamicVariableDefinition[]>([]);
   const [fastMode, setFastMode] = useState(false);
+  const [useV2, setUseV2] = useState(false);
+  const [ventureContext, setVentureContext] = useState("");
 
   const totalCells = companies.length * selectedVariableIds.length;
   const estimatedMinutes = Math.ceil(totalCells * (fastMode ? 0.3 : 0.5));
@@ -77,6 +81,8 @@ export default function NewRunPage() {
         dynamic_variables: dynamicVariableDefs.length > 0 ? dynamicVariableDefs : undefined,
         fast_mode: fastMode,
         concurrency: 3,
+        version: useV2 ? "v2" : "v1",
+        venture_context: ventureContext.trim() || undefined,
       });
       router.push(`/runs/${result.run_id}`);
     } catch (error) {
@@ -182,6 +188,19 @@ export default function NewRunPage() {
               <CardContent className="space-y-4">
                 <div className="flex items-center justify-between">
                   <div className="space-y-0.5">
+                    <Label htmlFor="v2-mode">Relational (V2)</Label>
+                    <p className="text-sm text-muted-foreground">
+                      Compare all companies per parameter; executive brief and deep-dive reports
+                    </p>
+                  </div>
+                  <Switch
+                    id="v2-mode"
+                    checked={useV2}
+                    onCheckedChange={setUseV2}
+                  />
+                </div>
+                <div className="flex items-center justify-between">
+                  <div className="space-y-0.5">
                     <Label htmlFor="fast-mode" className="flex items-center gap-2">
                       <Zap className="h-4 w-4 text-yellow-500" />
                       Fast Mode
@@ -198,6 +217,38 @@ export default function NewRunPage() {
                 </div>
               </CardContent>
             </Card>
+
+            {/* Venture Context (V2 only) */}
+            {useV2 && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Lightbulb className="h-5 w-5 text-amber-500" />
+                    Venture Context
+                    <span className="text-xs font-normal text-muted-foreground ml-1">(optional)</span>
+                  </CardTitle>
+                  <CardDescription>
+                    Describe your proposed venture or strategic position. The executive brief will
+                    personalize white-space analysis and next steps to your specific situation.
+                    Leave blank for a neutral landscape analysis.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <Textarea
+                    placeholder='e.g. "Low-cost airline focused on connecting the Caribbean with Europe. Spin-off of LATAM airlines with a budget of $200M. Targeting underserved leisure and diaspora routes."'
+                    value={ventureContext}
+                    onChange={(e) => setVentureContext(e.target.value)}
+                    rows={4}
+                    className="resize-y"
+                  />
+                  {ventureContext.trim() && (
+                    <p className="mt-2 text-xs text-muted-foreground">
+                      White space and next steps will be tailored to this venture.
+                    </p>
+                  )}
+                </CardContent>
+              </Card>
+            )}
 
             <Separator />
 

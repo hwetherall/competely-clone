@@ -282,6 +282,70 @@ class ComparativeReport:
 
 
 @dataclass
+class WhiteSpaceOpportunity:
+    """
+    A structured white-space opportunity (Option B view).
+
+    Attributes:
+        opportunity: What is the gap?
+        why_it_exists: What structural dynamics create this opening?
+        who_is_closest: Which existing player is best positioned to capture it?
+        entry_difficulty: How hard would it be to fill this gap? (Low/Medium/High)
+    """
+    opportunity: str = ""
+    why_it_exists: str = ""
+    who_is_closest: str = ""
+    entry_difficulty: str = ""
+
+    def to_dict(self) -> Dict[str, Any]:
+        return {
+            "opportunity": self.opportunity,
+            "why_it_exists": self.why_it_exists,
+            "who_is_closest": self.who_is_closest,
+            "entry_difficulty": self.entry_difficulty,
+        }
+
+    @classmethod
+    def from_dict(cls, data: Dict[str, Any]) -> "WhiteSpaceOpportunity":
+        return cls(
+            opportunity=data.get("opportunity", ""),
+            why_it_exists=data.get("why_it_exists", ""),
+            who_is_closest=data.get("who_is_closest", ""),
+            entry_difficulty=data.get("entry_difficulty", ""),
+        )
+
+
+@dataclass
+class NextStepItem:
+    """
+    A single next-step recommendation within a workstream bucket.
+
+    Attributes:
+        action: What to do
+        rationale: Why (tied back to a finding/white space)
+        priority: High / Medium / Low
+    """
+    action: str = ""
+    rationale: str = ""
+    priority: str = ""
+
+    def to_dict(self) -> Dict[str, Any]:
+        return {
+            "action": self.action,
+            "rationale": self.rationale,
+            "priority": self.priority,
+        }
+
+    @classmethod
+    def from_dict(cls, data: Dict[str, Any]) -> "NextStepItem":
+        return cls(
+            action=data.get("action", ""),
+            rationale=data.get("rationale", ""),
+            priority=data.get("priority", ""),
+        )
+
+
+@dataclass
 class ExecutiveBrief:
     """
     Landscape-level executive summary.
@@ -290,16 +354,34 @@ class ExecutiveBrief:
     Attributes:
         brief: The "30-second read" paragraph
         key_themes: Cross-cutting strategic themes
+        trends: Cross-cutting directional shifts
+        white_space_opportunities: Structured opportunities (Option B)
+        white_space_matrix: Category-organized gaps (Option C): segment_gaps, product_gaps, business_model_gaps, geographic_gaps
+        next_steps: Workstream buckets -> list of NextStepItems: investigate_further, quick_wins, strategic_bets, monitor_and_defend
+        venture_context: Optional user-supplied venture description used to personalize white space and next steps
         metadata: Model, tokens, etc.
     """
     brief: str = ""
     key_themes: List[str] = field(default_factory=list)
+    trends: List[str] = field(default_factory=list)
+    white_space_opportunities: List[WhiteSpaceOpportunity] = field(default_factory=list)
+    white_space_matrix: Dict[str, List[str]] = field(default_factory=dict)
+    next_steps: Dict[str, List[NextStepItem]] = field(default_factory=dict)
+    venture_context: str = ""
     metadata: Dict[str, Any] = field(default_factory=dict)
 
     def to_dict(self) -> Dict[str, Any]:
         return {
             "brief": self.brief,
             "key_themes": self.key_themes,
+            "trends": self.trends,
+            "white_space_opportunities": [o.to_dict() for o in self.white_space_opportunities],
+            "white_space_matrix": self.white_space_matrix,
+            "next_steps": {
+                bucket: [item.to_dict() for item in items]
+                for bucket, items in self.next_steps.items()
+            },
+            "venture_context": self.venture_context,
             "metadata": self.metadata,
         }
 
@@ -308,6 +390,17 @@ class ExecutiveBrief:
         return cls(
             brief=data.get("brief", ""),
             key_themes=data.get("key_themes", []),
+            trends=data.get("trends", []),
+            white_space_opportunities=[
+                WhiteSpaceOpportunity.from_dict(o)
+                for o in data.get("white_space_opportunities", [])
+            ],
+            white_space_matrix=data.get("white_space_matrix", {}),
+            next_steps={
+                bucket: [NextStepItem.from_dict(item) for item in items]
+                for bucket, items in data.get("next_steps", {}).items()
+            },
+            venture_context=data.get("venture_context", ""),
             metadata=data.get("metadata", {}),
         )
 
@@ -350,3 +443,17 @@ class V2RunResult:
             "executive": self.executive,
             "metadata": self.metadata,
         }
+
+    @classmethod
+    def from_dict(cls, data: Dict[str, Any]) -> "V2RunResult":
+        return cls(
+            run_id=data.get("run_id", ""),
+            timestamp=data.get("timestamp", ""),
+            companies=data.get("companies", []),
+            parameters=data.get("parameters", []),
+            parameter_definitions=data.get("parameter_definitions", {}),
+            intelligence=data.get("intelligence", {}),
+            analyses=data.get("analyses", {}),
+            executive=data.get("executive", {}),
+            metadata=data.get("metadata", {}),
+        )

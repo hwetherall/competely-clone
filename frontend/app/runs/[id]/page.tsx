@@ -4,6 +4,8 @@ import { use, useEffect } from "react";
 import { useRun, useRunProgress } from "@/lib/api";
 import { Header } from "@/components/layout/Header";
 import { ResultsTable } from "@/components/runs/ResultsTable";
+import { ResultsV2 } from "@/components/runs/ResultsV2";
+import type { RunDetailV2 } from "@/lib/types";
 import { RunProgress } from "@/components/runs/RunProgress";
 import { PageLoadingState } from "@/components/common/LoadingState";
 import { Button } from "@/components/ui/button";
@@ -117,10 +119,17 @@ export default function RunResultPage({ params }: PageProps) {
   }
 
   const handleExport = (format: "json" | "csv" | "html") => {
-    // For now, just link to the API - in production you'd implement proper download
     const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
     window.open(`${baseUrl}/api/runs/${id}`, "_blank");
   };
+
+  const isV2 = "version" in data && data.version === "v2";
+  const v2Data = isV2 ? (data as RunDetailV2) : null;
+  const v1Data = !isV2 ? data : null;
+  const meta = data.metadata as { elapsed_seconds?: number; total_elapsed_seconds?: number; total_cells?: number; successful_cells?: number; failed_cells?: number };
+  const elapsed = meta?.total_elapsed_seconds ?? meta?.elapsed_seconds ?? 0;
+  const totalCells = meta?.total_cells ?? (v2Data ? v2Data.companies.length * v2Data.parameters.length : 0);
+  const successfulCells = meta?.successful_cells ?? totalCells;
 
   return (
     <>
@@ -132,53 +141,45 @@ export default function RunResultPage({ params }: PageProps) {
               <FileJson className="h-4 w-4 mr-2" />
               JSON
             </Button>
-            <Button variant="outline" size="sm" onClick={() => handleExport("csv")}>
-              <FileSpreadsheet className="h-4 w-4 mr-2" />
-              CSV
-            </Button>
-            <Button variant="outline" size="sm" onClick={() => handleExport("html")}>
-              <FileText className="h-4 w-4 mr-2" />
-              HTML
-            </Button>
+            {!isV2 && (
+              <>
+                <Button variant="outline" size="sm" onClick={() => handleExport("csv")}>
+                  <FileSpreadsheet className="h-4 w-4 mr-2" />
+                  CSV
+                </Button>
+                <Button variant="outline" size="sm" onClick={() => handleExport("html")}>
+                  <FileText className="h-4 w-4 mr-2" />
+                  HTML
+                </Button>
+              </>
+            )}
           </div>
         }
       />
 
       <div className="p-6 space-y-6">
-        {/* Summary Card */}
         <Card>
           <CardContent className="py-4">
             <div className="flex flex-wrap items-center gap-6">
-              {/* Status */}
               <div className="flex items-center gap-2">
                 <CheckCircle className="h-5 w-5 text-green-500" />
                 <span className="font-medium">Completed</span>
+                {isV2 && (
+                  <Badge variant="secondary">V2 Relational</Badge>
+                )}
               </div>
-
-              {/* Timestamp */}
               <div className="flex items-center gap-2 text-muted-foreground">
                 <Clock className="h-4 w-4" />
                 <span>{formatTimestamp(data.timestamp)}</span>
               </div>
-
-              {/* Duration */}
               <div className="text-muted-foreground">
-                Duration: {formatDuration(data.metadata.elapsed_seconds)}
+                Duration: {formatDuration(elapsed)}
               </div>
-
-              {/* Stats */}
               <div className="flex items-center gap-2">
                 <Badge variant="secondary">
-                  {data.metadata.successful_cells}/{data.metadata.total_cells} cells
+                  {successfulCells}/{totalCells} {isV2 ? "parameters" : "cells"}
                 </Badge>
-                {data.metadata.failed_cells > 0 && (
-                  <Badge variant="destructive">
-                    {data.metadata.failed_cells} failed
-                  </Badge>
-                )}
               </div>
-
-              {/* Companies */}
               <div className="flex items-center gap-2">
                 {data.companies.map((company) => (
                   <Badge key={company} variant="outline">
@@ -190,13 +191,16 @@ export default function RunResultPage({ params }: PageProps) {
           </CardContent>
         </Card>
 
-        {/* Results Table */}
-        <ResultsTable data={data} />
-
-        {/* Help Text */}
-        <p className="text-center text-sm text-muted-foreground">
-          Click any cell to see the full analysis with sources
-        </p>
+        {isV2 && v2Data ? (
+          <ResultsV2 data={v2Data} />
+        ) : (
+          <>
+            {v1Data && <ResultsTable data={v1Data} />}
+            <p className="text-center text-sm text-muted-foreground">
+              Click any cell to see the full analysis with sources
+            </p>
+          </>
+        )}
       </div>
     </>
   );

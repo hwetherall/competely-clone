@@ -196,25 +196,69 @@ Your evaluation:"""
 # Phase 4: Executive Brief
 # =============================================================================
 
-EXECUTIVE_BRIEF_SYSTEM = """You are a strategy advisor summarizing a competitive landscape for the C-Suite. Your job is to distill multiple parameter-level reports into one compelling executive brief and a short list of cross-cutting themes. Be concise and actionable."""
+EXECUTIVE_BRIEF_SYSTEM = """You are a strategy advisor summarizing a competitive landscape for the C-Suite. Your job is to distill multiple parameter-level reports into one compelling executive brief with cross-cutting themes, trends, white-space analysis (from two independent lenses), and actionable next steps. Be concise, specific, and actionable."""
 
 EXECUTIVE_BRIEF_PROMPT = """Synthesize an executive brief from the following parameter-level competitive analyses.
 
 Companies in scope: {companies_list}
 
-Parameter reports (headline + executive summary + top rankings per parameter):
+Parameter reports (headline + executive summary + top rankings + trends + white space per parameter):
 {parameter_summaries}
-
+{venture_context_block}
 INSTRUCTIONS:
-1. Write a single paragraph (4-8 sentences) that a busy executive can read in 30 seconds. It should answer: What is the overall competitive landscape? Who leads where? What are the biggest strategic takeaways and white-space opportunities?
-2. List 3-6 key_themes: cross-cutting strategic themes that span multiple parameters (e.g. "Platform convergence", "Race to transparency in pricing").
+Produce ALL of the following sections:
+
+1. **brief**: A single paragraph (4-8 sentences) that a busy executive can read in 30 seconds. It should answer: What is the overall competitive landscape? Who leads where? What are the biggest strategic takeaways?
+
+2. **key_themes**: 3-6 cross-cutting strategic themes that span multiple parameters (e.g. "Platform convergence", "Race to transparency in pricing").
+
+3. **trends**: 3-7 cross-cutting DIRECTIONAL SHIFTS — not what IS true today, but what is CHANGING and WHERE things are headed. Synthesize from the parameter-level trends into landscape-level shifts. Each trend should describe a direction of movement (e.g. "Loyalty programs are evolving from flight rewards into full financial ecosystems").
+
+4. **white_space_opportunities**: 3-7 structured strategic opportunities. For EACH opportunity provide:
+   - "opportunity": What is the unoccupied position or underserved gap?
+   - "why_it_exists": What structural dynamics create this opening?
+   - "who_is_closest": Which existing player is best positioned to capture it?
+   - "entry_difficulty": "Low", "Medium", or "High"
+   {venture_ws_instruction}
+
+5. **white_space_matrix**: Organize ALL identified white spaces into a category matrix with these exact keys:
+   - "segment_gaps": Customer segments nobody serves well
+   - "product_gaps": Capabilities or features nobody offers
+   - "business_model_gaps": Monetization approaches nobody has tried
+   - "geographic_gaps": Markets or regions nobody is addressing
+   Each key maps to a list of 1-5 short descriptions. This is an INDEPENDENT view from white_space_opportunities — it should categorize ALL gaps, not just restate the opportunities.
+   {venture_matrix_instruction}
+
+6. **next_steps**: Actionable recommendations organized into workstream buckets. Each bucket is a key mapping to a list of items. Each item has "action", "rationale", and "priority" ("High"/"Medium"/"Low"). Use these exact bucket keys:
+   - "investigate_further": Things that need deeper research before acting
+   - "quick_wins": Low-effort, high-signal actions achievable in weeks
+   - "strategic_bets": Bigger moves requiring commitment but with outsized payoff
+   - "monitor_and_defend": Competitive moves to watch that could disrupt positioning
+   Include 1-4 items per bucket.
+   {venture_ns_instruction}
 
 Output your response as JSON inside <executive_json> tags:
 
 <executive_json>
 {{
   "brief": "Your 4-8 sentence executive paragraph...",
-  "key_themes": ["Theme 1", "Theme 2", "Theme 3"]
+  "key_themes": ["Theme 1", "Theme 2"],
+  "trends": ["Trend 1: directional shift description...", "Trend 2: ..."],
+  "white_space_opportunities": [
+    {{"opportunity": "...", "why_it_exists": "...", "who_is_closest": "...", "entry_difficulty": "Medium"}}
+  ],
+  "white_space_matrix": {{
+    "segment_gaps": ["Gap 1", "Gap 2"],
+    "product_gaps": ["Gap 1"],
+    "business_model_gaps": ["Gap 1"],
+    "geographic_gaps": ["Gap 1"]
+  }},
+  "next_steps": {{
+    "investigate_further": [{{"action": "...", "rationale": "...", "priority": "High"}}],
+    "quick_wins": [{{"action": "...", "rationale": "...", "priority": "High"}}],
+    "strategic_bets": [{{"action": "...", "rationale": "...", "priority": "Medium"}}],
+    "monitor_and_defend": [{{"action": "...", "rationale": "...", "priority": "High"}}]
+  }}
 }}
 </executive_json>
 
@@ -225,7 +269,7 @@ Your executive brief:"""
 # Helpers for formatting
 # =============================================================================
 
-def format_dossiers_for_normalize(dossiers_by_company: dict, parameter_name: str) -> str:
+def format_dossiers_for_normalize(dossiers_by_company: dict) -> str:
     """Format company dossiers into a string for the normalize prompt."""
     lines = []
     for company, dossier in dossiers_by_company.items():
@@ -240,7 +284,7 @@ def format_dossiers_for_normalize(dossiers_by_company: dict, parameter_name: str
 
 
 def format_parameter_summaries_for_executive(reports: list) -> str:
-    """Format parameter report summaries for the executive brief prompt."""
+    """Format parameter report summaries for the executive brief prompt, including trends and white space."""
     lines = []
     for r in reports:
         if hasattr(r, "to_dict"):
@@ -252,5 +296,45 @@ def format_parameter_summaries_for_executive(reports: list) -> str:
         summary = d.get("executive_summary", "")
         rankings = d.get("rankings", [])
         rank_str = ", ".join(f"{x.get('rank')}. {x.get('company')} ({x.get('label', '')})" for x in rankings[:5])
-        lines.append(f"\n### {name}\nHeadline: {headline}\nSummary: {summary}\nRankings: {rank_str}")
+        trends = d.get("trends", [])
+        trends_str = ", ".join(trends[:5]) if trends else "None identified"
+        white_space = d.get("white_space", [])
+        ws_str = ", ".join(white_space[:5]) if white_space else "None identified"
+        lines.append(
+            f"\n### {name}\nHeadline: {headline}\nSummary: {summary}\nRankings: {rank_str}"
+            f"\nTrends: {trends_str}\nWhite space: {ws_str}"
+        )
     return "\n".join(lines) if lines else "No reports."
+
+
+def build_venture_context_block(venture_context: str) -> dict:
+    """Build the venture context block and per-section instructions for the executive prompt."""
+    if not venture_context or not venture_context.strip():
+        return {
+            "venture_context_block": "",
+            "venture_ws_instruction": "",
+            "venture_matrix_instruction": "",
+            "venture_ns_instruction": "",
+        }
+    vc = venture_context.strip()
+    return {
+        "venture_context_block": (
+            f"\n--- VENTURE CONTEXT ---\n"
+            f"The user is evaluating this competitive landscape from the perspective of a specific venture:\n"
+            f"{vc}\n"
+            f"Use this context to personalize white space analysis and next steps. "
+            f"Frame opportunities and recommendations in terms of what THIS venture should prioritize.\n"
+            f"---\n"
+        ),
+        "venture_ws_instruction": (
+            "Frame opportunities through the lens of the user's venture context above. "
+            "Which gaps are most relevant to THEIR specific venture?"
+        ),
+        "venture_matrix_instruction": (
+            "Prioritize gaps that are most relevant to the user's venture context above."
+        ),
+        "venture_ns_instruction": (
+            "Tailor recommendations specifically to the user's venture described above. "
+            "What should THEY investigate, what are THEIR quick wins, THEIR strategic bets?"
+        ),
+    }

@@ -68,6 +68,11 @@ export default function RunsListPage() {
                         <div className="flex items-center gap-3">
                           <h3 className="font-semibold">{run.id}</h3>
                           <StatusBadge status={run.status} />
+                          {run.version === "v2" && (
+                            <Badge variant="outline" className="text-xs">
+                              V2 Relational
+                            </Badge>
+                          )}
                         </div>
                         <div className="flex items-center gap-4 text-sm text-muted-foreground">
                           <span className="flex items-center gap-1">

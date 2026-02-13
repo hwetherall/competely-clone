@@ -16,6 +16,7 @@ sys.path.insert(0, str(project_root))
 from api.models import (
     RunListItem,
     RunDetailResponse,
+    RunDetailV2Response,
     RunCreateRequest,
     RunCreateResponse,
     RunProgressResponse,
@@ -29,6 +30,7 @@ from api.models import (
     ConfidenceLevel,
 )
 from api.services import ResearchRunner
+from api.services.v2_runner import V2Runner
 
 router = APIRouter()
 
@@ -39,6 +41,11 @@ RESULTS_DIR = project_root / "data" / "results"
 def get_run_id_from_filename(filename: str) -> str:
     """Extract run ID from filename (e.g., comparison_20260128_163249.json -> comparison_20260128_163249)."""
     return filename.replace(".json", "")
+
+
+def is_v2_run(run_id: str) -> bool:
+    """Return True if run_id is a V2 run."""
+    return run_id.startswith("v2_run_")
 
 
 def parse_result_file(filepath: Path) -> Optional[dict]:
@@ -89,6 +96,31 @@ async def list_runs():
                 completed_at=timestamp,
                 total_cells=total_cells,
                 successful_cells=successful,
+                version="v1",
+            ))
+
+    # V2 runs (v2_run_*.json)
+    if RESULTS_DIR.exists():
+        for filepath in RESULTS_DIR.glob("v2_run_*.json"):
+            data = parse_result_file(filepath)
+            if not data:
+                continue
+            run_id = get_run_id_from_filename(filepath.name)
+            companies = data.get("companies", [])
+            parameters = data.get("parameters", [])
+            timestamp = data.get("timestamp", "")
+            metadata = data.get("metadata", {})
+            total_cells = len(companies) * len(parameters) if companies and parameters else 0
+            runs.append(RunListItem(
+                id=run_id,
+                companies=companies,
+                variables=parameters,
+                status=RunStatus.COMPLETED,
+                created_at=timestamp,
+                completed_at=timestamp,
+                total_cells=total_cells,
+                successful_cells=total_cells,
+                version="v2",
             ))
     
     # Check for in-progress runs
@@ -109,6 +141,7 @@ async def list_runs():
                     created_at=progress.get("started_at", ""),
                     total_cells=progress.get("total", 0),
                     successful_cells=progress.get("completed", 0),
+                    version="v2" if run_id.startswith("v2_run_") else "v1",
                 ))
         except Exception:
             continue
@@ -119,23 +152,35 @@ async def list_runs():
     return runs
 
 
-@router.get("/{run_id}", response_model=RunDetailResponse)
+@router.get("/{run_id}")
 async def get_run(run_id: str):
     """
     Get full details for a specific run.
-    
-    Returns the complete research grid with all cell data.
+    Returns V1 grid detail or V2 relational detail based on run_id.
     """
     filepath = RESULTS_DIR / f"{run_id}.json"
-    
     if not filepath.exists():
         raise HTTPException(status_code=404, detail=f"Run not found: {run_id}")
-    
+
     data = parse_result_file(filepath)
     if not data:
         raise HTTPException(status_code=500, detail="Failed to parse run data")
-    
-    # Convert grid data to proper schema
+
+    if is_v2_run(run_id):
+        return RunDetailV2Response(
+            id=data.get("run_id", run_id),
+            timestamp=data.get("timestamp", ""),
+            companies=data.get("companies", []),
+            parameters=data.get("parameters", []),
+            parameter_definitions=data.get("parameter_definitions", {}),
+            executive=data.get("executive", {}),
+            analyses=data.get("analyses", {}),
+            metadata=data.get("metadata", {}),
+            status=RunStatus.COMPLETED,
+            version="v2",
+        )
+
+    # V1: Convert grid data to proper schema
     grid = {}
     raw_grid = data.get("grid", {})
     
@@ -197,6 +242,7 @@ async def get_run(run_id: str):
         grid=grid,
         metadata=metadata,
         status=RunStatus.COMPLETED,
+        version="v1",
     )
 
 
@@ -231,14 +277,23 @@ async def get_run_status(run_id: str):
             with open(progress_filepath, "r", encoding="utf-8") as f:
                 progress = json.load(f)
             
-            # Parse current task
+            # Parse current task (V1 has dict with company/variable; V2 has phase + current string)
             current = None
-            if progress.get("current"):
+            if progress.get("current") and isinstance(progress["current"], dict):
                 current = CurrentTask(
                     company=progress["current"].get("company", ""),
                     variable=progress["current"].get("variable", ""),
                     step=progress["current"].get("step"),
                 )
+            elif progress.get("phase") or progress.get("current"):
+                step = progress.get("current") or f"Phase: {progress.get('phase', 'running')}"
+                # V2 format: "Company - Variable" or phase name
+                company, variable = "", ""
+                if step and " - " in step:
+                    parts = step.split(" - ", 1)
+                    company = parts[0].strip()
+                    variable = parts[1].strip() if len(parts) > 1 else ""
+                current = CurrentTask(company=company, variable=variable, step=step)
             
             # Parse activity
             activity = [
@@ -279,13 +334,11 @@ async def get_run_status(run_id: str):
 @router.post("", response_model=RunCreateResponse)
 async def create_run(request: RunCreateRequest, background_tasks: BackgroundTasks):
     """
-    Start a new research run.
-    
-    The research runs in the background and progress can be monitored
-    via the /runs/{run_id}/status endpoint.
+    Start a new research run (V1 grid or V2 relational).
+    Use request.version = "v2" for the relational competitive intelligence pipeline.
     """
-    # Validate variables: each must be either a known static variable or provided in dynamic_variables
     from config.variables import get_all_variable_ids
+
     valid_static = set(get_all_variable_ids())
     dynamic_ids = {d.id for d in (request.dynamic_variables or [])}
     invalid_vars = [
@@ -297,41 +350,56 @@ async def create_run(request: RunCreateRequest, background_tasks: BackgroundTask
             status_code=400,
             detail=f"Invalid or missing variable definitions: {', '.join(invalid_vars)}. Include dynamic_variables for generated variables."
         )
-    
-    # Generate run ID
-    run_id = f"comparison_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
-    
-    # Initialize progress file
+
+    use_v2 = (getattr(request, "version", None) or "v1") == "v2"
+    run_id = f"v2_run_{datetime.now().strftime('%Y%m%d_%H%M%S')}" if use_v2 else f"comparison_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+
     progress_filepath = RESULTS_DIR / f"progress_{run_id}.json"
+    total = len(request.companies) * len(request.variables)
     initial_progress = {
         "run_id": run_id,
         "status": "pending",
         "companies": request.companies,
         "variables": request.variables,
-        "total": len(request.companies) * len(request.variables),
+        "total": total,
         "completed": 0,
         "current": None,
         "started_at": datetime.now().isoformat(),
         "elapsed_seconds": 0,
         "recent_activity": [],
     }
-    
+    if use_v2:
+        initial_progress["phase"] = "starting"
+
     with open(progress_filepath, "w", encoding="utf-8") as f:
         json.dump(initial_progress, f, indent=2)
-    
-    # Start background task
-    dynamic_var_dicts = [d.model_dump() for d in request.dynamic_variables] if request.dynamic_variables else None
-    runner = ResearchRunner()
-    background_tasks.add_task(
-        runner.run_research_sync,
-        run_id=run_id,
-        companies=request.companies,
-        variables=request.variables,
-        dynamic_variables=dynamic_var_dicts,
-        concurrency=request.concurrency,
-        fast_mode=request.fast_mode,
-    )
-    
+
+    if use_v2:
+        dynamic_var_dicts = [d.model_dump() for d in request.dynamic_variables] if request.dynamic_variables else None
+        v2_runner = V2Runner()
+        background_tasks.add_task(
+            v2_runner.run_sync,
+            run_id=run_id,
+            companies=request.companies,
+            variables=request.variables,
+            dynamic_variables=dynamic_var_dicts,
+            concurrency=request.concurrency,
+            fast_mode=request.fast_mode,
+            venture_context=request.venture_context or "",
+        )
+    else:
+        dynamic_var_dicts = [d.model_dump() for d in request.dynamic_variables] if request.dynamic_variables else None
+        runner = ResearchRunner()
+        background_tasks.add_task(
+            runner.run_research_sync,
+            run_id=run_id,
+            companies=request.companies,
+            variables=request.variables,
+            dynamic_variables=dynamic_var_dicts,
+            concurrency=request.concurrency,
+            fast_mode=request.fast_mode,
+        )
+
     return RunCreateResponse(
         run_id=run_id,
         status=RunStatus.PENDING,

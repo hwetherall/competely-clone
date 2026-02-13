@@ -64,7 +64,7 @@ class NormalizeAgent:
                 raw_dossiers={},
             )
 
-        dossiers_text = format_dossiers_for_normalize(dossiers_by_company, parameter_name)
+        dossiers_text = format_dossiers_for_normalize(dossiers_by_company)
         prompt = NORMALIZE_PROMPT.format(
             parameter_name=parameter_name,
             research_prompt=research_prompt,

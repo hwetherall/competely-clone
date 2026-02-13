@@ -88,11 +88,19 @@ export function RunProgress({ runId, onComplete }: RunProgressProps) {
             <p className="text-sm text-muted-foreground mb-1">Currently researching:</p>
             <div className="flex items-center gap-2">
               <Loader2 className="h-4 w-4 animate-spin text-primary" />
-              <span className="font-medium">{progressData.current.company}</span>
-              <ArrowRight className="h-4 w-4 text-muted-foreground" />
-              <span>{progressData.current.variable}</span>
+              {(progressData.current.company || progressData.current.variable) ? (
+                <>
+                  <span className="font-medium">{progressData.current.company}</span>
+                  <ArrowRight className="h-4 w-4 text-muted-foreground" />
+                  <span>{progressData.current.variable}</span>
+                </>
+              ) : (
+                <span className="font-medium">
+                  {progressData.current.step || "Starting..."}
+                </span>
+              )}
             </div>
-            {progressData.current.step && (
+            {progressData.current.step && (progressData.current.company || progressData.current.variable) && (
               <p className="mt-1 text-xs text-muted-foreground">
                 {progressData.current.step}
               </p>

@@ -137,10 +137,11 @@ class RunListItem(BaseModel):
     completed_at: Optional[str] = None
     total_cells: int
     successful_cells: Optional[int] = None
+    version: Optional[str] = Field(default="v1", description="'v1' or 'v2'")
 
 
 class RunDetailResponse(BaseModel):
-    """Full detail of a completed run."""
+    """Full detail of a completed run (V1 grid)."""
     id: str
     timestamp: str
     companies: List[str]
@@ -148,6 +149,21 @@ class RunDetailResponse(BaseModel):
     grid: Dict[str, Dict[str, CellData]]
     metadata: RunMetadata
     status: RunStatus = RunStatus.COMPLETED
+    version: Optional[str] = Field(default="v1", description="'v1' or 'v2'")
+
+
+class RunDetailV2Response(BaseModel):
+    """Full detail of a completed V2 relational run."""
+    id: str
+    timestamp: str
+    companies: List[str]
+    parameters: List[str]
+    parameter_definitions: Dict[str, Dict[str, Any]]
+    executive: Dict[str, Any]
+    analyses: Dict[str, Dict[str, Any]]
+    metadata: Dict[str, Any]
+    status: RunStatus = RunStatus.COMPLETED
+    version: str = "v2"
 
 
 class RunCreateRequest(BaseModel):
@@ -160,6 +176,11 @@ class RunCreateRequest(BaseModel):
     )
     concurrency: int = Field(default=3, ge=1, le=10, description="Maximum concurrent tasks")
     fast_mode: bool = Field(default=False, description="Use fast mode (single iteration)")
+    version: Optional[str] = Field(default="v1", description="Pipeline version: 'v1' (grid) or 'v2' (relational)")
+    venture_context: Optional[str] = Field(
+        default=None,
+        description="Optional venture description to personalize white space analysis and next steps in the executive brief",
+    )
 
 
 class RunCreateResponse(BaseModel):

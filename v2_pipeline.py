@@ -17,7 +17,7 @@ import argparse
 import time
 from pathlib import Path
 from datetime import datetime, timezone
-from typing import List, Dict, Any, Optional
+from typing import List, Dict, Any, Optional, Callable
 
 project_root = Path(__file__).parent
 sys.path.insert(0, str(project_root))
@@ -106,18 +106,23 @@ async def gather_one(
     variable_id: str,
     total: int,
     completed: List[int],
-    start: float,
     variable_lookup: Optional[Dict[str, VariableDefinition]],
+    progress_callback: Optional[Callable[[str, int, int, Optional[str]], None]] = None,
 ) -> tuple[str, str, IntelligenceDossier]:
+    var_name = variable_lookup.get(variable_id).name if variable_lookup and variable_id in variable_lookup else variable_id
     async with semaphore:
-        completed[0] += 1
-        n = completed[0]
-        var_name = variable_lookup.get(variable_id).name if variable_lookup and variable_id in variable_lookup else variable_id
+        n = completed[0] + 1
         print(f"  [Gather {n}/{total}] {company} - {var_name}...")
         try:
             dossier = await agent.gather(company, variable_id)
+            completed[0] += 1
+            if progress_callback:
+                progress_callback("gather", completed[0], total, f"{company} - {var_name}")
             return (company, variable_id, dossier)
         except Exception as e:
+            completed[0] += 1
+            if progress_callback:
+                progress_callback("gather", completed[0], total, f"{company} - {var_name}")
             logger.error(f"Gather failed {company} - {variable_id}: {e}")
             return (
                 company,
@@ -142,12 +147,21 @@ async def run_v2_analysis(
     fast_mode: bool = False,
     generate_vars: bool = True,
     max_parameters: Optional[int] = None,
+    variable_ids_override: Optional[List[str]] = None,
+    variable_lookup_override: Optional[Dict[str, VariableDefinition]] = None,
+    run_id_override: Optional[str] = None,
+    progress_callback: Optional[Callable[[str, int, int, Optional[str]], None]] = None,
+    venture_context: str = "",
 ) -> V2RunResult:
     variable_ids: List[str] = []
     variable_lookup: Dict[str, VariableDefinition] = {}
     variable_definitions: Dict[str, Dict[str, Any]] = {}
 
-    if generate_vars and len(companies) >= 2:
+    if variable_ids_override is not None and variable_lookup_override is not None:
+        variable_ids = list(variable_ids_override)
+        variable_lookup = dict(variable_lookup_override)
+        variable_definitions = {vid: {"id": v.id, "name": v.name, "category": v.category} for vid, v in variable_lookup.items()}
+    elif generate_vars and len(companies) >= 2:
         print("\n  Analyzing competitor set and generating smart parameters...")
         try:
             gen_result = await generate_variables_impl(companies)
@@ -209,8 +223,8 @@ async def run_v2_analysis(
             var_id,
             total_gather,
             completed_count,
-            start_time,
             variable_lookup,
+            progress_callback,
         )
         for company in companies
         for var_id in variable_ids
@@ -228,11 +242,14 @@ async def run_v2_analysis(
         company, variable_id, dossier = r
         intelligence[company][variable_id] = dossier.to_dict()
 
-    # Phase 2: Normalize (per parameter)
+    # Phase 2: Normalize (per parameter, parallel)
+    if progress_callback:
+        progress_callback("normalize", total_gather, total_gather, "Starting normalize...")
     print("\nPhase 2: Normalize\n")
     phase2_start = time.time()
     datasets: Dict[str, NormalizedDataset] = {}
-    for i, var_id in enumerate(variable_ids):
+
+    async def normalize_one(var_id: str, idx: int) -> tuple[str, NormalizedDataset]:
         var = variable_lookup.get(var_id) or get_variable(var_id)
         research_prompt = var.research_prompt.format(company="each company")
         dossiers_by_company = {}
@@ -241,23 +258,42 @@ async def run_v2_analysis(
             if d_dict:
                 dossiers_by_company[company] = IntelligenceDossier.from_dict(d_dict)
         if dossiers_by_company:
-            print(f"  [{i + 1}/{len(variable_ids)}] {var.name}...")
-            datasets[var_id] = await normalize_agent.normalize(
+            print(f"  [{idx + 1}/{len(variable_ids)}] {var.name}...")
+            result = await normalize_agent.normalize(
                 var_id,
                 var.name,
                 research_prompt,
                 dossiers_by_company,
             )
-        else:
-            datasets[var_id] = NormalizedDataset(
-                parameter_id=var_id,
-                parameter_name=var.name,
-                raw_dossiers={},
-            )
+            return (var_id, result)
+        return (var_id, NormalizedDataset(
+            parameter_id=var_id,
+            parameter_name=var.name,
+            raw_dossiers={},
+        ))
+
+    norm_sem = asyncio.Semaphore(concurrency)
+
+    async def normalize_one_throttled(var_id: str, idx: int) -> tuple[str, NormalizedDataset]:
+        async with norm_sem:
+            return await normalize_one(var_id, idx)
+
+    norm_results = await asyncio.gather(
+        *(normalize_one_throttled(vid, i) for i, vid in enumerate(variable_ids)),
+        return_exceptions=True,
+    )
+    for r in norm_results:
+        if isinstance(r, Exception):
+            logger.error("Normalize task failed: %s", r)
+            continue
+        var_id, dataset = r
+        datasets[var_id] = dataset
     phase2_elapsed = time.time() - phase2_start
     print(f"\n  Phase 2 completed in {format_time(phase2_elapsed)}")
 
     # Phase 3: Synthesize (per parameter)
+    if progress_callback:
+        progress_callback("synthesize", total_gather, total_gather, "Starting synthesize...")
     print("\nPhase 3: Synthesize\n")
     phase3_start = time.time()
     analyses: Dict[str, Dict[str, Any]] = {}
@@ -291,6 +327,8 @@ async def run_v2_analysis(
     print(f"\n  Phase 3 completed in {format_time(phase3_elapsed)}")
 
     # Phase 4: Executive
+    if progress_callback:
+        progress_callback("executive", total_gather, total_gather, "Generating executive brief...")
     print("\nPhase 4: Executive brief\n")
     phase4_start = time.time()
     reports_for_exec = []
@@ -299,12 +337,12 @@ async def run_v2_analysis(
         if a:
             reports_for_exec.append(ComparativeReport.from_dict(a))
     companies_list = ", ".join(companies)
-    executive = await executive_agent.synthesize_brief(companies_list, reports_for_exec)
+    executive = await executive_agent.synthesize_brief(companies_list, reports_for_exec, venture_context=venture_context)
     phase4_elapsed = time.time() - phase4_start
     print(f"  Phase 4 completed in {format_time(phase4_elapsed)}")
 
     total_elapsed = time.time() - start_time
-    run_id = f"v2_run_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+    run_id = run_id_override or f"v2_run_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
     result = V2RunResult(
         run_id=run_id,
         timestamp=datetime.now(timezone.utc).isoformat(),

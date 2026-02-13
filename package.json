@@ -1,0 +1,12 @@
+{
+  "name": "competely-clone",
+  "private": true,
+  "scripts": {
+    "dev": "concurrently -n backend,frontend -c blue,magenta \"node scripts/start-backend.js\" \"npm run dev --prefix frontend\"",
+    "dev:backend": "node scripts/start-backend.js",
+    "dev:frontend": "npm run dev --prefix frontend"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.0"
+  }
+}

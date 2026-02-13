@@ -46,6 +46,7 @@ class GatherState:
     search_results: List[SearchResult] = field(default_factory=list)
     evidence_sources: List[EvidenceSource] = field(default_factory=list)
     evidence_passages: List[EvidencePassage] = field(default_factory=list)
+    fetched_urls: set = field(default_factory=set)  # URLs already fetched across iterations
     pages_fetched: int = 0
     pages_failed: int = 0
     iteration: int = 0
@@ -200,8 +201,10 @@ class GatherAgent:
             return self._fallback_queries(company, variable.name)
 
     def _fallback_queries(self, company: str, variable_name: str) -> List[str]:
+        from datetime import datetime
+        year = datetime.now().year
         return [
-            f"{company} {variable_name} 2024",
+            f"{company} {variable_name} {year}",
             f"{company} {variable_name} analysis",
         ]
 
@@ -229,16 +232,15 @@ class GatherAgent:
 
     async def _fetch_and_build_evidence(self, state: GatherState) -> None:
         urls_to_fetch = []
-        seen_urls = set()
         for result in state.search_results:
             ranked = sorted(
                 result.items,
                 key=lambda x: (-x.source_score, x.position),
             )
             for item in ranked[:settings.TOP_K_RESULTS_TO_FETCH]:
-                if item.url not in seen_urls and item.source_score >= settings.MIN_SOURCE_SCORE:
+                if item.url not in state.fetched_urls and item.source_score >= settings.MIN_SOURCE_SCORE:
                     urls_to_fetch.append(item)
-                    seen_urls.add(item.url)
+                    state.fetched_urls.add(item.url)
         urls_to_fetch = urls_to_fetch[:settings.MAX_PAGES_PER_CELL]
         if not urls_to_fetch:
             return

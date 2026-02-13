@@ -9,11 +9,17 @@ import re
 from typing import List, Dict, Any, Optional
 
 from agents.llm_client import LLMClient
-from agents.v2_schemas import ExecutiveBrief, ComparativeReport
+from agents.v2_schemas import (
+    ExecutiveBrief,
+    ComparativeReport,
+    WhiteSpaceOpportunity,
+    NextStepItem,
+)
 from agents.v2_prompts import (
     EXECUTIVE_BRIEF_SYSTEM,
     EXECUTIVE_BRIEF_PROMPT,
     format_parameter_summaries_for_executive,
+    build_venture_context_block,
 )
 from config import settings
 
@@ -35,30 +41,54 @@ class ExecutiveAgent:
         self,
         companies_list: str,
         reports: List[ComparativeReport],
+        venture_context: str = "",
     ) -> ExecutiveBrief:
         """
         Produce ExecutiveBrief from parameter report summaries.
-        Uses only headline, executive_summary, and rankings per report to stay within context.
+        Uses headline, executive_summary, rankings, trends, and white_space per report.
+        Optionally personalizes white space and next steps with venture_context.
         """
         parameter_summaries = format_parameter_summaries_for_executive(reports)
+        vc_parts = build_venture_context_block(venture_context)
         prompt = EXECUTIVE_BRIEF_PROMPT.format(
             companies_list=companies_list,
             parameter_summaries=parameter_summaries,
+            venture_context_block=vc_parts["venture_context_block"],
+            venture_ws_instruction=vc_parts["venture_ws_instruction"],
+            venture_matrix_instruction=vc_parts["venture_matrix_instruction"],
+            venture_ns_instruction=vc_parts["venture_ns_instruction"],
         )
         try:
             response = await self.llm_client.complete_simple(
                 prompt=prompt,
                 system_prompt=EXECUTIVE_BRIEF_SYSTEM,
                 temperature=0.5,
-                max_tokens=4000,
+                max_tokens=12000,
                 model_override=EXECUTIVE_MODEL,
             )
             if response and response.strip():
                 parsed = self._parse_executive_json(response)
                 if parsed:
+                    # Parse white_space_opportunities
+                    ws_opps = [
+                        WhiteSpaceOpportunity.from_dict(o)
+                        for o in parsed.get("white_space_opportunities", [])
+                    ]
+                    # Parse next_steps buckets
+                    raw_ns = parsed.get("next_steps", {})
+                    next_steps = {
+                        bucket: [NextStepItem.from_dict(item) for item in items]
+                        for bucket, items in raw_ns.items()
+                        if isinstance(items, list)
+                    }
                     return ExecutiveBrief(
                         brief=parsed.get("brief", ""),
                         key_themes=parsed.get("key_themes", []),
+                        trends=parsed.get("trends", []),
+                        white_space_opportunities=ws_opps,
+                        white_space_matrix=parsed.get("white_space_matrix", {}),
+                        next_steps=next_steps,
+                        venture_context=venture_context,
                         metadata={"model": EXECUTIVE_MODEL},
                     )
         except Exception as e:
