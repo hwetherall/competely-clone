@@ -16,7 +16,7 @@ Prompts for:
 GATHER_FACT_EXTRACTION_SYSTEM = """You are a competitive intelligence analyst. Your task is to extract structured facts from evidence passages. Output ONLY valid JSON. Do not write prose or explanations. Every fact must cite a source_id from the evidence."""
 
 GATHER_FACT_EXTRACTION_PROMPT = """Extract structured facts about {company} for the research dimension: {parameter_name}.
-
+{parameter_context_line}
 Research goal: {research_prompt}
 
 Evidence (source IDs like [S1], [S2] appear in the passages):
@@ -58,7 +58,7 @@ Your extraction:"""
 NORMALIZE_SYSTEM = """You are a competitive intelligence analyst. Your job is to normalize company dossiers for one parameter into a common comparison schema so that companies can be compared side-by-side. Output only valid JSON."""
 
 NORMALIZE_PROMPT = """Normalize the following company dossiers for the parameter: {parameter_name}.
-
+{parameter_context_line}
 Parameter context: {research_prompt}
 
 Dossiers (one per company):
@@ -99,7 +99,7 @@ Your normalization:"""
 SYNTHESIS_DRAFT_SYSTEM = """You are a senior competitive intelligence analyst. Your task is to write a comparative "State of the Nation" report that compares multiple companies on one dimension. You must compare companies AGAINST each other, declare winners and losers, identify trends and white space. Be specific and evidence-based. Cite source IDs when referencing facts."""
 
 SYNTHESIS_DRAFT_PROMPT = """Write a comparative analysis report for the parameter: {parameter_name}.
-
+{parameter_context_line}
 Parameter context: {research_prompt}
 
 Companies being compared: {companies_list}

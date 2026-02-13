@@ -1,9 +1,9 @@
 """
 Variable generator: analyzes the Set of Competitors (SoC) and produces
-contextual parameter recommendations using a strategic LLM (Claude Opus 4.6).
+contextual parameter recommendations using a strategic LLM (e.g. kimi-k2.5).
 
 - Tier 2: include/exclude recommendations for "sometimes" variables
-- Tier 3: ~20 industry-specific dynamic variables with full research definitions
+- Tier 3: industry-specific dynamic variables with full research definitions
 """
 
 import json
@@ -12,7 +12,7 @@ import logging
 from dataclasses import dataclass, field
 from typing import List, Dict, Any
 
-from config.variables import VariableDefinition, get_sometimes_variables
+from config.variables import VariableDefinition, get_sometimes_variables, get_always_variables
 from config import settings
 from agents.llm_client import LLMClient, LLMError
 
@@ -36,6 +36,8 @@ class VariableGenerationResult:
     """Result of generate_variables(): Tier 2 recommendations + generated Tier 3 variables."""
     tier2_recommendations: List[Tier2Recommendation]
     generated_variables: List[VariableDefinition]
+    generated_variable_rationales: Dict[str, str]  # variable id -> rationale for Tier 3
+    always_parameter_contexts: Dict[str, str]  # variable id -> one-line context for Tier 1
     industry_context: str
 
 
@@ -55,9 +57,23 @@ def _build_user_prompt(companies: List[str]) -> str:
     sometimes_list = "\n".join(
         f"- {v.id} ({v.name})" for v in sometimes
     )
+    always = get_always_variables()
+    always_list = "\n".join(
+        f"- {v.id} ({v.name})" for v in always
+    )
     companies_list = ", ".join(companies)
 
     return f"""Set of Competitors (SoC): {companies_list}
+
+---
+
+PART 0 — Always-included parameters context
+The following parameters are always included in every analysis. For each one, provide a one-line parameter_context that explains why this dimension matters when comparing this specific SoC (e.g. for UVP: "How each player positions its core promise shapes where white space remains.").
+
+Always-included parameters:
+{always_list}
+
+Output a JSON object that maps each variable id to a one-line string. You will include this in the full JSON under "always_parameter_contexts".
 
 ---
 
@@ -98,11 +114,16 @@ For EACH generated parameter you MUST provide a full research definition so a re
 7. category: One of a few categories you use to group them (e.g. "Operations & Infrastructure", "Customer Experience", "Financials").
 8. preferred_source_types: List like ["official", "tier1_news", "regulatory"] as appropriate.
 9. max_concise_chars: 200 unless a different limit is better.
+10. rationale: One sentence explaining why this parameter is relevant for this specific SoC (e.g. "Gojek and Grab are super-apps; Uber/Lyft are not; this dimension reveals diversification strategy."). This will be shown to the user so they understand why the parameter was suggested.
 
 Output your response as a single JSON object inside <result>...</result> tags. Use this exact structure (no trailing commas):
 
 <result>
 {{
+  "always_parameter_contexts": {{
+    "unique_value_proposition": "How each player positions its core promise shapes where white space remains.",
+    "positioning": "Market segment and positioning reveal premium vs value gaps in the set."
+  }},
   "industry_context": "Your one sentence here",
   "tier2_recommendations": [
     {{ "variable_id": "competitive_positioning_summary", "include": true, "reason": "Relevant for any competitive set" }},
@@ -118,13 +139,14 @@ Output your response as a single JSON object inside <result>...</result> tags. U
       "answer_spec": ["Total fleet size (number of aircraft)", "Breakdown by type if available", "Source and date of data"],
       "key_terms": ["fleet", "aircraft", "planes", "narrow-body", "wide-body", "orders", "retirement"],
       "preferred_source_types": ["official", "tier1_news"],
-      "max_concise_chars": 200
+      "max_concise_chars": 200,
+      "rationale": "Fleet size and composition directly affect capacity and cost structure; comparing these highlights operational scale and investment priorities across the set."
     }}
   ]
 }}
 </result>
 
-Generate tier2_recommendations for EVERY sometimes variable listed above. Generate exactly 10 generated_variables. Now output the JSON:"""
+Generate always_parameter_contexts for EVERY always-included variable listed in PART 0. Generate tier2_recommendations for EVERY sometimes variable listed above. Generate exactly 10 generated_variables. Now output the JSON:"""
 
 
 def _extract_result_json(content: str) -> dict:
@@ -219,7 +241,7 @@ async def generate_variables(companies: List[str]) -> VariableGenerationResult:
     model = settings.VARIABLE_GENERATOR_MODEL
     prompt = _build_user_prompt(companies)
 
-    print(f"[Variable generation] Calling {model} (this may take 30-90 seconds)...")
+    print(f"[Variable generation] Calling {model}...")
     logger.info("Calling variable generator model: %s", model)
     content = await client.complete_simple(
         prompt=prompt,
@@ -233,6 +255,10 @@ async def generate_variables(companies: List[str]) -> VariableGenerationResult:
     data = _extract_result_json(content)
 
     industry_context = data.get("industry_context", "Unknown industry")
+    always_parameter_contexts: Dict[str, str] = {}
+    for k, v in data.get("always_parameter_contexts", {}).items():
+        if isinstance(k, str) and isinstance(v, str):
+            always_parameter_contexts[k] = v.strip()
 
     tier2_recommendations: List[Tier2Recommendation] = []
     for rec in data.get("tier2_recommendations", []):
@@ -243,9 +269,12 @@ async def generate_variables(companies: List[str]) -> VariableGenerationResult:
         ))
 
     generated_variables: List[VariableDefinition] = []
+    generated_variable_rationales: Dict[str, str] = {}
     for g in data.get("generated_variables", []):
         try:
-            generated_variables.append(_dict_to_variable_definition(g))
+            v = _dict_to_variable_definition(g)
+            generated_variables.append(v)
+            generated_variable_rationales[v.id] = str(g.get("rationale", "")).strip()
         except (KeyError, TypeError) as e:
             logger.warning("Skipping malformed generated variable: %s", e)
             continue
@@ -253,5 +282,7 @@ async def generate_variables(companies: List[str]) -> VariableGenerationResult:
     return VariableGenerationResult(
         tier2_recommendations=tier2_recommendations,
         generated_variables=generated_variables,
+        generated_variable_rationales=generated_variable_rationales,
+        always_parameter_contexts=always_parameter_contexts,
         industry_context=industry_context,
     )

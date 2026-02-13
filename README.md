@@ -179,6 +179,10 @@ Results are saved to `data/results/comparison_<timestamp>.json`:
     └──────────┘        └──────────┘        └──────────┘
 ```
 
+## Deployment
+
+To deploy the **frontend** (Next.js) to **Vercel** and the **backend** (FastAPI) to **Railway**, see **[DEPLOYMENT.md](DEPLOYMENT.md)** for step-by-step instructions, environment variables, and CORS setup.
+
 ## License
 
 MIT

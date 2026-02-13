@@ -74,11 +74,32 @@ export default function NewRunPage() {
 
   const handleSubmit = async () => {
     if (!canSubmit) return;
+    let parameter_contexts: Record<string, string> | undefined;
+    if (useV2 && generatedData) {
+      parameter_contexts = {};
+      const alwaysIds = new Set(generatedData.always_variables.map((v) => v.id));
+      const tier2ById = new Map(
+        generatedData.tier2_recommendations.map((r) => [r.variable_id, r.reason])
+      );
+      const generatedById = new Map(
+        generatedData.generated_variables.map((v) => [v.id, v.rationale ?? ""])
+      );
+      for (const id of selectedVariableIds) {
+        if (alwaysIds.has(id)) {
+          parameter_contexts[id] = generatedData.always_parameter_contexts?.[id] ?? "";
+        } else if (tier2ById.has(id)) {
+          parameter_contexts[id] = tier2ById.get(id) ?? "";
+        } else if (generatedById.has(id)) {
+          parameter_contexts[id] = generatedById.get(id) ?? "";
+        }
+      }
+    }
     try {
       const result = await createRun.mutateAsync({
         companies,
         variables: selectedVariableIds,
         dynamic_variables: dynamicVariableDefs.length > 0 ? dynamicVariableDefs : undefined,
+        parameter_contexts: parameter_contexts,
         fast_mode: fastMode,
         concurrency: 3,
         version: useV2 ? "v2" : "v1",

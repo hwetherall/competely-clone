@@ -20,8 +20,10 @@ RESULTS_DIR = project_root / "data" / "results"
 def _build_variable_lookup(
     variable_ids: List[str],
     dynamic_variables: Optional[List[Dict[str, Any]]] = None,
+    parameter_contexts: Optional[Dict[str, str]] = None,
 ):
     """Build variable_id -> VariableDefinition for V2 pipeline."""
+    from dataclasses import replace
     from config.variables import VariableDefinition, get_variable
 
     lookup = {}
@@ -29,7 +31,7 @@ def _build_variable_lookup(
     for var_id in variable_ids:
         if var_id in dynamic_by_id:
             d = dynamic_by_id[var_id]
-            lookup[var_id] = VariableDefinition(
+            v = VariableDefinition(
                 id=d["id"],
                 name=d["name"],
                 category=d["category"],
@@ -42,7 +44,10 @@ def _build_variable_lookup(
                 tier="dynamic",
             )
         else:
-            lookup[var_id] = get_variable(var_id)
+            v = get_variable(var_id)
+        if parameter_contexts and var_id in parameter_contexts and parameter_contexts[var_id]:
+            v = replace(v, parameter_context=parameter_contexts[var_id])
+        lookup[var_id] = v
     return lookup
 
 
@@ -88,6 +93,7 @@ class V2Runner:
         companies: List[str],
         variables: List[str],
         dynamic_variables: Optional[List[Dict[str, Any]]] = None,
+        parameter_contexts: Optional[Dict[str, str]] = None,
         concurrency: int = 3,
         fast_mode: bool = False,
         venture_context: str = "",
@@ -98,6 +104,7 @@ class V2Runner:
             companies=companies,
             variables=variables,
             dynamic_variables=dynamic_variables,
+            parameter_contexts=parameter_contexts,
             concurrency=concurrency,
             fast_mode=fast_mode,
             venture_context=venture_context,
@@ -109,6 +116,7 @@ class V2Runner:
         companies: List[str],
         variables: List[str],
         dynamic_variables: Optional[List[Dict[str, Any]]] = None,
+        parameter_contexts: Optional[Dict[str, str]] = None,
         concurrency: int = 3,
         fast_mode: bool = False,
         venture_context: str = "",
@@ -123,7 +131,9 @@ class V2Runner:
         self.progress_file = RESULTS_DIR / f"progress_{run_id}.json"
         self.start_time = time.time()
         self.started_at = datetime.now().isoformat()
-        variable_lookup = _build_variable_lookup(variables, dynamic_variables)
+        variable_lookup = _build_variable_lookup(
+            variables, dynamic_variables, parameter_contexts
+        )
         total_cells = len(companies) * len(variables)
 
         self._update_progress("gather", status="running", completed=0, total=total_cells, current="Starting gather...")

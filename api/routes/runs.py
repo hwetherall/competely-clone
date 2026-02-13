@@ -383,6 +383,7 @@ async def create_run(request: RunCreateRequest, background_tasks: BackgroundTask
             companies=request.companies,
             variables=request.variables,
             dynamic_variables=dynamic_var_dicts,
+            parameter_contexts=request.parameter_contexts,
             concurrency=request.concurrency,
             fast_mode=request.fast_mode,
             venture_context=request.venture_context or "",

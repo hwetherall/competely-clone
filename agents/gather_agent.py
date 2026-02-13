@@ -346,9 +346,16 @@ class GatherAgent:
             ),
         )
         evidence_text = evidence_pack.format_for_prompt()
+        parameter_context = getattr(state.variable, "parameter_context", None)
+        parameter_context_line = (
+            f"Focus on {state.variable.name} for {state.company}, which '{parameter_context}'.\n\n"
+            if parameter_context
+            else ""
+        )
         prompt = GATHER_FACT_EXTRACTION_PROMPT.format(
             company=state.company,
             parameter_name=state.variable.name,
+            parameter_context_line=parameter_context_line,
             research_prompt=state.variable.research_prompt.format(company=state.company),
             evidence_text=evidence_text,
         )

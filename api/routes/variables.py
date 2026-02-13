@@ -69,12 +69,12 @@ async def generate_variables(request: GenerateVariablesRequest):
     """
     Generate smart parameters based on the Set of Competitors (SoC).
     
-    Analyzes the competitor list with Claude Opus 4.6 to:
+    Analyzes the competitor list with a fast LLM to:
     - Detect industry context
     - Recommend which Tier 2 (contextual) variables to include or exclude
-    - Generate ~20 industry-specific Tier 3 variables with full research definitions
+    - Generate industry-specific Tier 3 variables with full research definitions
     
-    Takes ~30-90 seconds (Claude Opus 4.6). Requires OPENROUTER_API_KEY.
+    Requires OPENROUTER_API_KEY.
     """
     print(f"[Variable generation] Request received for companies: {request.companies}")
     try:
@@ -114,12 +114,14 @@ async def generate_variables(request: GenerateVariablesRequest):
             preferred_source_types=v.preferred_source_types,
             key_terms=v.key_terms,
             max_concise_chars=v.max_concise_chars,
+            rationale=result.generated_variable_rationales.get(v.id) or None,
         )
         for v in result.generated_variables
     ]
     return VariableGenerationResponse(
         industry_context=result.industry_context,
         always_variables=always_variables,
+        always_parameter_contexts=result.always_parameter_contexts,
         tier2_recommendations=tier2,
         generated_variables=generated,
     )

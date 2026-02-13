@@ -62,6 +62,7 @@ class DynamicVariableDefinition(BaseModel):
     preferred_source_types: List[str] = []
     key_terms: List[str] = []
     max_concise_chars: int = 200
+    rationale: Optional[str] = None
 
 
 class VariableGenerationResponse(BaseModel):
@@ -70,6 +71,10 @@ class VariableGenerationResponse(BaseModel):
     always_variables: List[VariableResponse] = Field(
         default_factory=list,
         description="Tier 1 variables (always included) for display",
+    )
+    always_parameter_contexts: Dict[str, str] = Field(
+        default_factory=dict,
+        description="Tier 1 variable id -> one-line context for why this dimension matters for this SoC",
     )
     tier2_recommendations: List[Tier2RecommendationSchema] = []
     generated_variables: List[DynamicVariableDefinition] = Field(
@@ -180,6 +185,10 @@ class RunCreateRequest(BaseModel):
     venture_context: Optional[str] = Field(
         default=None,
         description="Optional venture description to personalize white space analysis and next steps in the executive brief",
+    )
+    parameter_contexts: Optional[Dict[str, str]] = Field(
+        default=None,
+        description="Optional variable id -> one-line context for each parameter (from variable generation); used by V2 pipeline to guide gather/normalize/synthesis.",
     )
 
 

@@ -264,6 +264,7 @@ async def run_v2_analysis(
                 var.name,
                 research_prompt,
                 dossiers_by_company,
+                parameter_context=getattr(var, "parameter_context", None),
             )
             return (var_id, result)
         return (var_id, NormalizedDataset(
@@ -312,7 +313,11 @@ async def run_v2_analysis(
             continue
         print(f"  [{i + 1}/{len(variable_ids)}] {var.name}...")
         try:
-            report = await synthesis_agent.synthesize(norm, research_prompt)
+            report = await synthesis_agent.synthesize(
+                norm,
+                research_prompt,
+                parameter_context=getattr(var, "parameter_context", None),
+            )
             analyses[var_id] = report.to_dict()
         except Exception as e:
             logger.error("Synthesis failed for %s: %s", var_id, e)

@@ -4,6 +4,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
+import { Info } from "lucide-react";
 import type {
   VariableGenerationResponse,
   DynamicVariableDefinition,
@@ -66,14 +67,18 @@ export function SmartVariableSelector({
           </CardTitle>
         </CardHeader>
         <CardContent className="py-2 px-4">
-          <ul className="space-y-1.5">
+          <ul className="space-y-2">
             {data.always_variables.map((v) => (
-              <li
-                key={v.id}
-                className="flex items-center gap-2 text-sm text-muted-foreground"
-              >
-                <span className="inline-block w-4 h-4 rounded border border-muted bg-muted/50" />
-                <span>{v.name}</span>
+              <li key={v.id} className="flex items-start gap-2">
+                <span className="inline-block w-4 h-4 mt-0.5 rounded border border-muted bg-muted/50 shrink-0" />
+                <div className="min-w-0">
+                  <span className="text-sm text-muted-foreground">{v.name}</span>
+                  {data.always_parameter_contexts?.[v.id] && (
+                    <p className="text-xs text-muted-foreground mt-0.5">
+                      {data.always_parameter_contexts[v.id]}
+                    </p>
+                  )}
+                </div>
               </li>
             ))}
           </ul>
@@ -136,19 +141,36 @@ export function SmartVariableSelector({
           {data.generated_variables.map((v) => (
             <div
               key={v.id}
-              className="flex items-center space-x-2"
+              className="flex items-start gap-2"
             >
               <Checkbox
                 id={v.id}
                 checked={selectedVariableIds.includes(v.id)}
                 onCheckedChange={() => toggleGenerated(v.id)}
               />
-              <Label
-                htmlFor={v.id}
-                className="text-sm font-normal cursor-pointer"
-              >
-                {v.name}
-              </Label>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-1.5">
+                  <Label
+                    htmlFor={v.id}
+                    className="text-sm font-normal cursor-pointer"
+                  >
+                    {v.name}
+                  </Label>
+                  {v.rationale && (
+                    <span
+                      className="inline-flex text-muted-foreground hover:text-foreground"
+                      title={v.rationale}
+                    >
+                      <Info className="h-3.5 w-3.5 shrink-0" aria-hidden />
+                    </span>
+                  )}
+                </div>
+                {v.rationale && (
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    {v.rationale}
+                  </p>
+                )}
+              </div>
             </div>
           ))}
         </CardContent>

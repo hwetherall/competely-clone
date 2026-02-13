@@ -7,7 +7,7 @@ answer specifications for evidence-grounded research.
 """
 
 from dataclasses import dataclass, field
-from typing import List, Dict
+from typing import List, Dict, Optional
 
 
 @dataclass
@@ -24,6 +24,7 @@ class VariableDefinition:
     key_terms: List[str] = field(default_factory=list)  # Keywords for passage selection
     max_concise_chars: int = 240  # Maximum characters for concise summary
     tier: str = "always"       # "always" | "sometimes" | "dynamic"
+    parameter_context: Optional[str] = None  # One-line focus context for this run (from variable generation)
 
 
 # =============================================================================

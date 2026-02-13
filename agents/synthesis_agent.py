@@ -75,6 +75,7 @@ class SynthesisAgent:
         self,
         normalized: NormalizedDataset,
         research_prompt: str,
+        parameter_context: Optional[str] = None,
     ) -> ComparativeReport:
         """
         Produce a comparative report for one parameter. May loop: draft -> evaluate ->
@@ -87,7 +88,9 @@ class SynthesisAgent:
         draft: Optional[Dict[str, Any]] = None
 
         for iteration in range(MAX_SYNTHESIS_ITERATIONS):
-            draft = await self._draft_report(normalized, research_prompt, companies_list)
+            draft = await self._draft_report(
+                normalized, research_prompt, companies_list, parameter_context
+            )
             if not draft:
                 continue
             evaluation = await self._evaluate_draft(draft, normalized)
@@ -108,7 +111,9 @@ class SynthesisAgent:
             )
             if not new_dossiers:
                 break
-            normalized = await self._re_normalize(normalized, new_dossiers, research_prompt)
+            normalized = await self._re_normalize(
+                normalized, new_dossiers, research_prompt, parameter_context
+            )
             regather_count += 1
 
         return self._finalize_report(
@@ -124,12 +129,19 @@ class SynthesisAgent:
         normalized: NormalizedDataset,
         research_prompt: str,
         companies_list: str,
+        parameter_context: Optional[str] = None,
     ) -> Optional[Dict[str, Any]]:
         """Call Claude Opus to draft the comparative report."""
+        parameter_context_line = (
+            f"Focus for this comparison: '{parameter_context}'.\n\n"
+            if parameter_context
+            else ""
+        )
         normalized_data = json.dumps(normalized.company_data, indent=2)
         dossiers_context = _format_dossiers_context(normalized.raw_dossiers)
         prompt = SYNTHESIS_DRAFT_PROMPT.format(
             parameter_name=normalized.parameter_name,
+            parameter_context_line=parameter_context_line,
             research_prompt=research_prompt,
             companies_list=companies_list,
             normalized_data=normalized_data,
@@ -257,6 +269,7 @@ class SynthesisAgent:
         normalized: NormalizedDataset,
         new_dossiers: Dict[str, IntelligenceDossier],
         research_prompt: str,
+        parameter_context: Optional[str] = None,
     ) -> NormalizedDataset:
         """Merge new dossiers into existing and re-run normalization.
 
@@ -314,6 +327,7 @@ class SynthesisAgent:
             normalized.parameter_name,
             research_prompt,
             merged,
+            parameter_context=parameter_context,
         )
 
     def _finalize_report(

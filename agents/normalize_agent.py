@@ -41,6 +41,7 @@ class NormalizeAgent:
         parameter_name: str,
         research_prompt: str,
         dossiers_by_company: Dict[str, IntelligenceDossier],
+        parameter_context: Optional[str] = None,
     ) -> NormalizedDataset:
         """
         Produce a NormalizedDataset for one parameter from N company dossiers.
@@ -50,6 +51,7 @@ class NormalizeAgent:
             parameter_name: Human-readable name
             research_prompt: Parameter research context (with {company} already substituted or generic)
             dossiers_by_company: company -> IntelligenceDossier
+            parameter_context: Optional one-line focus context for this comparison (from variable generation)
 
         Returns:
             NormalizedDataset with schema_fields, company_data, data_gaps
@@ -64,9 +66,15 @@ class NormalizeAgent:
                 raw_dossiers={},
             )
 
+        parameter_context_line = (
+            f"Focus for this comparison: '{parameter_context}'.\n\n"
+            if parameter_context
+            else ""
+        )
         dossiers_text = format_dossiers_for_normalize(dossiers_by_company)
         prompt = NORMALIZE_PROMPT.format(
             parameter_name=parameter_name,
+            parameter_context_line=parameter_context_line,
             research_prompt=research_prompt,
             dossiers_text=dossiers_text,
         )
