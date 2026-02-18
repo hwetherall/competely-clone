@@ -453,22 +453,41 @@ INTELLIGENCE_STEP_INSTRUCTIONS = {
         "'Regional/domestic', 'Cargo-focused'. For geography: list actual regions where competitors exist."
     ),
     "parameters": (
-        "The user is about to select research parameters/dimensions. "
-        "Generate 1-2 questions about what analytical lens matters most. "
-        "Focus on: B2B vs B2C weighting, financial vs operational vs product focus, "
-        "regulatory importance, innovation vs stability."
+        "The user is about to select research parameters/dimensions for comparing these companies. "
+        "Generate 2-3 questions about what analytical lens matters most.\n"
+        "Focus on:\n"
+        "1. Primary analysis focus: financial performance, product/service quality, "
+        "technology/innovation, market positioning, customer experience, operations/supply chain\n"
+        "2. Business context: B2B vs B2C weighting, regulatory environment importance, "
+        "ESG/sustainability focus\n"
+        "3. Depth preference: breadth across many dimensions vs deep-dive on fewer\n\n"
+        "Make options concrete and specific to the industry. For example, for airlines: "
+        "'Route network & fleet', 'Pricing & yield management', 'Loyalty programs', "
+        "'On-time performance', 'Sustainability commitments'."
     ),
     "goal": (
-        "The user is about to define research goals. "
-        "Generate 1-2 questions about strategic intent: "
-        "new entrant assessment, incumbent defense, investment thesis, "
-        "product strategy, or market entry."
+        "The user is about to define the research mission and key questions. "
+        "Generate 2-3 questions about what they want to learn and why.\n"
+        "Focus on:\n"
+        "1. Strategic intent: Are you evaluating a new market entry, defending an incumbent position, "
+        "assessing an investment, benchmarking for improvement, or exploring M&A targets?\n"
+        "2. Decision horizon: Is this for an immediate decision (next quarter), "
+        "medium-term strategy (1-2 years), or long-range planning (3-5 years)?\n"
+        "3. Key concern: What keeps you up at night about this competitive landscape? "
+        "(pricing pressure, disruption risk, market share erosion, regulatory change, etc.)\n\n"
+        "Make options concrete and relevant to the specific companies/industry provided."
     ),
     "audience": (
-        "The user is configuring the audience. "
-        "Generate 1-2 questions about report consumption: "
-        "board-level summary vs analyst detail, internal vs external, "
-        "decision timeline urgency."
+        "The user is configuring who will read this report and how deep to go. "
+        "Generate 2-3 questions about report consumption and format.\n"
+        "Focus on:\n"
+        "1. Primary reader: C-suite/board (high-level), strategy team (detailed), "
+        "product/engineering team (technical), investors/analysts (financial)\n"
+        "2. Report purpose: Decision support for a specific initiative, ongoing competitive monitoring, "
+        "onboarding/education, or investor presentation\n"
+        "3. Detail level: Executive summary with key takeaways, balanced overview with supporting data, "
+        "or deep analytical dive with full evidence\n\n"
+        "Make options concrete. Consider that different audiences need different emphasis."
     ),
 }
 
