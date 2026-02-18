@@ -9,7 +9,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import type { RunDetailV2, WhiteSpaceOpportunity, NextStepItem } from "@/lib/types";
+import type { RunDetailV2, WhiteSpaceOpportunity, NextStepItem, RiskOverlay, CautionaryNarrative } from "@/lib/types";
 import { getConfidenceColor } from "@/lib/api";
 
 interface ResultsV2Props {
@@ -91,14 +91,34 @@ export function ResultsV2({ data }: ResultsV2Props) {
               <div className="space-y-3">
                 {executive.white_space_opportunities.map((opp: WhiteSpaceOpportunity, i: number) => {
                   const diffColor = opp.entry_difficulty === "Low" ? "bg-green-100 text-green-800" : opp.entry_difficulty === "High" ? "bg-red-100 text-red-800" : "bg-yellow-100 text-yellow-800";
+                  const overlay = data.postmortem_brief?.risk_overlays?.find(
+                    (r: RiskOverlay) => r.white_space_opportunity === opp.opportunity
+                  );
+                  const riskColor = overlay?.risk_level === "High" ? "bg-red-100 text-red-800 border-red-200" : overlay?.risk_level === "Low" ? "bg-green-100 text-green-800 border-green-200" : "bg-amber-100 text-amber-800 border-amber-200";
                   return (
                     <div key={i} className="border rounded-lg p-4 bg-gray-50">
                       <div className="flex items-start justify-between gap-2 mb-2">
                         <h4 className="font-semibold text-gray-900 text-sm">{i + 1}. {opp.opportunity}</h4>
-                        <span className={`text-xs px-2 py-0.5 rounded whitespace-nowrap ${diffColor}`}>{opp.entry_difficulty} entry</span>
+                        <div className="flex gap-1.5 shrink-0">
+                          {overlay && (
+                            <span className={`text-xs px-2 py-0.5 rounded border whitespace-nowrap ${riskColor}`}>
+                              {overlay.risk_level} risk
+                            </span>
+                          )}
+                          <span className={`text-xs px-2 py-0.5 rounded whitespace-nowrap ${diffColor}`}>{opp.entry_difficulty} entry</span>
+                        </div>
                       </div>
                       <p className="text-sm text-gray-600 mb-1"><span className="font-medium text-gray-700">Why it exists:</span> {opp.why_it_exists}</p>
                       <p className="text-sm text-gray-600"><span className="font-medium text-gray-700">Best positioned:</span> {opp.who_is_closest}</p>
+                      {overlay && overlay.historical_precedent && overlay.historical_precedent !== "No direct historical precedent identified." && (
+                        <div className="mt-3 p-3 bg-slate-100 border border-slate-200 rounded-md">
+                          <p className="text-xs font-medium text-slate-700 mb-1">Historical Risk</p>
+                          <p className="text-xs text-slate-600">{overlay.historical_precedent}</p>
+                          {overlay.mitigation_guidance && (
+                            <p className="text-xs text-slate-600 mt-1"><span className="font-medium">Mitigation:</span> {overlay.mitigation_guidance}</p>
+                          )}
+                        </div>
+                      )}
                     </div>
                   );
                 })}
@@ -188,6 +208,91 @@ export function ResultsV2({ data }: ResultsV2Props) {
           )}
         </CardContent>
       </Card>
+
+      {/* Post-Mortem Intelligence */}
+      {data.postmortem_brief && data.postmortem_brief.failure_patterns?.length > 0 && (
+        <Card className="border-l-4 border-l-slate-500">
+          <CardHeader>
+            <h2 className="text-xl font-semibold text-slate-800">Post-Mortem Intelligence</h2>
+            <p className="text-sm text-muted-foreground">
+              Lessons from {data.graveyard_companies?.length ?? 0} failed companies in this sector
+            </p>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            {/* Failure Patterns */}
+            <div>
+              <h3 className="text-sm font-semibold text-slate-700 mb-2">Failure Patterns</h3>
+              <ul className="space-y-2">
+                {data.postmortem_brief.failure_patterns.map((p, i) => (
+                  <li key={i} className="flex gap-2 text-sm text-slate-700">
+                    <span className="text-red-500 font-bold shrink-0">!</span>
+                    {p}
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            {/* Structural Vulnerabilities */}
+            {data.postmortem_brief.structural_vulnerabilities?.length > 0 && (
+              <div>
+                <h3 className="text-sm font-semibold text-slate-700 mb-2">Structural Vulnerabilities</h3>
+                <ul className="space-y-2">
+                  {data.postmortem_brief.structural_vulnerabilities.map((v, i) => (
+                    <li key={i} className="flex gap-2 text-sm text-slate-600">
+                      <span className="text-amber-500 shrink-0">&#x26A0;</span>
+                      {v}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            {/* Cautionary Narratives */}
+            {data.postmortem_brief.cautionary_narratives?.length > 0 && (
+              <div>
+                <h3 className="text-sm font-semibold text-slate-700 mb-2">Cautionary Narratives</h3>
+                <div className="space-y-3">
+                  {data.postmortem_brief.cautionary_narratives.map((n: CautionaryNarrative, i: number) => (
+                    <div key={i} className="border rounded-lg p-4 bg-slate-50">
+                      <div className="flex items-start justify-between gap-2 mb-2">
+                        <h4 className="font-semibold text-slate-900 text-sm">{n.company}</h4>
+                        {n.failure_mode && (
+                          <Badge variant="outline" className="text-xs border-slate-300 text-slate-600">{n.failure_mode}</Badge>
+                        )}
+                      </div>
+                      {n.peak_position && (
+                        <p className="text-sm text-slate-600 mb-1"><span className="font-medium">At their peak:</span> {n.peak_position}</p>
+                      )}
+                      {n.narrative && (
+                        <p className="text-sm text-slate-600 mb-2">{n.narrative}</p>
+                      )}
+                      {n.key_lesson && (
+                        <p className="text-sm text-slate-800 bg-slate-100 rounded p-2 border border-slate-200">
+                          <span className="font-medium">Key lesson:</span> {n.key_lesson}
+                        </p>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Survival Principles */}
+            {data.postmortem_brief.survival_principles?.length > 0 && (
+              <div>
+                <h3 className="text-sm font-semibold text-slate-700 mb-2">Survival Principles</h3>
+                <ol className="space-y-2 list-decimal list-inside">
+                  {data.postmortem_brief.survival_principles.map((p, i) => (
+                    <li key={i} className="text-sm text-slate-700">
+                      {p}
+                    </li>
+                  ))}
+                </ol>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
 
       {/* Parameter cards by category */}
       <div>

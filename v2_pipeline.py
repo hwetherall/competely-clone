@@ -28,11 +28,15 @@ from agents.normalize_agent import NormalizeAgent
 from agents.synthesis_agent import SynthesisAgent
 from agents.research_synthesis_agent import ResearchSynthesisAgent
 from agents.executive_agent import ExecutiveAgent
+from agents.postmortem_agent import PostMortemAgent
+from agents.risk_overlay_agent import RiskOverlayAgent
 from agents.v2_schemas import (
     IntelligenceDossier,
     NormalizedDataset,
     ComparativeReport,
     ExecutiveBrief,
+    PostMortemBrief,
+    GraveyardCompany,
     V2RunResult,
 )
 from agents.variable_generator import generate_variables as generate_variables_impl
@@ -155,6 +159,8 @@ async def run_v2_analysis(
     venture_context: str = "",
     key_questions: Optional[List[str]] = None,
     hypothesis: str = "",
+    graveyard_companies: Optional[List[str]] = None,
+    industry_context: str = "",
 ) -> V2RunResult:
     variable_ids: List[str] = []
     variable_lookup: Dict[str, VariableDefinition] = {}
@@ -372,6 +378,198 @@ async def run_v2_analysis(
     phase4_elapsed = time.time() - phase4_start
     print(f"  Phase 4 completed in {format_time(phase4_elapsed)}")
 
+    # =========================================================================
+    # Graveyard Track (if enabled)
+    # =========================================================================
+    gy_companies_data: List[Dict[str, Any]] = []
+    gy_intelligence: Dict[str, Dict[str, Dict[str, Any]]] = {}
+    gy_analyses: Dict[str, Dict[str, Any]] = {}
+    postmortem_dict: Dict[str, Any] = {}
+    gy_elapsed = 0.0
+
+    if graveyard_companies and len(graveyard_companies) > 0:
+        from agents.graveyard_variable_generator import generate_graveyard_variables
+
+        gy_start = time.time()
+        print("\n" + "=" * 70)
+        print("  Graveyard Track: Post-Mortem Intelligence")
+        print("=" * 70)
+
+        # Phase 0G: Generate graveyard variables
+        if progress_callback:
+            progress_callback("graveyard_vars", 0, 0, "Generating failure-focused parameters...")
+        print("\n  Phase 0G: Generating graveyard parameters...")
+        try:
+            gy_vars = await generate_graveyard_variables(
+                dead_companies=graveyard_companies,
+                industry_context=industry_context,
+                living_companies=companies,
+            )
+            gy_variable_ids = [v.id for v in gy_vars]
+            gy_variable_lookup: Dict[str, VariableDefinition] = {v.id: v for v in gy_vars}
+            print(f"  Generated {len(gy_variable_ids)} graveyard parameters")
+        except Exception as e:
+            logger.warning("Graveyard variable generation failed: %s", e)
+            gy_variable_ids = []
+            gy_variable_lookup = {}
+
+        if gy_variable_ids:
+            # Phase 1G: Gather (graveyard)
+            gy_gather_total = len(graveyard_companies) * len(gy_variable_ids)
+            gy_completed_count = [0]
+            if progress_callback:
+                progress_callback("graveyard_gather", 0, gy_gather_total, "Starting graveyard gather...")
+            print(f"\n  Phase 1G: Gather ({gy_gather_total} tasks)\n")
+
+            gy_gather_agent = GatherAgent(
+                max_iterations=1 if fast_mode else 2,
+                min_iterations=1,
+                skip_evaluation=fast_mode,
+                variable_lookup=gy_variable_lookup,
+            )
+
+            gy_tasks = [
+                gather_one(
+                    semaphore,
+                    gy_gather_agent,
+                    company,
+                    var_id,
+                    gy_gather_total,
+                    gy_completed_count,
+                    gy_variable_lookup,
+                    lambda phase, c, t, cur: progress_callback("graveyard_gather", c, t, cur) if progress_callback else None,
+                )
+                for company in graveyard_companies
+                for var_id in gy_variable_ids
+            ]
+            gy_gather_results = await asyncio.gather(*gy_tasks, return_exceptions=True)
+
+            gy_intelligence = {c: {} for c in graveyard_companies}
+            for r in gy_gather_results:
+                if isinstance(r, Exception):
+                    logger.error("Graveyard gather task failed: %s", r)
+                    continue
+                company, variable_id, dossier = r
+                gy_intelligence[company][variable_id] = dossier.to_dict()
+
+            # Phase 2G: Normalize (graveyard)
+            if progress_callback:
+                progress_callback("graveyard_normalize", 0, len(gy_variable_ids), "Normalizing graveyard data...")
+            print("\n  Phase 2G: Normalize (graveyard)\n")
+
+            gy_datasets: Dict[str, NormalizedDataset] = {}
+            normalize_agent_gy = NormalizeAgent()
+
+            async def gy_normalize_one(var_id: str, idx: int) -> tuple[str, NormalizedDataset]:
+                var = gy_variable_lookup[var_id]
+                research_prompt = var.research_prompt.format(company="each company")
+                dossiers_by_company = {}
+                for company in graveyard_companies:
+                    d_dict = gy_intelligence.get(company, {}).get(var_id)
+                    if d_dict:
+                        dossiers_by_company[company] = IntelligenceDossier.from_dict(d_dict)
+                if dossiers_by_company:
+                    print(f"    [{idx + 1}/{len(gy_variable_ids)}] {var.name}...")
+                    result = await normalize_agent_gy.normalize(
+                        var_id, var.name, research_prompt, dossiers_by_company
+                    )
+                    return (var_id, result)
+                return (var_id, NormalizedDataset(
+                    parameter_id=var_id, parameter_name=var.name, raw_dossiers={},
+                ))
+
+            gy_norm_sem = asyncio.Semaphore(concurrency)
+
+            async def gy_normalize_throttled(var_id: str, idx: int):
+                async with gy_norm_sem:
+                    return await gy_normalize_one(var_id, idx)
+
+            gy_norm_results = await asyncio.gather(
+                *(gy_normalize_throttled(vid, i) for i, vid in enumerate(gy_variable_ids)),
+                return_exceptions=True,
+            )
+            for r in gy_norm_results:
+                if isinstance(r, Exception):
+                    logger.error("Graveyard normalize failed: %s", r)
+                    continue
+                var_id, dataset = r
+                gy_datasets[var_id] = dataset
+
+            # Phase 3G: Synthesize (graveyard, failure-lens)
+            if progress_callback:
+                progress_callback("graveyard_synthesize", 0, len(gy_variable_ids), "Synthesizing failure patterns...")
+            print("\n  Phase 3G: Synthesize (graveyard)\n")
+
+            from agents.synthesis_agent import SynthesisAgent as GySynthAgent
+            gy_synthesis_agent = GySynthAgent(variable_lookup=gy_variable_lookup)
+            # Override prompts for failure lens
+            import agents.v2_prompts as gy_prompts
+            original_draft_sys = gy_prompts.SYNTHESIS_DRAFT_SYSTEM
+            original_draft_prompt = gy_prompts.SYNTHESIS_DRAFT_PROMPT
+            gy_prompts.SYNTHESIS_DRAFT_SYSTEM = gy_prompts.GRAVEYARD_SYNTHESIS_DRAFT_SYSTEM
+            gy_prompts.SYNTHESIS_DRAFT_PROMPT = gy_prompts.GRAVEYARD_SYNTHESIS_DRAFT_PROMPT
+
+            for i, var_id in enumerate(gy_variable_ids):
+                var = gy_variable_lookup[var_id]
+                research_prompt = var.research_prompt.format(company="each company")
+                norm = gy_datasets.get(var_id)
+                if not norm or not norm.company_data:
+                    gy_analyses[var_id] = ComparativeReport(
+                        parameter_id=var_id, parameter_name=var.name,
+                        headline="Insufficient data.", executive_summary="", confidence="none",
+                    ).to_dict()
+                    continue
+                print(f"    [{i + 1}/{len(gy_variable_ids)}] {var.name}...")
+                try:
+                    report = await gy_synthesis_agent.synthesize(norm, research_prompt)
+                    gy_analyses[var_id] = report.to_dict()
+                except Exception as e:
+                    logger.error("Graveyard synthesis failed for %s: %s", var_id, e)
+                    gy_analyses[var_id] = ComparativeReport(
+                        parameter_id=var_id, parameter_name=var.name,
+                        headline="Synthesis failed.", executive_summary="", confidence="none",
+                    ).to_dict()
+
+            # Restore original prompts
+            gy_prompts.SYNTHESIS_DRAFT_SYSTEM = original_draft_sys
+            gy_prompts.SYNTHESIS_DRAFT_PROMPT = original_draft_prompt
+
+            # Phase 4G: Post-Mortem Brief
+            if progress_callback:
+                progress_callback("postmortem_brief", 0, 0, "Generating post-mortem brief...")
+            print("\n  Phase 4G: Post-Mortem Brief\n")
+
+            postmortem_agent = PostMortemAgent()
+            gy_reports = [
+                ComparativeReport.from_dict(a) for a in gy_analyses.values() if a
+            ]
+            dead_list = ", ".join(graveyard_companies)
+            living_list = ", ".join(companies)
+            pm_brief = await postmortem_agent.synthesize_brief(
+                dead_companies_list=dead_list,
+                living_companies_list=living_list,
+                reports=gy_reports,
+                industry_context=industry_context,
+                venture_context=venture_context,
+            )
+
+            # Phase 5: Risk Overlay Merge
+            if progress_callback:
+                progress_callback("risk_overlay", 0, 0, "Generating risk overlays...")
+            print("\n  Phase 5: Risk Overlay Merge\n")
+
+            overlay_agent = RiskOverlayAgent()
+            risk_overlays = await overlay_agent.generate_overlays(executive, pm_brief)
+            pm_brief.risk_overlays = risk_overlays
+            postmortem_dict = pm_brief.to_dict()
+
+            gy_companies_data = [
+                {"name": c} for c in graveyard_companies
+            ]
+
+            gy_elapsed = time.time() - gy_start
+            print(f"\n  Graveyard track completed in {format_time(gy_elapsed)}")
+
     total_elapsed = time.time() - start_time
     run_id = run_id_override or f"v2_run_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
     result = V2RunResult(
@@ -390,10 +588,16 @@ async def run_v2_analysis(
             "phase3_elapsed_seconds": phase3_elapsed,
             "phase35_elapsed_seconds": phase35_elapsed,
             "phase4_elapsed_seconds": phase4_elapsed,
+            "graveyard_elapsed_seconds": gy_elapsed,
             "total_elapsed_seconds": total_elapsed,
             "concurrency": concurrency,
             "fast_mode": fast_mode,
+            "graveyard_enabled": bool(graveyard_companies),
         },
+        graveyard_companies=gy_companies_data,
+        graveyard_intelligence=gy_intelligence,
+        graveyard_analyses=gy_analyses,
+        postmortem_brief=postmortem_dict,
     )
     return result
 

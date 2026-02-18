@@ -450,6 +450,131 @@ class ResearchSynthesis:
 
 
 @dataclass
+class GraveyardCompany:
+    """A company that has collapsed or ceased operations in the sector."""
+    name: str
+    years_active: str = ""
+    peak_description: str = ""
+    reason_summary: str = ""
+    confidence: str = "medium"
+
+    def to_dict(self) -> Dict[str, Any]:
+        return {
+            "name": self.name,
+            "years_active": self.years_active,
+            "peak_description": self.peak_description,
+            "reason_summary": self.reason_summary,
+            "confidence": self.confidence,
+        }
+
+    @classmethod
+    def from_dict(cls, data: Dict[str, Any]) -> "GraveyardCompany":
+        return cls(
+            name=data.get("name", ""),
+            years_active=data.get("years_active", ""),
+            peak_description=data.get("peak_description", ""),
+            reason_summary=data.get("reason_summary", ""),
+            confidence=data.get("confidence", "medium"),
+        )
+
+
+@dataclass
+class CautionaryNarrative:
+    """Per-company mini-narrative: who they were, why they failed, the lesson."""
+    company: str
+    peak_position: str = ""
+    failure_mode: str = ""
+    narrative: str = ""
+    key_lesson: str = ""
+
+    def to_dict(self) -> Dict[str, Any]:
+        return {
+            "company": self.company,
+            "peak_position": self.peak_position,
+            "failure_mode": self.failure_mode,
+            "narrative": self.narrative,
+            "key_lesson": self.key_lesson,
+        }
+
+    @classmethod
+    def from_dict(cls, data: Dict[str, Any]) -> "CautionaryNarrative":
+        return cls(
+            company=data.get("company", ""),
+            peak_position=data.get("peak_position", ""),
+            failure_mode=data.get("failure_mode", ""),
+            narrative=data.get("narrative", ""),
+            key_lesson=data.get("key_lesson", ""),
+        )
+
+
+@dataclass
+class RiskOverlay:
+    """Links a main-report white-space opportunity to historical failure precedent."""
+    white_space_opportunity: str = ""
+    historical_precedent: str = ""
+    risk_level: str = "Medium"
+    mitigation_guidance: str = ""
+
+    def to_dict(self) -> Dict[str, Any]:
+        return {
+            "white_space_opportunity": self.white_space_opportunity,
+            "historical_precedent": self.historical_precedent,
+            "risk_level": self.risk_level,
+            "mitigation_guidance": self.mitigation_guidance,
+        }
+
+    @classmethod
+    def from_dict(cls, data: Dict[str, Any]) -> "RiskOverlay":
+        return cls(
+            white_space_opportunity=data.get("white_space_opportunity", ""),
+            historical_precedent=data.get("historical_precedent", ""),
+            risk_level=data.get("risk_level", "Medium"),
+            mitigation_guidance=data.get("mitigation_guidance", ""),
+        )
+
+
+@dataclass
+class PostMortemBrief:
+    """
+    Landscape-level post-mortem intelligence report from failed companies.
+    Produced by the graveyard pipeline's executive phase + merge phase.
+    """
+    failure_patterns: List[str] = field(default_factory=list)
+    structural_vulnerabilities: List[str] = field(default_factory=list)
+    cautionary_narratives: List[CautionaryNarrative] = field(default_factory=list)
+    risk_overlays: List[RiskOverlay] = field(default_factory=list)
+    survival_principles: List[str] = field(default_factory=list)
+    metadata: Dict[str, Any] = field(default_factory=dict)
+
+    def to_dict(self) -> Dict[str, Any]:
+        return {
+            "failure_patterns": self.failure_patterns,
+            "structural_vulnerabilities": self.structural_vulnerabilities,
+            "cautionary_narratives": [n.to_dict() for n in self.cautionary_narratives],
+            "risk_overlays": [r.to_dict() for r in self.risk_overlays],
+            "survival_principles": self.survival_principles,
+            "metadata": self.metadata,
+        }
+
+    @classmethod
+    def from_dict(cls, data: Dict[str, Any]) -> "PostMortemBrief":
+        return cls(
+            failure_patterns=data.get("failure_patterns", []),
+            structural_vulnerabilities=data.get("structural_vulnerabilities", []),
+            cautionary_narratives=[
+                CautionaryNarrative.from_dict(n)
+                for n in data.get("cautionary_narratives", [])
+            ],
+            risk_overlays=[
+                RiskOverlay.from_dict(r)
+                for r in data.get("risk_overlays", [])
+            ],
+            survival_principles=data.get("survival_principles", []),
+            metadata=data.get("metadata", {}),
+        )
+
+
+@dataclass
 class V2RunResult:
     """
     Complete V2 run output for persistence and report generation.
@@ -476,9 +601,13 @@ class V2RunResult:
     executive: Dict[str, Any]
     research_synthesis: Dict[str, Any] = field(default_factory=dict)
     metadata: Dict[str, Any] = field(default_factory=dict)
+    graveyard_companies: List[Dict[str, Any]] = field(default_factory=list)
+    graveyard_intelligence: Dict[str, Dict[str, Dict[str, Any]]] = field(default_factory=dict)
+    graveyard_analyses: Dict[str, Dict[str, Any]] = field(default_factory=dict)
+    postmortem_brief: Dict[str, Any] = field(default_factory=dict)
 
     def to_dict(self) -> Dict[str, Any]:
-        return {
+        d = {
             "run_id": self.run_id,
             "timestamp": self.timestamp,
             "companies": self.companies,
@@ -490,6 +619,15 @@ class V2RunResult:
             "research_synthesis": self.research_synthesis,
             "metadata": self.metadata,
         }
+        if self.graveyard_companies:
+            d["graveyard_companies"] = self.graveyard_companies
+        if self.graveyard_intelligence:
+            d["graveyard_intelligence"] = self.graveyard_intelligence
+        if self.graveyard_analyses:
+            d["graveyard_analyses"] = self.graveyard_analyses
+        if self.postmortem_brief:
+            d["postmortem_brief"] = self.postmortem_brief
+        return d
 
     @classmethod
     def from_dict(cls, data: Dict[str, Any]) -> "V2RunResult":
@@ -504,4 +642,8 @@ class V2RunResult:
             executive=data.get("executive", {}),
             research_synthesis=data.get("research_synthesis", {}),
             metadata=data.get("metadata", {}),
+            graveyard_companies=data.get("graveyard_companies", []),
+            graveyard_intelligence=data.get("graveyard_intelligence", {}),
+            graveyard_analyses=data.get("graveyard_analyses", {}),
+            postmortem_brief=data.get("postmortem_brief", {}),
         )

@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { AlertTriangle, Download, Save, Play, CheckCircle2, FileText, Target, Users, Zap, Edit2, ChevronDown, ChevronUp, ListFilter } from "lucide-react";
+import { AlertTriangle, Download, Save, Play, CheckCircle2, FileText, Target, Users, Zap, Edit2, ChevronDown, ChevronUp, ListFilter, Skull } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface PlanReviewProps {
@@ -277,6 +277,37 @@ export function PlanReview({
           </section>
 
           <Separator />
+
+          {/* Graveyard / Post-Mortem Intelligence */}
+          {plan.graveyard_enabled && plan.graveyard_companies && plan.graveyard_companies.length > 0 && (
+            <>
+              <Separator />
+              <section className="space-y-3">
+                <h3 className="text-lg font-semibold flex items-center gap-2">
+                  <Skull className="h-5 w-5 text-slate-500" />
+                  Post-Mortem Intelligence
+                </h3>
+                <p className="text-sm text-muted-foreground">
+                  {plan.graveyard_companies.length} defunct companies will be analyzed for failure patterns and risk overlays.
+                </p>
+                <div className="grid gap-2">
+                  {plan.graveyard_companies.map((c) => (
+                    <div key={c.name} className="rounded-lg border p-3 text-sm bg-muted/20">
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="font-medium">{c.name}</span>
+                        {c.years_active && (
+                          <span className="text-xs text-muted-foreground">({c.years_active})</span>
+                        )}
+                      </div>
+                      {c.reason_summary && (
+                        <p className="text-xs text-muted-foreground">{c.reason_summary}</p>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </section>
+            </>
+          )}
 
           {/* Hypothesis (if present) */}
           {plan.hypothesis && (

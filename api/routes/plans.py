@@ -44,6 +44,9 @@ from api.models import (
     RunCreateRequest,
     RunCreateResponse,
     RunStatus,
+    GraveyardCompanySchema,
+    DiscoverGraveyardRequest,
+    DiscoverGraveyardResponse,
 )
 from api.services.v2_runner import V2Runner
 from agents.research_plan_agent import (
@@ -286,6 +289,38 @@ async def confidence_preview_endpoint(request: ConfidencePreviewRequest):
 
 
 # =============================================================================
+# Graveyard Discovery
+# =============================================================================
+
+@router.post("/discover-graveyard", response_model=DiscoverGraveyardResponse)
+async def discover_graveyard_endpoint(request: DiscoverGraveyardRequest):
+    """Discover defunct companies in the sector for post-mortem intelligence."""
+    from agents.graveyard_discovery_agent import discover_graveyard_companies
+
+    try:
+        companies = await discover_graveyard_companies(
+            companies=request.companies,
+            industry_context=request.industry_context,
+            sector_hint=request.sector_hint,
+        )
+        return DiscoverGraveyardResponse(
+            companies=[
+                GraveyardCompanySchema(
+                    name=c.name,
+                    years_active=c.years_active,
+                    peak_description=c.peak_description,
+                    reason_summary=c.reason_summary,
+                    confidence=c.confidence,
+                )
+                for c in companies
+            ]
+        )
+    except Exception as e:
+        logger.exception("Graveyard discovery failed")
+        raise HTTPException(status_code=502, detail=f"Graveyard discovery failed: {str(e)}")
+
+
+# =============================================================================
 # Plan CRUD
 # =============================================================================
 
@@ -324,6 +359,8 @@ async def create_plan(request: PlanCreateRequest):
         "depth": request.depth,
         "focus_companies": request.focus_companies,
         "known_context": request.known_context,
+        "graveyard_enabled": request.graveyard_enabled,
+        "graveyard_companies": [g.model_dump() for g in request.graveyard_companies],
         "confidence_preview": None,
         "clarification_log": [],
         "run_id": None,
@@ -466,6 +503,12 @@ async def launch_plan(plan_id: str, background_tasks: BackgroundTasks):
     with open(progress_filepath, "w", encoding="utf-8") as f:
         json.dump(initial_progress, f, indent=2)
 
+    graveyard_company_names = None
+    if plan.get("graveyard_enabled") and plan.get("graveyard_companies"):
+        graveyard_company_names = [
+            g.get("name", "") for g in plan["graveyard_companies"] if g.get("name")
+        ]
+
     v2_runner = V2Runner()
     background_tasks.add_task(
         v2_runner.run_sync,
@@ -479,6 +522,8 @@ async def launch_plan(plan_id: str, background_tasks: BackgroundTasks):
         venture_context=venture_context,
         key_questions=key_questions,
         hypothesis=plan.get("hypothesis", ""),
+        graveyard_companies=graveyard_company_names,
+        industry_context=plan.get("industry_context", ""),
     )
 
     plan["status"] = "launched"

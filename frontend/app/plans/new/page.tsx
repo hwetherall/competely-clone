@@ -18,6 +18,7 @@ import {
   useLaunchPlan,
   useIntelligenceQuestions,
   useIntelligenceFollowup,
+  useDiscoverGraveyard,
 } from "@/lib/api";
 import type {
   CompanyProfile,
@@ -29,6 +30,7 @@ import type {
   DynamicVariableDefinition,
   ResearchGoalResult,
   ConfidencePreview,
+  GraveyardCompany,
 } from "@/lib/types";
 import { PlanWizardStepper } from "@/components/plans/PlanWizardStepper";
 import { CompanyValidation, type CompanyChoiceState } from "@/components/plans/CompanyValidation";
@@ -39,6 +41,7 @@ import { AudienceConfig } from "@/components/plans/AudienceConfig";
 import { PlanReview } from "@/components/plans/PlanReview";
 import { SubsidiarySelectorModal } from "@/components/plans/SubsidiarySelectorModal";
 import { IntelligenceQuestionsPanel } from "@/components/plans/IntelligenceQuestionsPanel";
+import { GraveyardDiscovery } from "@/components/plans/GraveyardDiscovery";
 import { Loader2, AlertCircle, ChevronRight, Sparkles } from "lucide-react";
 
 function getDefaultSelection(data: VariableGenerationResponse): string[] {
@@ -104,6 +107,9 @@ export default function NewPlanPage() {
   const [knownContext, setKnownContext] = useState("");
   const [confidencePreview, setConfidencePreview] = useState<ConfidencePreview | null>(null);
   const [planId, setPlanId] = useState<string | null>(null);
+  const [graveyardEnabled, setGraveyardEnabled] = useState(false);
+  const [graveyardCompanies, setGraveyardCompanies] = useState<GraveyardCompany[]>([]);
+  const [graveyardError, setGraveyardError] = useState<string | null>(null);
 
   const validateCompanies = useValidateCompanies();
   const suggestCompanies = useSuggestCompanies();
@@ -116,6 +122,7 @@ export default function NewPlanPage() {
   const launchPlan = useLaunchPlan();
   const intelligenceQuestionsMutation = useIntelligenceQuestions();
   const intelligenceFollowupMutation = useIntelligenceFollowup();
+  const discoverGraveyardMutation = useDiscoverGraveyard();
 
   const finalCompanyNames = (() => {
     const baseNames = companies.flatMap((c) => {
@@ -383,26 +390,30 @@ export default function NewPlanPage() {
     }
   };
 
+  const buildPlanPayload = () => ({
+    title: `Research Plan: ${variableData?.industry_context ?? "Competitive Analysis"}`,
+    companies,
+    suggested_companies: suggestions,
+    accepted_suggestions: acceptedSuggestionIds,
+    effective_company_names: finalCompanyNames,
+    industry_context: variableData?.industry_context ?? "",
+    selected_variable_ids: selectedVariableIds,
+    dynamic_variables: dynamicVariableDefs,
+    parameter_contexts: variableData?.always_parameter_contexts ?? {},
+    mission_statement: goal.mission_statement,
+    key_questions: goal.key_questions,
+    hypothesis: goal.hypothesis,
+    perspective: goal.perspective,
+    audience,
+    depth,
+    focus_companies: focusCompanies,
+    known_context: knownContext || null,
+    graveyard_enabled: graveyardEnabled,
+    graveyard_companies: graveyardEnabled ? graveyardCompanies : [],
+  });
+
   const handleSaveDraft = async () => {
-    const payload = {
-      title: `Research Plan: ${variableData?.industry_context ?? "Competitive Analysis"}`,
-      companies,
-      suggested_companies: suggestions,
-      accepted_suggestions: acceptedSuggestionIds,
-      effective_company_names: finalCompanyNames,
-      industry_context: variableData?.industry_context ?? "",
-      selected_variable_ids: selectedVariableIds,
-      dynamic_variables: dynamicVariableDefs,
-      parameter_contexts: variableData?.always_parameter_contexts ?? {},
-      mission_statement: goal.mission_statement,
-      key_questions: goal.key_questions,
-      hypothesis: goal.hypothesis,
-      perspective: goal.perspective,
-      audience,
-      depth,
-      focus_companies: focusCompanies,
-      known_context: knownContext || null,
-    };
+    const payload = buildPlanPayload();
     try {
       const res = await createPlan.mutateAsync(payload);
       setPlanId(res.plan_id);
@@ -415,25 +426,7 @@ export default function NewPlanPage() {
   const handleLaunch = async () => {
     let id = planId;
     if (!id) {
-      const payload = {
-        title: `Research Plan: ${variableData?.industry_context ?? "Competitive Analysis"}`,
-        companies,
-        suggested_companies: suggestions,
-        accepted_suggestions: acceptedSuggestionIds,
-        effective_company_names: finalCompanyNames,
-        industry_context: variableData?.industry_context ?? "",
-        selected_variable_ids: selectedVariableIds,
-        dynamic_variables: dynamicVariableDefs,
-        parameter_contexts: variableData?.always_parameter_contexts ?? {},
-        mission_statement: goal.mission_statement,
-        key_questions: goal.key_questions,
-        hypothesis: goal.hypothesis,
-        perspective: goal.perspective,
-        audience,
-        depth,
-        focus_companies: focusCompanies,
-        known_context: knownContext || null,
-      };
+      const payload = buildPlanPayload();
       const createRes = await createPlan.mutateAsync(payload);
       id = createRes.plan_id;
       setPlanId(id);
@@ -483,6 +476,19 @@ export default function NewPlanPage() {
       setConfidencePreview(res);
     } catch {
       setConfidencePreview(null);
+    }
+  };
+
+  const handleDiscoverGraveyard = async () => {
+    setGraveyardError(null);
+    try {
+      const res = await discoverGraveyardMutation.mutateAsync({
+        companies: finalCompanyNames,
+        industry_context: variableData?.industry_context ?? "",
+      });
+      setGraveyardCompanies(res.companies);
+    } catch (e) {
+      setGraveyardError(e instanceof Error ? e.message : "Discovery failed");
     }
   };
 
@@ -960,6 +966,22 @@ export default function NewPlanPage() {
                       onKnownContextChange={setKnownContext}
                       companyNames={finalCompanyNames}
                     />
+                    <div className="mt-6 pt-6 border-t">
+                      <GraveyardDiscovery
+                        enabled={graveyardEnabled}
+                        onToggle={(v) => {
+                          setGraveyardEnabled(v);
+                          if (v && graveyardCompanies.length === 0) {
+                            handleDiscoverGraveyard();
+                          }
+                        }}
+                        companies={graveyardCompanies}
+                        onCompaniesChange={setGraveyardCompanies}
+                        onDiscover={handleDiscoverGraveyard}
+                        isDiscovering={discoverGraveyardMutation.isPending}
+                        error={graveyardError}
+                      />
+                    </div>
                     <Button className="mt-4" onClick={() => setStep(6)}>
                       Next: Review
                       <ChevronRight className="h-4 w-4 ml-1" />
@@ -1011,6 +1033,8 @@ export default function NewPlanPage() {
                   depth,
                   focus_companies: focusCompanies,
                   known_context: knownContext,
+                  graveyard_enabled: graveyardEnabled,
+                  graveyard_companies: graveyardCompanies,
                 }}
                 confidencePreview={confidencePreview}
                 onEditStep={setStep}

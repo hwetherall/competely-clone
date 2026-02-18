@@ -175,6 +175,27 @@ class RunDetailV2Response(BaseModel):
     version: str = "v2"
 
 
+class GraveyardCompanySchema(BaseModel):
+    """A discovered defunct company for post-mortem intelligence."""
+    name: str
+    years_active: str = ""
+    peak_description: str = ""
+    reason_summary: str = ""
+    confidence: str = "medium"
+
+
+class DiscoverGraveyardRequest(BaseModel):
+    """Request to discover defunct companies in a sector."""
+    companies: List[str] = Field(..., min_length=1, description="Living competitor names")
+    industry_context: str = ""
+    sector_hint: str = ""
+
+
+class DiscoverGraveyardResponse(BaseModel):
+    """Response with discovered defunct companies."""
+    companies: List[GraveyardCompanySchema] = []
+
+
 class RunCreateRequest(BaseModel):
     """Request to create a new research run."""
     companies: List[str] = Field(..., min_length=1, description="List of company names to analyze")
@@ -201,6 +222,14 @@ class RunCreateRequest(BaseModel):
     hypothesis: Optional[str] = Field(
         default=None,
         description="Hypothesis to validate in the synthesis phase",
+    )
+    graveyard_companies: Optional[List[str]] = Field(
+        default=None,
+        description="List of defunct company names for post-mortem intelligence analysis",
+    )
+    industry_context: Optional[str] = Field(
+        default=None,
+        description="Industry context for graveyard analysis",
     )
 
 
@@ -436,6 +465,9 @@ class ResearchPlanSchema(BaseModel):
     focus_companies: List[str] = []
     known_context: Optional[str] = None
 
+    graveyard_enabled: bool = False
+    graveyard_companies: List[GraveyardCompanySchema] = []
+
     confidence_preview: Optional[ConfidencePreviewSchema] = None
     clarification_log: List[ClarificationAnswerSchema] = []
     run_id: Optional[str] = None
@@ -447,7 +479,7 @@ class PlanCreateRequest(BaseModel):
     companies: List[CompanyProfileSchema] = []
     suggested_companies: List[CompanySuggestionSchema] = []
     accepted_suggestions: List[str] = []
-    effective_company_names: Optional[List[str]] = None  # When set (e.g. selected subsidiaries), launch uses this for the run
+    effective_company_names: Optional[List[str]] = None
     industry_context: str = ""
     selected_variable_ids: List[str] = []
     dynamic_variables: List[DynamicVariableDefinition] = []
@@ -460,6 +492,8 @@ class PlanCreateRequest(BaseModel):
     depth: str = "standard"
     focus_companies: List[str] = []
     known_context: Optional[str] = None
+    graveyard_enabled: bool = False
+    graveyard_companies: List[GraveyardCompanySchema] = []
 
 
 class PlanCreateResponse(BaseModel):

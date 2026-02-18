@@ -99,6 +99,8 @@ class V2Runner:
         venture_context: str = "",
         key_questions: Optional[List[str]] = None,
         hypothesis: str = "",
+        graveyard_companies: Optional[List[str]] = None,
+        industry_context: str = "",
     ):
         """Entry point for BackgroundTasks: run V2 pipeline and save result."""
         asyncio.run(self._run(
@@ -112,6 +114,8 @@ class V2Runner:
             venture_context=venture_context,
             key_questions=key_questions,
             hypothesis=hypothesis,
+            graveyard_companies=graveyard_companies,
+            industry_context=industry_context,
         ))
 
     async def _run(
@@ -126,6 +130,8 @@ class V2Runner:
         venture_context: str = "",
         key_questions: Optional[List[str]] = None,
         hypothesis: str = "",
+        graveyard_companies: Optional[List[str]] = None,
+        industry_context: str = "",
     ):
         from v2_pipeline import (
             run_v2_analysis,
@@ -160,6 +166,8 @@ class V2Runner:
                 venture_context=venture_context,
                 key_questions=key_questions,
                 hypothesis=hypothesis,
+                graveyard_companies=graveyard_companies,
+                industry_context=industry_context,
             )
             save_v2_result(result)
             self._update_progress(

@@ -167,18 +167,25 @@ async def get_run(run_id: str):
         raise HTTPException(status_code=500, detail="Failed to parse run data")
 
     if is_v2_run(run_id):
-        return RunDetailV2Response(
-            id=data.get("run_id", run_id),
-            timestamp=data.get("timestamp", ""),
-            companies=data.get("companies", []),
-            parameters=data.get("parameters", []),
-            parameter_definitions=data.get("parameter_definitions", {}),
-            executive=data.get("executive", {}),
-            analyses=data.get("analyses", {}),
-            metadata=data.get("metadata", {}),
-            status=RunStatus.COMPLETED,
-            version="v2",
-        )
+        response_data = {
+            "id": data.get("run_id", run_id),
+            "timestamp": data.get("timestamp", ""),
+            "companies": data.get("companies", []),
+            "parameters": data.get("parameters", []),
+            "parameter_definitions": data.get("parameter_definitions", {}),
+            "executive": data.get("executive", {}),
+            "analyses": data.get("analyses", {}),
+            "metadata": data.get("metadata", {}),
+            "status": RunStatus.COMPLETED,
+            "version": "v2",
+        }
+        if data.get("graveyard_companies"):
+            response_data["graveyard_companies"] = data["graveyard_companies"]
+        if data.get("graveyard_analyses"):
+            response_data["graveyard_analyses"] = data["graveyard_analyses"]
+        if data.get("postmortem_brief"):
+            response_data["postmortem_brief"] = data["postmortem_brief"]
+        return response_data
 
     # V1: Convert grid data to proper schema
     grid = {}
@@ -389,6 +396,8 @@ async def create_run(request: RunCreateRequest, background_tasks: BackgroundTask
             venture_context=request.venture_context or "",
             key_questions=request.key_questions,
             hypothesis=request.hypothesis or "",
+            graveyard_companies=request.graveyard_companies,
+            industry_context=request.industry_context or "",
         )
     else:
         dynamic_var_dicts = [d.model_dump() for d in request.dynamic_variables] if request.dynamic_variables else None

@@ -23,6 +23,7 @@ import type {
   ResearchPlan,
   PlanListItem,
   DynamicVariableDefinition,
+  GraveyardCompany,
 } from "./types";
 
 // API base URL - adjust based on environment
@@ -310,6 +311,33 @@ export function useConfidencePreview() {
   return useMutation({ mutationFn: confidencePreview });
 }
 
+// =============================================================================
+// Graveyard Discovery API
+// =============================================================================
+
+export interface DiscoverGraveyardResponse {
+  companies: GraveyardCompany[];
+}
+
+export async function discoverGraveyard(payload: {
+  companies: string[];
+  industry_context?: string;
+  sector_hint?: string;
+}): Promise<DiscoverGraveyardResponse> {
+  return fetchAPI<DiscoverGraveyardResponse>("/api/plans/discover-graveyard", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+
+export function useDiscoverGraveyard() {
+  return useMutation({ mutationFn: discoverGraveyard });
+}
+
+// =============================================================================
+// Plan CRUD API
+// =============================================================================
+
 export interface PlanCreateRequest {
   title?: string;
   companies: CompanyProfile[];
@@ -328,6 +356,8 @@ export interface PlanCreateRequest {
   depth?: string;
   focus_companies?: string[];
   known_context?: string | null;
+  graveyard_enabled?: boolean;
+  graveyard_companies?: GraveyardCompany[];
 }
 
 export interface PlanCreateResponse {
@@ -356,6 +386,8 @@ export async function createPlan(request: PlanCreateRequest): Promise<PlanCreate
       depth: request.depth ?? "standard",
       focus_companies: request.focus_companies ?? [],
       known_context: request.known_context ?? null,
+      graveyard_enabled: request.graveyard_enabled ?? false,
+      graveyard_companies: request.graveyard_companies ?? [],
     }),
   });
 }

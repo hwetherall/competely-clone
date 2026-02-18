@@ -306,6 +306,157 @@ Your executive brief:"""
 
 
 # =============================================================================
+# Graveyard: Phase 3G - Failure-Lens Synthesis
+# =============================================================================
+
+GRAVEYARD_SYNTHESIS_DRAFT_SYSTEM = """You are a senior competitive intelligence analyst specializing in corporate failure analysis. Your task is to write a comparative "Post-Mortem" report examining multiple defunct companies on one failure dimension. You must identify common patterns, structural root causes, and actionable lessons for new entrants. Be specific and evidence-based. Cite source IDs when referencing facts."""
+
+GRAVEYARD_SYNTHESIS_DRAFT_PROMPT = """Write a failure-focused comparative analysis for the parameter: {parameter_name}.
+{parameter_context_line}
+Parameter context: {research_prompt}
+
+Defunct companies being analyzed: {companies_list}
+
+Normalized comparison data:
+{normalized_data}
+
+Additional context from dossiers (source IDs and passages):
+{dossiers_context}
+
+INSTRUCTIONS:
+1. Write a headline (1-2 sentences) that captures the dominant failure pattern across these companies.
+2. Write an executive_summary (2-3 sentences) explaining what this dimension reveals about why companies in this space fail.
+3. Produce rankings: order companies from most instructive failure to least, with a label (e.g. "Cautionary Example", "Partial Failure") and a one-line rationale for each.
+4. Build a positioning_table: list of objects, one per company, with keys for each schema field plus "failure_mode" (e.g. "Financial Collapse", "Competitive Displacement") and "time_to_collapse" if evident.
+5. Write full_report_markdown: a 800-1500 word narrative that compares all companies' failures on this dimension, identifies patterns, root causes, and lessons. Use [S1], [S2] citations.
+6. List failure_patterns: 2-5 recurring failure modes or structural weaknesses visible across these companies.
+7. List lessons: 2-5 actionable takeaways a new entrant should internalize.
+8. Set confidence: "high", "medium", or "low" based on evidence strength.
+
+Output your response as JSON inside <synthesis_json> tags:
+
+<synthesis_json>
+{{
+  "headline": "One or two sentence failure pattern verdict.",
+  "executive_summary": "Two to three sentence summary.",
+  "rankings": [
+    {{"rank": 1, "company": "Company A", "label": "Most Instructive", "rationale": "..."}},
+    {{"rank": 2, "company": "Company B", "label": "Cautionary Example", "rationale": "..."}}
+  ],
+  "positioning_table": [
+    {{"company": "Company A", "failure_mode": "Financial Collapse", "field1": "value", "field2": "value", "time_to_collapse": "3 years"}}
+  ],
+  "full_report_markdown": "Full narrative with citations...",
+  "white_space": ["Failure pattern 1", "Failure pattern 2"],
+  "trends": ["Lesson 1", "Lesson 2"],
+  "confidence": "high"
+}}
+</synthesis_json>
+
+Note: Use "white_space" for failure_patterns and "trends" for lessons to maintain schema compatibility.
+
+Your report:"""
+
+
+# =============================================================================
+# Graveyard: Phase 4G - Post-Mortem Brief
+# =============================================================================
+
+POSTMORTEM_BRIEF_SYSTEM = """You are a strategy advisor distilling failure intelligence for C-Suite consumption. Your job is to synthesize parameter-level failure reports from defunct companies into a compelling cautionary brief with failure patterns, structural vulnerabilities, per-company narratives, and survival principles for new entrants. Be concise, specific, and actionable."""
+
+POSTMORTEM_BRIEF_PROMPT = """Synthesize a post-mortem intelligence brief from the following failure analyses of defunct companies.
+
+Defunct companies analyzed: {companies_list}
+Living competitors in scope: {living_companies_list}
+Industry context: {industry_context}
+
+Parameter reports (headline + executive summary + failure patterns + lessons per parameter):
+{parameter_summaries}
+{venture_context_block}
+INSTRUCTIONS:
+Produce ALL of the following sections:
+
+1. **failure_patterns**: 3-6 recurring failure modes that appear across multiple defunct companies and parameters. Each should be a substantive sentence (e.g. "Over-expansion into premium segments without sufficient load factor guarantees led to fatal cash flow spirals").
+
+2. **structural_vulnerabilities**: 3-5 industry-level structural risks that the failures expose. These are not company-specific but reveal fragilities in the market itself (e.g. "The airline industry's high fixed-cost structure means even small revenue shortfalls cascade into insolvency within 18-24 months").
+
+3. **cautionary_narratives**: One mini-narrative per defunct company. For EACH, provide:
+   - "company": Company name
+   - "peak_position": What they were at their peak (1-2 sentences)
+   - "failure_mode": Primary category of failure
+   - "narrative": 3-5 sentence story of rise and fall
+   - "key_lesson": One-line takeaway
+
+4. **survival_principles**: 4-7 distilled rules-of-thumb for avoiding the same fate. Frame as affirmative guidance (e.g. "Maintain 6+ months of operating reserves before expanding into new routes" not "Don't run out of money").
+
+Output your response as JSON inside <postmortem_json> tags:
+
+<postmortem_json>
+{{
+  "failure_patterns": ["Pattern 1", "Pattern 2"],
+  "structural_vulnerabilities": ["Vulnerability 1", "Vulnerability 2"],
+  "cautionary_narratives": [
+    {{
+      "company": "Company A",
+      "peak_position": "Was the largest X in Y...",
+      "failure_mode": "Financial Collapse",
+      "narrative": "Founded in 19XX, Company A grew to...",
+      "key_lesson": "One-line takeaway."
+    }}
+  ],
+  "survival_principles": ["Principle 1", "Principle 2"]
+}}
+</postmortem_json>
+
+Your post-mortem brief:"""
+
+
+# =============================================================================
+# Phase 5: Risk Overlay Merge
+# =============================================================================
+
+RISK_OVERLAY_SYSTEM = """You are a risk analyst. Your job is to cross-reference white-space opportunities identified in a competitive analysis with failure patterns from defunct companies in the same space. For each opportunity, identify whether historical failures suggest heightened risk and provide mitigation guidance."""
+
+RISK_OVERLAY_PROMPT = """Cross-reference these white-space opportunities with the post-mortem failure intelligence to produce risk overlays.
+
+White-space opportunities from the main competitive analysis:
+{white_space_opportunities}
+
+Failure patterns from defunct companies:
+{failure_patterns}
+
+Structural vulnerabilities:
+{structural_vulnerabilities}
+
+Cautionary narratives (summaries):
+{cautionary_summaries}
+
+INSTRUCTIONS:
+For EACH white-space opportunity, determine if any historical failure pattern is relevant. Produce a risk overlay with:
+- "white_space_opportunity": The opportunity text (verbatim from input)
+- "historical_precedent": Which defunct company/failure pattern is relevant and why (2-3 sentences). If no precedent exists, say "No direct historical precedent identified."
+- "risk_level": "High", "Medium", or "Low" based on how closely a past failure maps to this opportunity
+- "mitigation_guidance": Actionable advice to avoid the historical pitfall (1-2 sentences)
+
+Output your response as JSON inside <risk_overlay_json> tags:
+
+<risk_overlay_json>
+{{
+  "risk_overlays": [
+    {{
+      "white_space_opportunity": "The exact opportunity text...",
+      "historical_precedent": "Pan Am attempted a similar strategy in 1980...",
+      "risk_level": "High",
+      "mitigation_guidance": "Ensure minimum 70% load factor commitment before..."
+    }}
+  ]
+}}
+</risk_overlay_json>
+
+Your risk overlays:"""
+
+
+# =============================================================================
 # Helpers for formatting
 # =============================================================================
 
@@ -343,6 +494,29 @@ def format_parameter_summaries_for_executive(reports: list) -> str:
         lines.append(
             f"\n### {name}\nHeadline: {headline}\nSummary: {summary}\nRankings: {rank_str}"
             f"\nTrends: {trends_str}\nWhite space: {ws_str}"
+        )
+    return "\n".join(lines) if lines else "No reports."
+
+
+def format_graveyard_summaries_for_postmortem(reports: list) -> str:
+    """Format graveyard parameter reports for the post-mortem brief prompt."""
+    lines = []
+    for r in reports:
+        if hasattr(r, "to_dict"):
+            d = r.to_dict()
+        else:
+            d = r
+        name = d.get("parameter_name", d.get("parameter_id", "?"))
+        headline = d.get("headline", "")
+        summary = d.get("executive_summary", "")
+        # white_space holds failure_patterns, trends holds lessons (schema reuse)
+        failure_patterns = d.get("white_space", [])
+        lessons = d.get("trends", [])
+        fp_str = ", ".join(failure_patterns[:5]) if failure_patterns else "None identified"
+        lessons_str = ", ".join(lessons[:5]) if lessons else "None identified"
+        lines.append(
+            f"\n### {name}\nHeadline: {headline}\nSummary: {summary}"
+            f"\nFailure patterns: {fp_str}\nLessons: {lessons_str}"
         )
     return "\n".join(lines) if lines else "No reports."
 

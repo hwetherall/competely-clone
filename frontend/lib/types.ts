@@ -185,6 +185,9 @@ export interface RunDetailV2 {
   metadata: Record<string, unknown>;
   status: RunStatus;
   version: "v2";
+  graveyard_companies?: GraveyardCompany[];
+  graveyard_analyses?: Record<string, Record<string, unknown>>;
+  postmortem_brief?: PostMortemBriefData;
 }
 
 export interface RunCreateRequest {
@@ -354,6 +357,8 @@ export interface ResearchPlan {
   depth: "quick" | "standard" | "deep";
   focus_companies: string[];
   known_context?: string | null;
+  graveyard_enabled?: boolean;
+  graveyard_companies?: GraveyardCompany[];
   confidence_preview?: ConfidencePreview | null;
   clarification_log?: unknown[];
   run_id?: string | null;
@@ -367,4 +372,39 @@ export interface PlanListItem {
   updated_at: string;
   companies: string[];
   run_id?: string | null;
+}
+
+// =============================================================================
+// Graveyard / Post-Mortem Intelligence Types
+// =============================================================================
+
+export interface GraveyardCompany {
+  name: string;
+  years_active: string;
+  peak_description: string;
+  reason_summary: string;
+  confidence: string;
+}
+
+export interface CautionaryNarrative {
+  company: string;
+  peak_position: string;
+  failure_mode: string;
+  narrative: string;
+  key_lesson: string;
+}
+
+export interface RiskOverlay {
+  white_space_opportunity: string;
+  historical_precedent: string;
+  risk_level: string;
+  mitigation_guidance: string;
+}
+
+export interface PostMortemBriefData {
+  failure_patterns: string[];
+  structural_vulnerabilities: string[];
+  cautionary_narratives: CautionaryNarrative[];
+  risk_overlays: RiskOverlay[];
+  survival_principles: string[];
 }

@@ -322,6 +322,68 @@ def generate_v2_html(data, output_path):
                 next_steps_html += '</div></div>'
         next_steps_html += '</div>'
 
+    # Post-Mortem Intelligence section
+    postmortem = data.get("postmortem_brief", {})
+    graveyard_cos = data.get("graveyard_companies", [])
+    postmortem_html = ""
+    if postmortem and postmortem.get("failure_patterns"):
+        pm_parts = []
+        pm_parts.append(
+            '<section id="postmortem" class="mb-12 animate-fade-in">'
+            '<div class="rounded-xl border border-slate-300 bg-slate-50 shadow-sm overflow-hidden">'
+            '<div class="p-6 md:p-8">'
+            '<h2 class="text-2xl font-display font-bold text-slate-800 mb-2">Post-Mortem Intelligence</h2>'
+            f'<p class="text-sm text-slate-500 mb-6">Lessons from {len(graveyard_cos)} failed companies in this sector</p>'
+        )
+        # Failure patterns
+        fp = postmortem.get("failure_patterns", [])
+        if fp:
+            pm_parts.append('<div class="mb-6"><h3 class="text-sm font-semibold text-slate-600 uppercase tracking-wider mb-3">Failure Patterns</h3><div class="space-y-2">')
+            for p in fp:
+                pm_parts.append(f'<div class="flex gap-2 text-sm text-slate-700"><span class="text-red-500 font-bold shrink-0">!</span><span>{html_escape.escape(p)}</span></div>')
+            pm_parts.append('</div></div>')
+        # Structural vulnerabilities
+        sv = postmortem.get("structural_vulnerabilities", [])
+        if sv:
+            pm_parts.append('<div class="mb-6"><h3 class="text-sm font-semibold text-slate-600 uppercase tracking-wider mb-3">Structural Vulnerabilities</h3><div class="space-y-2">')
+            for v in sv:
+                pm_parts.append(f'<div class="flex gap-2 text-sm text-slate-600"><span class="text-amber-500 shrink-0">&#x26A0;</span><span>{html_escape.escape(v)}</span></div>')
+            pm_parts.append('</div></div>')
+        # Cautionary narratives
+        cn = postmortem.get("cautionary_narratives", [])
+        if cn:
+            pm_parts.append('<div class="mb-6"><h3 class="text-sm font-semibold text-slate-600 uppercase tracking-wider mb-3">Cautionary Narratives</h3><div class="space-y-4">')
+            for n in cn:
+                co = html_escape.escape(n.get("company", ""))
+                fm = html_escape.escape(n.get("failure_mode", ""))
+                pp = html_escape.escape(n.get("peak_position", ""))
+                narr = html_escape.escape(n.get("narrative", ""))
+                lesson = html_escape.escape(n.get("key_lesson", ""))
+                fm_badge = f'<span class="text-xs px-2 py-0.5 rounded bg-slate-100 text-slate-600">{fm}</span>' if fm else ""
+                pp_line = f'<p class="text-sm text-slate-600 mb-1"><strong>At their peak:</strong> {pp}</p>' if pp else ""
+                narr_line = f'<p class="text-sm text-slate-600 mb-2">{narr}</p>' if narr else ""
+                lesson_line = f'<p class="text-sm text-slate-800 bg-slate-50 rounded p-2 border border-slate-200"><strong>Key lesson:</strong> {lesson}</p>' if lesson else ""
+                pm_parts.append(
+                    f'<div class="rounded-lg border border-slate-200 bg-white p-4">'
+                    f'<div class="flex items-start justify-between mb-2"><h4 class="font-semibold text-slate-900 text-sm">{co}</h4>'
+                    f'{fm_badge}'
+                    f'</div>'
+                    f'{pp_line}'
+                    f'{narr_line}'
+                    f'{lesson_line}'
+                    f'</div>'
+                )
+            pm_parts.append('</div></div>')
+        # Survival principles
+        sp = postmortem.get("survival_principles", [])
+        if sp:
+            pm_parts.append('<div><h3 class="text-sm font-semibold text-slate-600 uppercase tracking-wider mb-3">Survival Principles</h3><ol class="list-decimal list-inside space-y-2">')
+            for p in sp:
+                pm_parts.append(f'<li class="text-sm text-slate-700">{html_escape.escape(p)}</li>')
+            pm_parts.append('</ol></div>')
+        pm_parts.append('</div></div></section>')
+        postmortem_html = "\n".join(pm_parts)
+
     total_time = metadata.get("total_elapsed_seconds", 0)
     time_str = f"{total_time:.0f}s" if total_time < 60 else f"{total_time / 60:.1f}m"
     num_companies = len(companies)
@@ -432,6 +494,7 @@ def generate_v2_html(data, output_path):
             <a href="#trends" class="nav-link px-4 py-2 rounded-lg text-sm font-medium text-slate-600 hover:text-indigo-600 hover:bg-indigo-50 transition-colors">Trends</a>
             <a href="#white-space" class="nav-link px-4 py-2 rounded-lg text-sm font-medium text-slate-600 hover:text-indigo-600 hover:bg-indigo-50 transition-colors">White Space</a>
             <a href="#next-steps" class="nav-link px-4 py-2 rounded-lg text-sm font-medium text-slate-600 hover:text-indigo-600 hover:bg-indigo-50 transition-colors">Next Steps</a>
+            {'<a href="#postmortem" class="nav-link px-4 py-2 rounded-lg text-sm font-medium text-slate-600 hover:text-indigo-600 hover:bg-indigo-50 transition-colors">Post-Mortem</a>' if postmortem_html else ""}
             <a href="#parameter-analysis" class="nav-link px-4 py-2 rounded-lg text-sm font-medium text-slate-600 hover:text-indigo-600 hover:bg-indigo-50 transition-colors">Parameter Analysis</a>
         </div>
     </nav>
@@ -453,6 +516,8 @@ def generate_v2_html(data, output_path):
             {f'<details class="print-expand border-t border-slate-200" id="next-steps"><summary class="p-6 font-semibold text-slate-800 cursor-pointer hover:bg-slate-50 transition-colors">Next Steps</summary><div class="details-content px-6 pb-6 pt-2">{next_steps_html}</div></details>' if next_steps_html else ""}
         </div>
     </section>
+
+    {postmortem_html}
 
     <section id="parameter-analysis" class="mb-12 animate-fade-in">
         <h2 class="text-2xl font-display font-bold text-slate-900 mb-6">Parameter Analysis</h2>
