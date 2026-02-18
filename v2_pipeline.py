@@ -26,6 +26,7 @@ import logging
 from agents.gather_agent import GatherAgent
 from agents.normalize_agent import NormalizeAgent
 from agents.synthesis_agent import SynthesisAgent
+from agents.research_synthesis_agent import ResearchSynthesisAgent
 from agents.executive_agent import ExecutiveAgent
 from agents.v2_schemas import (
     IntelligenceDossier,
@@ -152,6 +153,8 @@ async def run_v2_analysis(
     run_id_override: Optional[str] = None,
     progress_callback: Optional[Callable[[str, int, int, Optional[str]], None]] = None,
     venture_context: str = "",
+    key_questions: Optional[List[str]] = None,
+    hypothesis: str = "",
 ) -> V2RunResult:
     variable_ids: List[str] = []
     variable_lookup: Dict[str, VariableDefinition] = {}
@@ -208,6 +211,7 @@ async def run_v2_analysis(
     )
     normalize_agent = NormalizeAgent()
     synthesis_agent = SynthesisAgent(variable_lookup=variable_lookup)
+    research_synthesis_agent = ResearchSynthesisAgent()
     executive_agent = ExecutiveAgent()
 
     # Phase 1: Gather
@@ -331,6 +335,28 @@ async def run_v2_analysis(
     phase3_elapsed = time.time() - phase3_start
     print(f"\n  Phase 3 completed in {format_time(phase3_elapsed)}")
 
+    # Phase 3.5: Research Synthesis
+    if progress_callback:
+        progress_callback("research_synthesis", total_gather, total_gather, "Synthesizing research findings...")
+    print("\nPhase 3.5: Research Synthesis\n")
+    phase35_start = time.time()
+    
+    reports_for_synthesis = []
+    for var_id in variable_ids:
+        a = analyses.get(var_id)
+        if a:
+            reports_for_synthesis.append(ComparativeReport.from_dict(a))
+            
+    companies_list = ", ".join(companies)
+    research_synthesis = await research_synthesis_agent.synthesize(
+        companies_list, 
+        reports_for_synthesis, 
+        key_questions or [], 
+        hypothesis
+    )
+    phase35_elapsed = time.time() - phase35_start
+    print(f"  Phase 3.5 completed in {format_time(phase35_elapsed)}")
+
     # Phase 4: Executive
     if progress_callback:
         progress_callback("executive", total_gather, total_gather, "Generating executive brief...")
@@ -357,10 +383,12 @@ async def run_v2_analysis(
         intelligence=intelligence,
         analyses=analyses,
         executive=executive.to_dict(),
+        research_synthesis=research_synthesis.to_dict(),
         metadata={
             "phase1_elapsed_seconds": phase1_elapsed,
             "phase2_elapsed_seconds": phase2_elapsed,
             "phase3_elapsed_seconds": phase3_elapsed,
+            "phase35_elapsed_seconds": phase35_elapsed,
             "phase4_elapsed_seconds": phase4_elapsed,
             "total_elapsed_seconds": total_elapsed,
             "concurrency": concurrency,

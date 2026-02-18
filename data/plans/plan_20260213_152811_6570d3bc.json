@@ -1,0 +1,525 @@
+{
+  "id": "plan_20260213_152811_6570d3bc",
+  "title": "Research Plan: B2B/B2C enterprise learning and online course platforms (EdTech / Corporate L&D)",
+  "status": "launched",
+  "created_at": "2026-02-13T22:28:11.369193+00:00",
+  "updated_at": "2026-02-13T22:28:11.395967+00:00",
+  "companies": [
+    {
+      "id": "go1",
+      "input_name": "Go1",
+      "official_name": "Go1",
+      "industry": "e-learning",
+      "description": "Go1 is a global edtech company providing a comprehensive learning platform that aggregates content from over 250 providers for corporate training, skill development, and compliance. It offers a single subscription model for businesses to access thousands of courses, integrable with LMS systems, simplifying L&D management.[1][7][1]",
+      "headquarters": "Underwood, Australia",
+      "website": "https://www.go1.com",
+      "ambiguity_notes": "Other entities include Unitree Go1 (robotics product) and GO1 (esports player); context indicates the L&D company.[14][20]"
+    },
+    {
+      "id": "coursera_inc",
+      "input_name": "Coursera",
+      "official_name": "Coursera, Inc.",
+      "industry": "Online Education / EdTech",
+      "description": "Coursera is a global online learning platform founded in 2012 that partners with over 375 universities and companies to offer courses, professional certificates, specializations, and degrees across diverse subjects. The company operates on a freemium model with multiple revenue streams including subscription services (Coursera Plus), individual course fees, professional certificates, degree programs, and enterprise solutions for corporate training.",
+      "headquarters": "Mountain View, California, United States",
+      "website": "https://www.coursera.org",
+      "ambiguity_notes": null
+    },
+    {
+      "id": "udemy",
+      "input_name": "Udemy",
+      "official_name": "Udemy, Inc.",
+      "industry": "e-learning",
+      "description": "Udemy is an online learning platform that connects instructors with students worldwide, offering thousands of on-demand video courses in subjects like business, technology, design, and personal development. Founded in 2010, it enables experts to create and sell courses while providing flexible, affordable education to learners.[1][16]",
+      "headquarters": "San Francisco, California, United States",
+      "website": "https://www.udemy.com",
+      "ambiguity_notes": null
+    },
+    {
+      "id": "opensesame",
+      "input_name": "OpenSesame",
+      "official_name": "OpenSesame Inc.",
+      "industry": "EdTech",
+      "description": "OpenSesame is an educational technology company providing an online marketplace for buying and selling e-learning courses focused on employee training, including compliance, business skills, and AI-related development. It offers integrated software, curated content, and services to help organizations reinvent their workforce through skills-based learning.[1][3][1]",
+      "headquarters": "Portland, Oregon, USA",
+      "website": "https://www.opensesame.com",
+      "ambiguity_notes": "OpenSesame can refer to: 1) OpenSesame Inc., the EdTech company (primary match); 2) OpenSesame, an open-source graphical experiment builder for psychology/neuroscience (osdoc.cogsci.nl); 3) Minor entities like an AI agents startup for insurance (opensesame.dev) or a Japanese IT firm.[2][4][12][13]"
+    },
+    {
+      "id": "linkedin_learning",
+      "input_name": "LinkedIn Learning",
+      "official_name": "LinkedIn Learning",
+      "industry": "E-Learning",
+      "description": "LinkedIn Learning is an American global massive open online course (MOOC) provider offering video courses taught by industry experts in software, creative, and business skills. It originated as Lynda.com, founded in 1995, acquired by LinkedIn in 2015 for $1.5 billion, and rebranded thereafter; it is a subsidiary of LinkedIn, owned by Microsoft.[1]",
+      "headquarters": "Carpinteria, California, USA",
+      "website": "https://www.linkedin.com/learning/",
+      "ambiguity_notes": null
+    }
+  ],
+  "suggested_companies": [
+    {
+      "id": "docebo_lms",
+      "name": "Docebo",
+      "category": "direct_competitor",
+      "rationale": "Docebo is a leading LMS provider focused on corporate training with AI integrations and extensive customizations, directly competing in enterprise e-learning.[1]",
+      "gap_filled": "Enterprise LMS capabilities and AI-driven learning features."
+    },
+    {
+      "id": "skillshare_creative",
+      "name": "Skillshare",
+      "category": "adjacent_disruptor",
+      "rationale": "Skillshare offers subscription-based creative and hobbyist courses, disrupting traditional e-learning with short, community-driven classes.[2]",
+      "gap_filled": "Creative skills training and subscription model for casual learners."
+    },
+    {
+      "id": "futurelearn_uk",
+      "name": "FutureLearn",
+      "category": "international",
+      "rationale": "FutureLearn, a UK-based platform partnering with global universities, provides micro-credentials and degrees for international audiences.[17]",
+      "gap_filled": "European market presence and university-backed international courses."
+    },
+    {
+      "id": "pluralsight_tech",
+      "name": "Pluralsight",
+      "category": "direct_competitor",
+      "rationale": "Pluralsight specializes in tech and IT skills with hands-on labs, serving professionals in corporate upskilling.[9]",
+      "gap_filled": "Technical and software-specific training depth."
+    },
+    {
+      "id": "ed_x_nonprofit",
+      "name": "edX",
+      "category": "direct_competitor",
+      "rationale": "edX offers university-level MOOCs from Harvard and MIT with proctored credentials, competing in academic e-learning.[3]",
+      "gap_filled": "Non-profit academic courses and MicroMasters programs."
+    },
+    {
+      "id": "thinkific_creator",
+      "name": "Thinkific",
+      "category": "dark_horse",
+      "rationale": "Thinkific enables creators to build and sell custom courses with high G2 ratings, emerging as a flexible platform for branded e-learning.[3]",
+      "gap_filled": "Course creation tools for independent instructors and businesses."
+    }
+  ],
+  "accepted_suggestions": [
+    "skillshare_creative",
+    "ed_x_nonprofit"
+  ],
+  "industry_context": "B2B/B2C enterprise learning and online course platforms (EdTech / Corporate L&D)",
+  "selected_variable_ids": [
+    "unique_value_proposition",
+    "positioning",
+    "differentiation",
+    "target_customer_personas",
+    "users",
+    "use_cases",
+    "key_features",
+    "business_models",
+    "pricing_strategy",
+    "market_share",
+    "market_size",
+    "estimated_revenue",
+    "competitive_positioning_summary",
+    "brand_promise",
+    "customer_segmentation",
+    "buyers",
+    "advanced_features",
+    "integrations",
+    "product_roadmap",
+    "dyn_b2b_b2c_revenue_mix",
+    "dyn_content_sourcing_model",
+    "dyn_credential_authority_perception",
+    "dyn_enterprise_integration_depth",
+    "dyn_content_vertical_focus",
+    "dyn_geographic_market_focus",
+    "dyn_instructor_quality_economics",
+    "dyn_completion_outcome_metrics",
+    "dyn_ai_personalization_capabilities",
+    "dyn_regulatory_compliance_capabilities"
+  ],
+  "dynamic_variables": [
+    {
+      "id": "dyn_b2b_b2c_revenue_mix",
+      "name": "B2B vs B2C Revenue Mix",
+      "category": "Financials",
+      "research_prompt": "Find the percentage breakdown of revenue derived from enterprise/B2B sales versus consumer/B2C individual purchases for {company}.\n\nIN SCOPE: Revenue split percentages, segment growth rates, number of enterprise customers vs individual learners, ARPU differences between segments.\n\nNOT IN SCOPE: Total revenue figures alone, geographic splits, or content category splits. Focus strictly on business model composition.",
+      "example_queries": [
+        "{company} B2B revenue percentage",
+        "{company} enterprise vs consumer revenue split",
+        "{company} business segment revenue 2024",
+        "{company} corporate learning revenue mix"
+      ],
+      "answer_spec": [
+        "Percentage of revenue from B2B/Enterprise vs B2C/Consumer",
+        "Growth rate of each segment year-over-year",
+        "Source and fiscal period of the data"
+      ],
+      "preferred_source_types": [
+        "official",
+        "tier1_news",
+        "analyst_reports"
+      ],
+      "key_terms": [
+        "B2B",
+        "enterprise",
+        "consumer",
+        "revenue mix",
+        "segment reporting",
+        "ARPU",
+        "business model",
+        "customer type"
+      ],
+      "max_concise_chars": 200,
+      "rationale": "Reveals whether players are primarily enterprise SaaS (Go1, OpenSesame) vs consumer marketplaces (Udemy, Skillshare) vs hybrids (Coursera, LinkedIn), exposing white space in mixed-model strategies."
+    },
+    {
+      "id": "dyn_content_sourcing_model",
+      "name": "Content Acquisition & Authorship Model",
+      "category": "Content Strategy",
+      "research_prompt": "Determine how {company} sources its learning content: marketplace/open, university partnerships, in-house production, or aggregated third-party licensing.\n\nIN SCOPE: Content creator economics (revenue share vs flat fees), number of instructors/partners, content approval processes, exclusivity arrangements, and content update frequency.\n\nNOT IN SCOPE: Total course counts without sourcing context, learner ratings, or specific course titles. Focus on the business model of content acquisition.",
+      "example_queries": [
+        "{company} content creator revenue share model",
+        "{company} instructor partnership program",
+        "{company} university partnerships content",
+        "{company} content licensing vs marketplace"
+      ],
+      "answer_spec": [
+        "Primary content sourcing method (marketplace/partner/in-house/aggregated)",
+        "Creator compensation structure and economics",
+        "Content quality control and curation methodology"
+      ],
+      "preferred_source_types": [
+        "official",
+        "tier1_news",
+        "industry_reports"
+      ],
+      "key_terms": [
+        "instructor",
+        "content creator",
+        "revenue share",
+        "royalty",
+        "university partner",
+        "marketplace",
+        "licensing",
+        "curation"
+      ],
+      "max_concise_chars": 200,
+      "rationale": "Contrasts Udemy's open marketplace against Coursera's university partnerships and Go1's aggregated library to identify white space in content curation strategies."
+    },
+    {
+      "id": "dyn_credential_authority_perception",
+      "name": "Credential Value & Accreditation",
+      "category": "Market Positioning",
+      "research_prompt": "Evaluate the perceived market value and accreditation status of credentials offered by {company}, specifically employer recognition and academic credit eligibility.\n\nIN SCOPE: University accreditation partnerships, industry-recognized certifications, employer survey data on credential value, stackability into degrees, and verification mechanisms.\n\nNOT IN SCOPE: Completion certificates without third-party validation, user testimonials about satisfaction, or course difficulty ratings. Focus on external validation of credential value.",
+      "example_queries": [
+        "{company} accredited degrees",
+        "{company} employer recognition credentials",
+        "{company} university credit transfer",
+        "{company} industry certification value"
+      ],
+      "answer_spec": [
+        "Level of credential authority (degree/certificate/badge)",
+        "List of accrediting or recognizing institutions/employers",
+        "Evidence of job market impact or salary uplift from credentials"
+      ],
+      "preferred_source_types": [
+        "official",
+        "tier1_news",
+        "academic_journals",
+        "employer_surveys"
+      ],
+      "key_terms": [
+        "accreditation",
+        "credential",
+        "certificate",
+        "degree",
+        "university partner",
+        "employer recognition",
+        "industry certification",
+        "credit transfer"
+      ],
+      "max_concise_chars": 200,
+      "rationale": "Distinguishes Coursera/edX degree pathways from Skillshare's hobby certificates to reveal gaps in employer-recognized credentialing versus casual learning."
+    },
+    {
+      "id": "dyn_enterprise_integration_depth",
+      "name": "Enterprise Tech Stack Integration",
+      "category": "Operations & Infrastructure",
+      "research_prompt": "Analyze the depth and breadth of {company}'s integrations with enterprise systems including LMS (Learning Management Systems), HRIS (Human Resource Information Systems), SSO, and LXP (Learning Experience Platforms).\n\nIN SCOPE: Native integrations vs API-only, SCORM/xAPI compliance, pre-built connectors for specific platforms (Workday, SAP SuccessFactors, Salesforce), and integration maintenance responsibility.\n\nNOT IN SCOPE: Consumer payment integrations (Stripe/PayPal), video streaming technology, or social media logins. Focus on enterprise workflow integration.",
+      "example_queries": [
+        "{company} LMS integrations",
+        "{company} HRIS connectors Workday SAP",
+        "{company} SCORM xAPI compliance",
+        "{company} enterprise API ecosystem"
+      ],
+      "answer_spec": [
+        "List of major enterprise platforms with native integrations",
+        "Data standards supported (SCORM, xAPI, LTI)",
+        "Integration deployment complexity (IT burden assessment)"
+      ],
+      "preferred_source_types": [
+        "official",
+        "technical_documentation",
+        "tier1_news"
+      ],
+      "key_terms": [
+        "LMS",
+        "HRIS",
+        "SSO",
+        "SCORM",
+        "xAPI",
+        "LTI",
+        "Workday",
+        "Salesforce",
+        "integration",
+        "API"
+      ],
+      "max_concise_chars": 200,
+      "rationale": "Maps the depth of HRIS/LMS connectivity (critical for Go1, OpenSesame, LinkedIn) versus standalone consumer platforms to identify integration white space."
+    },
+    {
+      "id": "dyn_content_vertical_focus",
+      "name": "Content Vertical Specialization",
+      "category": "Content Strategy",
+      "research_prompt": "Identify the primary content verticals and categories that {company} specializes in, and their revenue concentration by subject matter.\n\nIN SCOPE: Revenue or course catalog percentage by category (Technology, Business, Creative, Compliance, Soft Skills), instructor expertise concentration, and enterprise client industry alignment.\n\nNOT IN SCOPE: Individual popular courses, user engagement metrics by topic, or trending searches. Focus on strategic vertical bets.",
+      "example_queries": [
+        "{company} content categories revenue",
+        "{company} technology courses percentage",
+        "{company} compliance training focus",
+        "{company} creative vs business content split"
+      ],
+      "answer_spec": [
+        "Top 3 content verticals by revenue or catalog size",
+        "Concentration of enterprise clients by industry vertical",
+        "Strategic focus areas (generalist vs specialist positioning)"
+      ],
+      "preferred_source_types": [
+        "official",
+        "tier1_news",
+        "analyst_reports"
+      ],
+      "key_terms": [
+        "vertical",
+        "category",
+        "technology",
+        "business",
+        "creative",
+        "compliance",
+        "soft skills",
+        "content catalog",
+        "specialization"
+      ],
+      "max_concise_chars": 200,
+      "rationale": "Identifies whether players focus on hard skills (tech/data), creative arts, compliance training, or general business, revealing underserved vertical white space."
+    },
+    {
+      "id": "dyn_geographic_market_focus",
+      "name": "Geographic Market Penetration",
+      "category": "Market Positioning",
+      "research_prompt": "Determine the geographic revenue distribution and strategic market focus for {company}, including localization efforts and regional competitive positioning.\n\nIN SCOPE: Revenue by region (NA, EMEA, APAC, LATAM), content localization (language support), regional office presence, and local competitor dynamics.\n\nNOT IN SCOPE: User nationality demographics without revenue context, remote work policies, or server locations. Focus on market prioritization and revenue geography.",
+      "example_queries": [
+        "{company} revenue by region",
+        "{company} APAC market strategy",
+        "{company} geographic expansion",
+        "{company} localization language support"
+      ],
+      "answer_spec": [
+        "Percentage revenue by major geographic region",
+        "Key strategic growth markets vs mature markets",
+        "Localization depth (languages, local content, regional partnerships)"
+      ],
+      "preferred_source_types": [
+        "official",
+        "tier1_news",
+        "analyst_reports"
+      ],
+      "key_terms": [
+        "geographic",
+        "region",
+        "APAC",
+        "EMEA",
+        "LATAM",
+        "localization",
+        "language",
+        "market penetration",
+        "expansion"
+      ],
+      "max_concise_chars": 200,
+      "rationale": "Reveals regional dominance (e.g., Go1 in APAC, Coursera globally, LinkedIn in North America) to identify geographic white space for localization strategies."
+    },
+    {
+      "id": "dyn_instructor_quality_economics",
+      "name": "Instructor Economics & Retention",
+      "category": "Operations & Infrastructure",
+      "research_prompt": "Analyze how {company} compensates, retains, and quality-controls its content creators/instructors, including top instructor concentration and earnings distribution.\n\nIN SCOPE: Instructor payment models (revenue share tiers, flat fees, salaried), top 1% instructor revenue concentration, instructor churn rates, and quality assurance processes.\n\nNOT IN SCOPE: Learner satisfaction scores, course completion rates, or instructor biographies. Focus on the supply-side economics of content creators.",
+      "example_queries": [
+        "{company} instructor revenue share percentages",
+        "{company} top instructor earnings",
+        "{company} instructor retention program",
+        "{company} creator quality standards"
+      ],
+      "answer_spec": [
+        "Primary instructor compensation structure and typical earnings",
+        "Concentration of revenue among top creators (platform dependency risk)",
+        "Quality control mechanisms and barriers to entry for instructors"
+      ],
+      "preferred_source_types": [
+        "official",
+        "tier1_news",
+        "creator_surveys",
+        "industry_reports"
+      ],
+      "key_terms": [
+        "instructor",
+        "creator",
+        "revenue share",
+        "earnings",
+        "retention",
+        "quality control",
+        "top instructor",
+        "compensation"
+      ],
+      "max_concise_chars": 200,
+      "rationale": "Contrasts Udemy's gig-economy instructor base with Coursera's academic partnerships to reveal white space in creator monetization and quality control."
+    },
+    {
+      "id": "dyn_completion_outcome_metrics",
+      "name": "Learning Outcomes & Engagement",
+      "category": "Customer Experience",
+      "research_prompt": "Find verified data on course completion rates, skill assessment outcomes, and learner career progression for {company}.\n\nIN SCOPE: Verified completion percentages (not just enrollment), assessment-based skill improvement metrics, job placement or promotion rates attributed to platform, and engagement frequency (DAU/MAU).\n\nNOT IN SCOPE: Course ratings, number of reviews, or anecdotal testimonials. Focus on measurable learning outcomes and retention metrics.",
+      "example_queries": [
+        "{company} course completion rate statistics",
+        "{company} learner outcome metrics",
+        "{company} skill assessment results",
+        "{company} career advancement data"
+      ],
+      "answer_spec": [
+        "Verified course completion rate percentage",
+        "Skill assessment or competency improvement metrics",
+        "Career outcome data (promotion, hiring, salary change) linked to platform"
+      ],
+      "preferred_source_types": [
+        "official",
+        "academic_studies",
+        "tier1_news",
+        "transparency_reports"
+      ],
+      "key_terms": [
+        "completion rate",
+        "outcome",
+        "assessment",
+        "retention",
+        "engagement",
+        "skill verification",
+        "career outcome",
+        "learning effectiveness"
+      ],
+      "max_concise_chars": 200,
+      "rationale": "Reveals effectiveness gaps between Coursera's degree rigor and Skillshare's casual consumption, identifying white space in verified skill acquisition."
+    },
+    {
+      "id": "dyn_ai_personalization_capabilities",
+      "name": "AI & Adaptive Learning Maturity",
+      "category": "Technology & Innovation",
+      "research_prompt": "Evaluate the maturity of {company}'s AI capabilities for personalized learning paths, content recommendation, skill gap analysis, and automated tutoring/assessment.\n\nIN SCOPE: AI-driven features in production (not roadmap), use of LLMs for tutoring, adaptive learning algorithms, skill ontology mapping, and automated content curation.\n\nNOT IN SCOPE: Basic search algorithms, marketing personalization, or AI hype without product implementation. Focus on pedagogical AI applications.",
+      "example_queries": [
+        "{company} AI learning assistant features",
+        "{company} adaptive learning technology",
+        "{company} personalized learning paths AI",
+        "{company} skill gap analysis automation"
+      ],
+      "answer_spec": [
+        "Specific AI features deployed for personalization/tutoring",
+        "Level of learning path automation vs manual curation",
+        "Data sources used for personalization (skills, behavior, assessments)"
+      ],
+      "preferred_source_types": [
+        "official",
+        "technical_blogs",
+        "tier1_news",
+        "product_reviews"
+      ],
+      "key_terms": [
+        "AI",
+        "machine learning",
+        "adaptive learning",
+        "personalization",
+        "LLM",
+        "tutoring bot",
+        "skill gap",
+        "recommendation engine"
+      ],
+      "max_concise_chars": 200,
+      "rationale": "Maps the gap between basic content recommendations (Udemy) and advanced AI tutoring (emerging in Coursera/edX) to identify innovation white space."
+    },
+    {
+      "id": "dyn_regulatory_compliance_capabilities",
+      "name": "Compliance & Mandatory Training Focus",
+      "category": "Market Positioning",
+      "research_prompt": "Assess {company}'s capabilities and market focus on regulatory compliance training (safety, HR, ethics, industry-specific certifications) versus voluntary professional development.\n\nIN SCOPE: Compliance content catalog size, certification tracking for regulators, audit trail capabilities, industry-specific compliance (OSHA, HIPAA, SOC2), and B2B customer use case for mandatory training.\n\nNOT IN SCOPE: General soft skills, optional leadership training, or academic degree requirements. Focus on legally mandated or audit-required training.",
+      "example_queries": [
+        "{company} compliance training catalog",
+        "{company} regulatory certification tracking",
+        "{company} OSHA HIPAA training",
+        "{company} mandatory training solutions"
+      ],
+      "answer_spec": [
+        "Extent of compliance-focused content (catalog % or revenue %)",
+        "Regulatory tracking and audit capabilities (certificates of completion for audits)",
+        "Industry-specific compliance verticals served"
+      ],
+      "preferred_source_types": [
+        "official",
+        "industry_news",
+        "compliance_publications",
+        "analyst_reports"
+      ],
+      "key_terms": [
+        "compliance",
+        "mandatory training",
+        "regulatory",
+        "certification",
+        "audit trail",
+        "OSHA",
+        "HIPAA",
+        "safety training",
+        "risk management"
+      ],
+      "max_concise_chars": 200,
+      "rationale": "Distinguishes OpenSesame's regulatory compliance focus from Coursera's upskilling to reveal white space in high-stakes mandatory training markets."
+    }
+  ],
+  "parameter_contexts": {
+    "unique_value_proposition": "Distinguishes between degree-bearing credentials, skill marketplaces, and corporate L&D automation to reveal positioning gaps.",
+    "positioning": "Maps enterprise SaaS vs consumer marketplace vs academic partnership models to identify underserved segments.",
+    "differentiation": "Highlights content curation methods, credential authority, and integration depth that separate premium from commodity players.",
+    "target_customer_personas": "Contrasts HR/L&D buyers, individual upskillers, and academic seekers to spot persona white space.",
+    "users": "Quantifies learner base composition (enterprise employees vs individual consumers) indicating market penetration.",
+    "use_cases": "Distinguishes mandatory compliance training, voluntary upskilling, and degree programs to find scenario gaps.",
+    "key_features": "Compares LMS integration, mobile accessibility, and credentialing to identify feature parity and innovation gaps.",
+    "business_models": "Contrasts subscription SaaS, marketplace take-rates, and university revenue shares to reveal monetization white space.",
+    "pricing_strategy": "Maps per-seat enterprise pricing vs per-course consumer models to identify pricing architecture gaps.",
+    "market_share": "Quantifies relative positioning in corporate L&D vs consumer learning to identify concentration risks.",
+    "market_size": "Segments TAM by enterprise training budgets vs consumer education spend to reveal addressable white space.",
+    "estimated_revenue": "Reveals scale and growth trajectory differences between B2B platform and B2C marketplace models."
+  },
+  "mission_statement": "This research aims to comprehensively benchmark Go1, Coursera, Udemy, OpenSesame, LinkedIn Learning, Skillshare, and edX across 29 parameters to understand their competitive positioning, differentiation strategies, and growth trajectories within the converging B2B enterprise learning and B2C online course markets. The goal is to identify which platforms are best positioned to capture the expanding corporate L&D budget, where white-space opportunities exist, and how content aggregation models compare against content-creation models in driving sustainable revenue and retention.",
+  "key_questions": [
+    "How do the revenue models (subscription, per-seat licensing, marketplace commission, freemium) of each platform compare in terms of B2B enterprise penetration, average contract value, net revenue retention, and gross margin profiles?",
+    "What is each platform's content library breadth and depth (number of courses, content partners, proprietary vs. aggregated content), and how does content strategy correlate with enterprise customer acquisition and retention?",
+    "How does Go1's content aggregation and integration-first approach (LMS/LXP partnerships, API ecosystem) compare to Coursera's and edX's university-credentialed model and LinkedIn Learning's professional network distribution advantage in winning enterprise L&D deals?",
+    "What are the key differences in go-to-market strategies across B2B (direct enterprise sales, channel partnerships, platform integrations) and B2C (self-serve, SEO, social) segments, and which companies are most effectively executing a dual-motion strategy?",
+    "How do customer acquisition costs, lifetime value, churn rates, and engagement metrics (completion rates, monthly active learners per seat) differ across the competitive set, and what drives the variance?",
+    "Which platforms are making the most meaningful investments in AI-powered personalization, skills taxonomy mapping, adaptive learning paths, and workforce analytics \u2014 and how are these capabilities influencing enterprise buyer decisions?",
+    "What is the competitive landscape for credentialing and certification (micro-credentials, degrees, professional certificates), and how important is credential recognition in driving B2B vs. B2C demand for each platform?",
+    "How do geographic expansion strategies, localization capabilities, and international revenue mix compare across the set, and which regions represent the highest-growth battlegrounds for enterprise L&D spend?"
+  ],
+  "hypothesis": "Go1's platform-agnostic content aggregation model and deep LMS/LXP integration strategy will prove more defensible in the enterprise L&D segment than single-platform content libraries (e.g., Udemy Business, LinkedIn Learning), because enterprise buyers increasingly prefer unified content ecosystems over point solutions \u2014 but Go1 will face margin pressure and brand-awareness disadvantages relative to credentialed platforms like Coursera and edX that command pricing power through university partnerships.",
+  "perspective": "neutral",
+  "audience": "general",
+  "depth": "deep",
+  "focus_companies": [],
+  "known_context": null,
+  "confidence_preview": null,
+  "clarification_log": [],
+  "run_id": "v2_run_20260213_152811"
+}

@@ -236,3 +236,135 @@ export interface RunProgress {
   estimated_remaining_seconds?: number;
   recent_activity: ActivityItem[];
 }
+
+// =============================================================================
+// Research Plan Types
+// =============================================================================
+
+export interface CompanyProfile {
+  id: string;
+  input_name: string;
+  official_name: string;
+  industry: string;
+  description: string;
+  headquarters?: string;
+  website?: string;
+  ambiguity_notes?: string;
+  subsidiary_notes?: string | null;
+  subsidiaries?: string[];
+  brand_name?: string | null;
+}
+
+export interface CompanySuggestion {
+  id: string;
+  name: string;
+  category: string;
+  rationale: string;
+  gap_filled: string;
+  subsidiaries?: string[];
+  brand_name?: string | null;
+}
+
+export interface ClarificationOption {
+  id: string;
+  label: string;
+  description?: string;
+}
+
+export interface ClarificationQuestion {
+  id: string;
+  question: string;
+  options: ClarificationOption[];
+  allow_free_text?: boolean;
+  context?: string;
+  impacts?: string[];
+}
+
+// =============================================================================
+// Intelligence Question Types
+// =============================================================================
+
+export interface IntelligenceOption {
+  id: string;
+  label: string;
+  description?: string;
+}
+
+export interface IntelligenceQuestion {
+  id: string;
+  question: string;
+  options: IntelligenceOption[];
+  allow_multiple?: boolean;
+  allow_free_text?: boolean;
+  context?: string;
+  follow_up_hint?: string;
+}
+
+export interface IntelligenceAnswer {
+  question_id: string;
+  question_text: string;
+  selected_option_ids: string[];
+  selected_labels: string[];
+  free_text?: string;
+}
+
+// =============================================================================
+// Research Goal Types
+// =============================================================================
+
+export interface ResearchGoalResult {
+  mission_statement: string;
+  key_questions: string[];
+  hypothesis?: string | null;
+  perspective: string;
+}
+
+export interface CompanyConfidence {
+  company_id: string;
+  company_name: string;
+  level: string;
+  reason: string;
+}
+
+export interface ConfidencePreview {
+  overall_level: string;
+  company_confidences: CompanyConfidence[];
+  warnings: string[];
+  suggestions: string[];
+}
+
+export interface ResearchPlan {
+  id: string;
+  title: string;
+  status: "draft" | "accepted" | "launched" | "completed";
+  created_at: string;
+  updated_at: string;
+  companies: CompanyProfile[];
+  suggested_companies: CompanySuggestion[];
+  accepted_suggestions: string[];
+  industry_context: string;
+  selected_variable_ids: string[];
+  dynamic_variables: DynamicVariableDefinition[];
+  parameter_contexts: Record<string, string>;
+  mission_statement: string;
+  key_questions: string[];
+  hypothesis?: string | null;
+  perspective: string;
+  audience: string;
+  depth: "quick" | "standard" | "deep";
+  focus_companies: string[];
+  known_context?: string | null;
+  confidence_preview?: ConfidencePreview | null;
+  clarification_log?: unknown[];
+  run_id?: string | null;
+}
+
+export interface PlanListItem {
+  id: string;
+  title: string;
+  status: string;
+  created_at: string;
+  updated_at: string;
+  companies: string[];
+  run_id?: string | null;
+}

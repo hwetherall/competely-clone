@@ -193,6 +193,46 @@ Your evaluation:"""
 
 
 # =============================================================================
+# Phase 3.5: Research Synthesis
+# =============================================================================
+
+RESEARCH_SYNTHESIS_SYSTEM = """You are a lead research analyst. Your job is to answer the specific key questions defined in the original research plan and validate the initial hypothesis based on the gathered intelligence. You must be evidence-based, citing findings from the parameter reports."""
+
+RESEARCH_SYNTHESIS_PROMPT = """Synthesize the research findings to answer the original key questions and validate the hypothesis.
+
+Companies in scope: {companies_list}
+
+Research Plan:
+Hypothesis: {hypothesis}
+Key Questions:
+{key_questions_list}
+
+Parameter Reports (Findings):
+{parameter_summaries}
+
+INSTRUCTIONS:
+1. For each Key Question, provide a comprehensive answer (3-5 sentences) based on the findings in the parameter reports. Cite specific metrics or rankings where relevant.
+2. Validate the Hypothesis: explicitly state if it was supported, partially supported, or refuted by the data. Explain why in 3-5 sentences.
+
+Output your response as JSON inside <research_synthesis_json> tags:
+
+<research_synthesis_json>
+{{
+  "key_questions_answers": [
+    {{
+      "question": "Original question text...",
+      "answer": "Comprehensive answer based on findings..."
+    }},
+    ...
+  ],
+  "hypothesis_validation": "The hypothesis was [supported/refuted] because..."
+}}
+</research_synthesis_json>
+
+Your research synthesis:"""
+
+
+# =============================================================================
 # Phase 4: Executive Brief
 # =============================================================================
 

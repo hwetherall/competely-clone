@@ -194,6 +194,14 @@ class RunCreateRequest(BaseModel):
         default=None,
         description="Optional variable id -> one-line context for each parameter (from variable generation); used by V2 pipeline to guide gather/normalize/synthesis.",
     )
+    key_questions: Optional[List[str]] = Field(
+        default=None,
+        description="List of key questions to answer in the synthesis phase",
+    )
+    hypothesis: Optional[str] = Field(
+        default=None,
+        description="Hypothesis to validate in the synthesis phase",
+    )
 
 
 class RunCreateResponse(BaseModel):
@@ -238,3 +246,236 @@ class RunProgressResponse(BaseModel):
     elapsed_seconds: float
     estimated_remaining_seconds: Optional[float] = None
     recent_activity: List[ActivityItem] = []
+
+
+# =============================================================================
+# Research Plan Schemas
+# =============================================================================
+
+class CompanyProfileSchema(BaseModel):
+    """Verified company profile from Step 1."""
+    id: str
+    input_name: str
+    official_name: str
+    industry: str
+    description: str
+    headquarters: Optional[str] = None
+    website: Optional[str] = None
+    ambiguity_notes: Optional[str] = None
+    subsidiary_notes: Optional[str] = None  # Parent vs subsidiaries/brands (e.g. Lufthansa Group vs airline)
+    subsidiaries: List[str] = []  # Structured list for subsidiary selector UI
+    brand_name: Optional[str] = None  # When conglomerate: main brand only (e.g. Lufthansa German Airlines)
+
+
+class CompanySuggestionSchema(BaseModel):
+    """Suggested additional company from Step 2."""
+    id: str
+    name: str
+    category: str
+    rationale: str
+    gap_filled: str
+    subsidiaries: List[str] = []
+    brand_name: Optional[str] = None
+
+
+class ClarificationOptionSchema(BaseModel):
+    """One suggested answer for a clarification question."""
+    id: str
+    label: str
+    description: Optional[str] = None
+
+
+class ClarificationQuestionSchema(BaseModel):
+    """A single clarification question with options."""
+    id: str
+    question: str
+    options: List[ClarificationOptionSchema]
+    allow_free_text: bool = True
+    context: Optional[str] = None
+    impacts: Optional[List[str]] = None
+
+
+class IntelligenceOptionSchema(BaseModel):
+    """One option for an intelligence question."""
+    id: str
+    label: str
+    description: Optional[str] = None
+
+
+class IntelligenceQuestionSchema(BaseModel):
+    """A strategic intelligence question shown before content generation."""
+    id: str
+    question: str
+    options: List[IntelligenceOptionSchema]
+    allow_multiple: bool = True
+    allow_free_text: bool = True
+    context: Optional[str] = None
+    follow_up_hint: Optional[str] = None
+
+
+class IntelligenceAnswerSchema(BaseModel):
+    """A user's answer to an intelligence question."""
+    question_id: str
+    question_text: str = ""
+    selected_option_ids: List[str] = []
+    selected_labels: List[str] = []
+    free_text: Optional[str] = None
+
+
+class IntelligenceQuestionsRequest(BaseModel):
+    """Request to generate intelligence questions for a wizard step."""
+    step: str
+    context: Dict[str, Any] = Field(default_factory=dict)
+
+
+class IntelligenceQuestionsResponse(BaseModel):
+    """Response containing intelligence questions."""
+    questions: List[IntelligenceQuestionSchema] = []
+
+
+class IntelligenceFollowupRequest(BaseModel):
+    """Request to get follow-up questions after answering an intelligence question."""
+    step: str
+    question_id: str
+    selected_options: List[str] = []
+    context: Dict[str, Any] = Field(default_factory=dict)
+    previous_answers: List[IntelligenceAnswerSchema] = []
+
+
+class ValidateCompaniesRequest(BaseModel):
+    """Request for Step 1: validate company names."""
+    companies: List[str] = Field(..., min_length=1)
+
+
+class ValidateCompaniesResponse(BaseModel):
+    """Response from Step 1."""
+    companies: List[CompanyProfileSchema]
+    clarifications: List[ClarificationQuestionSchema] = []
+
+
+class SuggestCompaniesRequest(BaseModel):
+    """Request for Step 2: suggest additional companies."""
+    companies: List[CompanyProfileSchema] = Field(..., min_length=1)
+    intelligence_answers: Optional[List[IntelligenceAnswerSchema]] = None
+
+
+class SuggestCompaniesResponse(BaseModel):
+    """Response from Step 2."""
+    suggestions: List[CompanySuggestionSchema]
+    clarifications: List[ClarificationQuestionSchema] = []
+
+
+class ResearchGoalResultSchema(BaseModel):
+    """Output of Step 4: research goal generation."""
+    mission_statement: str
+    key_questions: List[str] = []
+    hypothesis: Optional[str] = None
+    perspective: str = "neutral"
+
+
+class GenerateGoalRequest(BaseModel):
+    """Request for Step 4: generate research goal."""
+    companies: List[Any] = Field(default_factory=list)  # CompanyProfileSchema or str
+    industry_context: str = ""
+    parameter_summary: Optional[str] = None
+
+
+class GenerateGoalResponse(BaseModel):
+    """Response from Step 4."""
+    goal: ResearchGoalResultSchema
+    clarifications: List[ClarificationQuestionSchema] = []
+
+
+class CompanyConfidenceSchema(BaseModel):
+    """Per-company data availability estimate."""
+    company_id: str
+    company_name: str
+    level: str
+    reason: str
+
+
+class ConfidencePreviewSchema(BaseModel):
+    """Feasibility assessment for Step 6."""
+    overall_level: str
+    company_confidences: List[CompanyConfidenceSchema] = []
+    warnings: List[str] = []
+    suggestions: List[str] = []
+
+
+class ClarificationAnswerSchema(BaseModel):
+    """One user answer to a clarification question (for audit log)."""
+    question_id: str
+    option_id: Optional[str] = None
+    free_text: Optional[str] = None
+
+
+class ResearchPlanSchema(BaseModel):
+    """Full research plan document."""
+    id: str
+    title: str
+    status: str = "draft"  # draft | accepted | launched | completed
+    created_at: str
+    updated_at: str
+
+    companies: List[CompanyProfileSchema] = []
+    suggested_companies: List[CompanySuggestionSchema] = []
+    accepted_suggestions: List[str] = []
+
+    industry_context: str = ""
+    selected_variable_ids: List[str] = []
+    dynamic_variables: List[DynamicVariableDefinition] = []
+    parameter_contexts: Dict[str, str] = {}
+
+    mission_statement: str = ""
+    key_questions: List[str] = []
+    hypothesis: Optional[str] = None
+    perspective: str = "neutral"
+
+    audience: str = "general"
+    depth: str = "standard"  # quick | standard | deep
+    focus_companies: List[str] = []
+    known_context: Optional[str] = None
+
+    confidence_preview: Optional[ConfidencePreviewSchema] = None
+    clarification_log: List[ClarificationAnswerSchema] = []
+    run_id: Optional[str] = None
+
+
+class PlanCreateRequest(BaseModel):
+    """Request to save a new plan (full plan payload)."""
+    title: str = "Research Plan"
+    companies: List[CompanyProfileSchema] = []
+    suggested_companies: List[CompanySuggestionSchema] = []
+    accepted_suggestions: List[str] = []
+    effective_company_names: Optional[List[str]] = None  # When set (e.g. selected subsidiaries), launch uses this for the run
+    industry_context: str = ""
+    selected_variable_ids: List[str] = []
+    dynamic_variables: List[DynamicVariableDefinition] = []
+    parameter_contexts: Dict[str, str] = {}
+    mission_statement: str = ""
+    key_questions: List[str] = []
+    hypothesis: Optional[str] = None
+    perspective: str = "neutral"
+    audience: str = "general"
+    depth: str = "standard"
+    focus_companies: List[str] = []
+    known_context: Optional[str] = None
+
+
+class PlanCreateResponse(BaseModel):
+    """Response after saving a plan."""
+    plan_id: str
+    status: str = "draft"
+
+
+class GenerateCustomParameterRequest(BaseModel):
+    """Request to generate a single custom parameter from free text."""
+    description: str
+    companies: List[str] = []
+    industry_context: str = ""
+
+
+class StepClarificationsRequest(BaseModel):
+    """Request to generate clarification questions for a step."""
+    step: str
+    context: Dict[str, Any] = Field(default_factory=dict)

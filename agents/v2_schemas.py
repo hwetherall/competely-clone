@@ -406,6 +406,50 @@ class ExecutiveBrief:
 
 
 @dataclass
+class KeyQuestionAnswer:
+    """
+    Answer to a key research question.
+    """
+    question: str
+    answer: str
+
+    def to_dict(self) -> Dict[str, Any]:
+        return {
+            "question": self.question,
+            "answer": self.answer,
+        }
+
+    @classmethod
+    def from_dict(cls, data: Dict[str, Any]) -> "KeyQuestionAnswer":
+        return cls(
+            question=data.get("question", ""),
+            answer=data.get("answer", ""),
+        )
+
+
+@dataclass
+class ResearchSynthesis:
+    """
+    Synthesis of research findings against the original plan.
+    """
+    key_questions_answers: List[KeyQuestionAnswer] = field(default_factory=list)
+    hypothesis_validation: str = ""
+
+    def to_dict(self) -> Dict[str, Any]:
+        return {
+            "key_questions_answers": [a.to_dict() for a in self.key_questions_answers],
+            "hypothesis_validation": self.hypothesis_validation,
+        }
+
+    @classmethod
+    def from_dict(cls, data: Dict[str, Any]) -> "ResearchSynthesis":
+        return cls(
+            key_questions_answers=[KeyQuestionAnswer.from_dict(a) for a in data.get("key_questions_answers", [])],
+            hypothesis_validation=data.get("hypothesis_validation", ""),
+        )
+
+
+@dataclass
 class V2RunResult:
     """
     Complete V2 run output for persistence and report generation.
@@ -419,6 +463,7 @@ class V2RunResult:
         intelligence: company -> param_id -> IntelligenceDossier (as dict)
         analyses: param_id -> ComparativeReport (as dict)
         executive: ExecutiveBrief (as dict)
+        research_synthesis: ResearchSynthesis (as dict)
         metadata: Phase-level stats, duration, etc.
     """
     run_id: str
@@ -429,7 +474,8 @@ class V2RunResult:
     intelligence: Dict[str, Dict[str, Dict[str, Any]]]
     analyses: Dict[str, Dict[str, Any]]
     executive: Dict[str, Any]
-    metadata: Dict[str, Any]
+    research_synthesis: Dict[str, Any] = field(default_factory=dict)
+    metadata: Dict[str, Any] = field(default_factory=dict)
 
     def to_dict(self) -> Dict[str, Any]:
         return {
@@ -441,6 +487,7 @@ class V2RunResult:
             "intelligence": self.intelligence,
             "analyses": self.analyses,
             "executive": self.executive,
+            "research_synthesis": self.research_synthesis,
             "metadata": self.metadata,
         }
 
@@ -455,5 +502,6 @@ class V2RunResult:
             intelligence=data.get("intelligence", {}),
             analyses=data.get("analyses", {}),
             executive=data.get("executive", {}),
+            research_synthesis=data.get("research_synthesis", {}),
             metadata=data.get("metadata", {}),
         )

@@ -132,6 +132,25 @@ MAX_SYNTHESIS_ITERATIONS: int = int(os.getenv("MAX_SYNTHESIS_ITERATIONS", "3"))
 MAX_REGATHERS_PER_PARAMETER: int = int(os.getenv("MAX_REGATHERS_PER_PARAMETER", "2"))
 
 # =============================================================================
+# Research Plan Wizard Models (all via OpenRouter)
+# =============================================================================
+
+# Fast tasks: clarification Qs, custom params, confidence preview
+PLAN_FAST_MODEL: str = os.getenv("PLAN_FAST_MODEL", "openrouter/aurora-alpha")
+# Intelligence questions: fast chained questions to steer downstream generation
+PLAN_INTELLIGENCE_MODEL: str = os.getenv(
+    "PLAN_INTELLIGENCE_MODEL", "meta-llama/llama-4-maverick"
+)
+# Research tasks: company validation, company suggestions (live web)
+PLAN_RESEARCH_MODEL: str = os.getenv("PLAN_RESEARCH_MODEL", "perplexity/sonar-pro-search")
+# Fallback for research tasks when Perplexity fails (:online enables web search)
+PLAN_RESEARCH_FALLBACK_MODEL: str = os.getenv(
+    "PLAN_RESEARCH_FALLBACK_MODEL", "openai/gpt-5.2:online"
+)
+# Heavy reasoning: research goal, mission, key questions
+PLAN_REASONING_MODEL: str = os.getenv("PLAN_REASONING_MODEL", "anthropic/claude-opus-4.6")
+
+# =============================================================================
 # Validation
 # =============================================================================
 

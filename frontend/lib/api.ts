@@ -13,6 +13,16 @@ import type {
   VariableCategories,
   Variable,
   VariableGenerationResponse,
+  CompanyProfile,
+  CompanySuggestion,
+  ClarificationQuestion,
+  IntelligenceQuestion,
+  IntelligenceAnswer,
+  ResearchGoalResult,
+  ConfidencePreview,
+  ResearchPlan,
+  PlanListItem,
+  DynamicVariableDefinition,
 } from "./types";
 
 // API base URL - adjust based on environment
@@ -146,7 +156,273 @@ export function useCreateRun() {
   return useMutation({
     mutationFn: createRun,
     onSuccess: () => {
-      // Invalidate runs list to refresh
+      queryClient.invalidateQueries({ queryKey: ["runs"] });
+    },
+  });
+}
+
+// =============================================================================
+// Research Plans API
+// =============================================================================
+
+export interface ValidateCompaniesResponse {
+  companies: CompanyProfile[];
+  clarifications: ClarificationQuestion[];
+}
+
+export async function validateCompanies(companies: string[]): Promise<ValidateCompaniesResponse> {
+  return fetchAPI<ValidateCompaniesResponse>("/api/plans/validate-companies", {
+    method: "POST",
+    body: JSON.stringify({ companies }),
+  });
+}
+
+export function useValidateCompanies() {
+  return useMutation({ mutationFn: validateCompanies });
+}
+
+export interface SuggestCompaniesResponse {
+  suggestions: CompanySuggestion[];
+  clarifications: ClarificationQuestion[];
+}
+
+export async function suggestCompanies(
+  companies: CompanyProfile[],
+  intelligenceAnswers?: IntelligenceAnswer[],
+): Promise<SuggestCompaniesResponse> {
+  return fetchAPI<SuggestCompaniesResponse>("/api/plans/suggest-companies", {
+    method: "POST",
+    body: JSON.stringify({
+      companies,
+      intelligence_answers: intelligenceAnswers ?? null,
+    }),
+  });
+}
+
+export function useSuggestCompanies() {
+  return useMutation({
+    mutationFn: ({ companies, intelligenceAnswers }: { companies: CompanyProfile[]; intelligenceAnswers?: IntelligenceAnswer[] }) =>
+      suggestCompanies(companies, intelligenceAnswers),
+  });
+}
+
+// =============================================================================
+// Intelligence Questions API
+// =============================================================================
+
+export interface IntelligenceQuestionsResponse {
+  questions: IntelligenceQuestion[];
+}
+
+export async function getIntelligenceQuestions(
+  step: string,
+  context: Record<string, unknown>,
+): Promise<IntelligenceQuestionsResponse> {
+  return fetchAPI<IntelligenceQuestionsResponse>("/api/plans/intelligence-questions", {
+    method: "POST",
+    body: JSON.stringify({ step, context }),
+  });
+}
+
+export function useIntelligenceQuestions() {
+  return useMutation({
+    mutationFn: ({ step, context }: { step: string; context: Record<string, unknown> }) =>
+      getIntelligenceQuestions(step, context),
+  });
+}
+
+export async function getIntelligenceFollowup(payload: {
+  step: string;
+  question_id: string;
+  selected_options: string[];
+  context: Record<string, unknown>;
+  previous_answers: IntelligenceAnswer[];
+}): Promise<IntelligenceQuestionsResponse> {
+  return fetchAPI<IntelligenceQuestionsResponse>("/api/plans/intelligence-followup", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+
+export function useIntelligenceFollowup() {
+  return useMutation({
+    mutationFn: getIntelligenceFollowup,
+  });
+}
+
+export interface GenerateGoalResponse {
+  goal: ResearchGoalResult;
+  clarifications: ClarificationQuestion[];
+}
+
+export async function generateGoal(request: {
+  companies: CompanyProfile[] | string[];
+  industry_context: string;
+  parameter_summary?: string;
+}): Promise<GenerateGoalResponse> {
+  return fetchAPI<GenerateGoalResponse>("/api/plans/generate-goal", {
+    method: "POST",
+    body: JSON.stringify(request),
+  });
+}
+
+export function useGenerateGoal() {
+  return useMutation({ mutationFn: generateGoal });
+}
+
+export async function generateCustomParameter(request: {
+  description: string;
+  companies?: string[];
+  industry_context?: string;
+}): Promise<DynamicVariableDefinition> {
+  return fetchAPI<DynamicVariableDefinition>("/api/plans/generate-custom-parameter", {
+    method: "POST",
+    body: JSON.stringify(request),
+  });
+}
+
+export function useGenerateCustomParameter() {
+  return useMutation({ mutationFn: generateCustomParameter });
+}
+
+export async function stepClarifications(step: string, context: Record<string, unknown>): Promise<{ clarifications: ClarificationQuestion[] }> {
+  return fetchAPI<{ clarifications: ClarificationQuestion[] }>("/api/plans/step-clarifications", {
+    method: "POST",
+    body: JSON.stringify({ step, context }),
+  });
+}
+
+export function useStepClarifications() {
+  return useMutation({ mutationFn: ({ step, context }: { step: string; context: Record<string, unknown> }) => stepClarifications(step, context) });
+}
+
+export async function confidencePreview(payload: {
+  companies: { id: string; official_name?: string; name?: string }[];
+  industry_context: string;
+}): Promise<ConfidencePreview> {
+  return fetchAPI<ConfidencePreview>("/api/plans/confidence-preview", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+
+export function useConfidencePreview() {
+  return useMutation({ mutationFn: confidencePreview });
+}
+
+export interface PlanCreateRequest {
+  title?: string;
+  companies: CompanyProfile[];
+  suggested_companies?: CompanySuggestion[];
+  accepted_suggestions?: string[];
+  effective_company_names?: string[] | null;
+  industry_context?: string;
+  selected_variable_ids?: string[];
+  dynamic_variables?: DynamicVariableDefinition[];
+  parameter_contexts?: Record<string, string>;
+  mission_statement?: string;
+  key_questions?: string[];
+  hypothesis?: string | null;
+  perspective?: string;
+  audience?: string;
+  depth?: string;
+  focus_companies?: string[];
+  known_context?: string | null;
+}
+
+export interface PlanCreateResponse {
+  plan_id: string;
+  status: string;
+}
+
+export async function createPlan(request: PlanCreateRequest): Promise<PlanCreateResponse> {
+  return fetchAPI<PlanCreateResponse>("/api/plans", {
+    method: "POST",
+    body: JSON.stringify({
+      title: request.title ?? "Research Plan",
+      companies: request.companies,
+      suggested_companies: request.suggested_companies ?? [],
+      accepted_suggestions: request.accepted_suggestions ?? [],
+      effective_company_names: request.effective_company_names ?? null,
+      industry_context: request.industry_context ?? "",
+      selected_variable_ids: request.selected_variable_ids ?? [],
+      dynamic_variables: request.dynamic_variables ?? [],
+      parameter_contexts: request.parameter_contexts ?? {},
+      mission_statement: request.mission_statement ?? "",
+      key_questions: request.key_questions ?? [],
+      hypothesis: request.hypothesis ?? null,
+      perspective: request.perspective ?? "neutral",
+      audience: request.audience ?? "general",
+      depth: request.depth ?? "standard",
+      focus_companies: request.focus_companies ?? [],
+      known_context: request.known_context ?? null,
+    }),
+  });
+}
+
+export function useCreatePlan() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: createPlan,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["plans"] });
+    },
+  });
+}
+
+export async function getPlans(): Promise<{ plans: PlanListItem[] }> {
+  return fetchAPI<{ plans: PlanListItem[] }>("/api/plans");
+}
+
+export function usePlans() {
+  return useQuery({
+    queryKey: ["plans"],
+    queryFn: getPlans,
+  });
+}
+
+export async function getPlan(planId: string): Promise<ResearchPlan> {
+  return fetchAPI<ResearchPlan>(`/api/plans/${planId}`);
+}
+
+export function usePlan(planId: string) {
+  return useQuery({
+    queryKey: ["plan", planId],
+    queryFn: () => getPlan(planId),
+    enabled: !!planId,
+  });
+}
+
+export async function updatePlan(planId: string, plan: Partial<ResearchPlan>): Promise<{ id: string; status: string }> {
+  return fetchAPI<{ id: string; status: string }>(`/api/plans/${planId}`, {
+    method: "PUT",
+    body: JSON.stringify(plan),
+  });
+}
+
+export function useUpdatePlan() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ planId, plan }: { planId: string; plan: Partial<ResearchPlan> }) => updatePlan(planId, plan),
+    onSuccess: (_, { planId }) => {
+      queryClient.invalidateQueries({ queryKey: ["plan", planId] });
+      queryClient.invalidateQueries({ queryKey: ["plans"] });
+    },
+  });
+}
+
+export async function launchPlan(planId: string): Promise<RunCreateResponse> {
+  return fetchAPI<RunCreateResponse>(`/api/plans/${planId}/launch`, {
+    method: "POST",
+  });
+}
+
+export function useLaunchPlan() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: launchPlan,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["plans"] });
       queryClient.invalidateQueries({ queryKey: ["runs"] });
     },
   });

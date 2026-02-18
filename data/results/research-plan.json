@@ -1,0 +1,483 @@
+{
+  "title": "Research Plan: Commercial aviation / scheduled passenger air transport",
+  "companies": [
+    {
+      "id": "qantas_airways_limited",
+      "input_name": "QANTAS",
+      "official_name": "Qantas Airways Limited",
+      "industry": "Airlines & Air Transportation",
+      "description": "Qantas Airways Limited is Australia's flag carrier and largest airline by fleet size, international flights, and international destinations in Oceania. Founded in 1920, it operates extensive domestic and international services across all seven continents and is a founding member of the oneworld airline alliance.",
+      "headquarters": "Mascot, Sydney, New South Wales, Australia",
+      "website": "www.qantas.com",
+      "ambiguity_notes": null
+    },
+    {
+      "id": "lufthansa",
+      "input_name": "Lufthansa",
+      "official_name": "Deutsche Lufthansa AG",
+      "industry": "Aviation",
+      "description": "Deutsche Lufthansa AG, trading as the Lufthansa Group, is a German aviation group with its flagship subsidiary Lufthansa German Airlines serving as Germany's flag carrier. It is Europe's largest airline by revenue and a founding member of Star Alliance, operating passenger, cargo, and related services worldwide.[1][2]",
+      "headquarters": "Cologne, Germany",
+      "website": "https://www.lufthansa.com",
+      "ambiguity_notes": null
+    },
+    {
+      "id": "ryanair",
+      "input_name": "RyanAir",
+      "official_name": "Ryanair DAC",
+      "industry": "Airlines",
+      "description": "Ryanair is an Irish ultra low-cost airline founded in 1984, operating primarily in Europe with a focus on low fares and high efficiency. It is Europe's largest airline group by passenger numbers, fleet size, and flights, serving over 220 destinations across 36 countries with a fleet of over 600 Boeing 737 aircraft.[2][2]",
+      "headquarters": "Swords, Ireland",
+      "website": "https://www.ryanair.com",
+      "ambiguity_notes": null
+    },
+    {
+      "id": "delta_airlines",
+      "input_name": "Delta Airlines",
+      "official_name": "Delta Air Lines, Inc.",
+      "industry": "Airlines",
+      "description": "Delta Air Lines, Inc. is a major U.S. airline headquartered in Atlanta, Georgia, operating flights to over 290 destinations across six continents with around 100,000 employees. It is known for its extensive hub network, including the world's busiest airport in Atlanta, and focuses on exceptional customer service and innovation.",
+      "headquarters": "Atlanta, GA, United States",
+      "website": "https://www.delta.com",
+      "ambiguity_notes": null
+    },
+    {
+      "id": "emirates",
+      "input_name": "Emirates",
+      "official_name": "Emirates",
+      "industry": "Airlines",
+      "description": "Emirates is a major international airline and one of the flag carriers of the United Arab Emirates, operating a vast network of flights from its hub in Dubai to over 150 destinations worldwide. It is a subsidiary of The Emirates Group, renowned for its all-widebody fleet including the largest number of Airbus A380s in service.[1][2][1]",
+      "headquarters": "Dubai, United Arab Emirates",
+      "website": "https://www.emirates.com",
+      "ambiguity_notes": "Primarily refers to Emirates airline; The Emirates Group is the parent company, but 'Emirates' commonly denotes the airline.[1][4][1]"
+    }
+  ],
+  "suggested_companies": [
+    {
+      "id": "american_airlines",
+      "name": "American Airlines",
+      "category": "direct_competitor",
+      "rationale": "American Airlines is one of the world's largest airlines by revenue and fleet size, providing a key US full-service benchmark missing from the current set.[1]",
+      "gap_filled": "US full-service network carrier dominance and transatlantic/transpacific competition"
+    },
+    {
+      "id": "united_airlines",
+      "name": "United Airlines Holdings",
+      "category": "direct_competitor",
+      "rationale": "United ranks among the top global airlines by revenue, offering insights into US hub-and-spoke operations and international expansion strategies.[1]",
+      "gap_filled": "Additional major US legacy carrier for comprehensive North American market coverage"
+    },
+    {
+      "id": "international_airlines_group",
+      "name": "International Airlines Group (IAG)",
+      "category": "direct_competitor",
+      "rationale": "IAG, parent of British Airways and Iberia, is a top European airline group by revenue, enhancing analysis of legacy European full-service models.[1]",
+      "gap_filled": "European full-service group beyond Lufthansa and Ryanair's low-cost focus"
+    },
+    {
+      "id": "air_france_klm",
+      "name": "Air France-KLM Group",
+      "category": "international",
+      "rationale": "Air France-KLM is a leading Franco-Dutch airline group with strong transatlantic and Asian routes, adding diverse European perspectives.[1]",
+      "gap_filled": "Franco-Dutch international operations and alliance dynamics"
+    },
+    {
+      "id": "singapore_airlines",
+      "name": "Singapore Airlines",
+      "category": "international",
+      "rationale": "Singapore Airlines excels in premium long-haul services from Asia, providing a contrast to Middle Eastern and Oceanic carriers like Emirates and Qantas.[2]",
+      "gap_filled": "Southeast Asian premium carrier and Star Alliance representation"
+    },
+    {
+      "id": "turkish_airlines",
+      "name": "Turkish Airlines",
+      "category": "dark_horse",
+      "rationale": "Turkish Airlines flies to more countries than any other airline from its Istanbul hub, offering unique insights into emerging market growth and connectivity.[23]",
+      "gap_filled": "Eurasian hub carrier with extensive point-to-point network"
+    }
+  ],
+  "accepted_suggestions": [
+    "american_airlines",
+    "singapore_airlines"
+  ],
+  "industry_context": "Commercial aviation / scheduled passenger air transport",
+  "selected_variable_ids": [
+    "unique_value_proposition",
+    "positioning",
+    "differentiation",
+    "target_customer_personas",
+    "users",
+    "use_cases",
+    "key_features",
+    "business_models",
+    "pricing_strategy",
+    "market_share",
+    "market_size",
+    "estimated_revenue",
+    "competitive_positioning_summary",
+    "brand_promise",
+    "customer_segmentation",
+    "advanced_features",
+    "dyn_route_network_model",
+    "dyn_ancillary_revenue_strategy",
+    "dyn_fleet_efficiency_profile",
+    "dyn_alliance_structure_dependence",
+    "dyn_premium_capacity_allocation",
+    "dyn_geographic_revenue_concentration",
+    "dyn_sustainability_credential_gap",
+    "dyn_loyalty_ecosystem_lock_in",
+    "dyn_unit_cost_competitiveness",
+    "dyn_direct_distribution_penetration"
+  ],
+  "dynamic_variables": [
+    {
+      "id": "dyn_route_network_model",
+      "name": "Route Network Topology",
+      "category": "Operations & Infrastructure",
+      "research_prompt": "Analyze {company}'s network structure focusing on hub-and-spoke versus point-to-point operations. Identify primary hub airports, route density by region (domestic, intra-regional, trans-Atlantic, trans-Pacific), and presence in underserved secondary cities.\n\nIN SCOPE: Hub airports, top routes by frequency, route map characteristics, percentage of ASKs concentrated at primary hubs.\n\nNOT IN SCOPE: Codeshare routes operated by partners, cargo-only routes, generic destination marketing.",
+      "example_queries": [
+        "{company} route network hub strategy",
+        "{company} top routes by capacity ASK",
+        "{company} point to point vs hub operations",
+        "{company} route map secondary cities"
+      ],
+      "answer_spec": [
+        "Primary hub airports and their concentration percentage of total ASKs",
+        "Route network type classification (hub-spoke/point-to-point/hybrid)",
+        "Top 3 geographic markets by Available Seat Kilometers"
+      ],
+      "preferred_source_types": [
+        "official",
+        "regulatory",
+        "tier1_news"
+      ],
+      "key_terms": [
+        "hub",
+        "route network",
+        "point-to-point",
+        "spoke",
+        "frequency",
+        "ASK",
+        "domestic routes",
+        "international routes"
+      ],
+      "max_concise_chars": 200,
+      "rationale": "Comparing Ryanair's point-to-point density against Emirates' hub concentration reveals geographic white space in direct secondary city connections."
+    },
+    {
+      "id": "dyn_ancillary_revenue_strategy",
+      "name": "Ancillary Revenue Mix",
+      "category": "Financials",
+      "research_prompt": "Quantify {company}'s non-ticket revenue streams including baggage fees, seat selection, onboard sales, travel insurance, car rentals, and cargo services. Focus on disclosed ancillary revenue as percentage of total revenue and innovation in monetization (dynamic pricing, bundles).\n\nIN SCOPE: Revenue breakdowns from financial reports, fee structures, partnership revenues, ancillary revenue growth trends.\n\nNOT IN SCOPE: Ticket yield, loyalty program revenue (covered separately), aircraft leasing income.",
+      "example_queries": [
+        "{company} ancillary revenue percentage 2023 2024",
+        "{company} non-ticket revenue breakdown",
+        "{company} baggage fees commission revenue",
+        "{company} onboard sales revenue"
+      ],
+      "answer_spec": [
+        "Ancillary revenue as percentage of total revenue",
+        "Top 3 ancillary revenue categories by value",
+        "Year-over-year growth rate of ancillary revenue"
+      ],
+      "preferred_source_types": [
+        "official",
+        "tier1_news"
+      ],
+      "key_terms": [
+        "ancillary revenue",
+        "non-ticket revenue",
+        "baggage fees",
+        "seat selection",
+        "commission",
+        "onboard sales",
+        "merchandising"
+      ],
+      "max_concise_chars": 200,
+      "rationale": "Ryanair's high ancillary dependence versus legacy carriers' traditional models reveals white space in unbundling and dynamic retailing."
+    },
+    {
+      "id": "dyn_fleet_efficiency_profile",
+      "name": "Fleet Efficiency Profile",
+      "category": "Operations & Infrastructure",
+      "research_prompt": "Assess {company}'s fleet composition focusing on average aircraft age, percentage of next-generation fuel-efficient aircraft (A320neo, 737 MAX, A350, 787), and fuel burn per seat kilometer data. Identify pending orders and retirement schedules.\n\nIN SCOPE: Fleet age statistics, aircraft types, engine efficiency ratings, order backlog, delivery timelines.\n\nNOT IN SCOPE: Total capacity in seats, pilot numbers, maintenance costs, cargo aircraft only.",
+      "example_queries": [
+        "{company} average fleet age 2024",
+        "{company} fleet composition A320neo 737 MAX",
+        "{company} fuel efficient aircraft percentage",
+        "{company} aircraft orders delivery schedule"
+      ],
+      "answer_spec": [
+        "Average fleet age in years",
+        "Percentage of fleet that is next-generation (neo/MAX/A350/787)",
+        "Number of aircraft on order versus current fleet size"
+      ],
+      "preferred_source_types": [
+        "official",
+        "tier1_news"
+      ],
+      "key_terms": [
+        "fleet age",
+        "A320neo",
+        "737 MAX",
+        "A350",
+        "Dreamliner",
+        "fuel efficiency",
+        "seat kilometers",
+        "aircraft order"
+      ],
+      "max_concise_chars": 200,
+      "rationale": "Fleet age variance between Singapore Airlines' modern long-haul fleet and older legacy assets indicates cost structure sustainability and capex burden white space."
+    },
+    {
+      "id": "dyn_alliance_structure_dependence",
+      "name": "Alliance Structure Dependence",
+      "category": "Strategic Positioning",
+      "research_prompt": "Map {company}'s alliance membership (Star Alliance, Oneworld, SkyTeam, or independent) and quantify reliance on code-shares, joint ventures (trans-Atlantic, trans-Pacific), and immunized partnerships. Calculate percentage of revenue from alliance routes versus proprietary network.\n\nIN SCOPE: Alliance membership status, JV details, metal-neutral revenue, feed traffic percentage, antitrust immunity status.\n\nNOT IN SCOPE: Simple interline agreements without revenue sharing, unilateral code-shares without strategic integration.",
+      "example_queries": [
+        "{company} alliance membership Star Oneworld SkyTeam",
+        "{company} joint venture revenue percentage",
+        "{company} transatlantic JV revenue",
+        "{company} code share revenue dependence"
+      ],
+      "answer_spec": [
+        "Alliance membership status or 'Independent'",
+        "Percentage of network ASKs operated via joint ventures",
+        "Key JV partners and scope (trans-Atlantic, intra-Asia, etc.)"
+      ],
+      "preferred_source_types": [
+        "official",
+        "tier1_news",
+        "regulatory"
+      ],
+      "key_terms": [
+        "Star Alliance",
+        "Oneworld",
+        "SkyTeam",
+        "joint venture",
+        "codeshare",
+        "metal neutral",
+        "immunized",
+        "hub feed"
+      ],
+      "max_concise_chars": 200,
+      "rationale": "Emirates' independence versus Deutsche Lufthansa's Star Alliance density reveals partnership versus organic growth white space opportunities."
+    },
+    {
+      "id": "dyn_premium_capacity_allocation",
+      "name": "Premium Capacity Allocation",
+      "category": "Product Strategy",
+      "research_prompt": "Analyze {company}'s deployment of premium cabins (First Class, Business Class, Premium Economy) across fleet types and routes. Calculate premium ASK percentage and compare to industry benchmarks. Focus on densification trends versus luxury positioning.\n\nIN SCOPE: Seat counts by cabin class, premium seat factor (load factor in premium), aircraft configuration types, premium revenue contribution.\n\nNOT IN SCOPE: Economy seat pitch, total passenger numbers, loyalty tier distribution, generic service quality scores.",
+      "example_queries": [
+        "{company} business class seats percentage fleet",
+        "{company} first class configuration routes",
+        "{company} premium economy deployment",
+        "{company} premium cabin load factor"
+      ],
+      "answer_spec": [
+        "Percentage of seats that are premium (First/Business/Premium Economy)",
+        "Number of aircraft with First Class cabins",
+        "Premium cabin revenue as percentage of total passenger revenue if available"
+      ],
+      "preferred_source_types": [
+        "official",
+        "tier1_news"
+      ],
+      "key_terms": [
+        "first class",
+        "business class",
+        "premium economy",
+        "cabin configuration",
+        "lie flat",
+        "premium seats",
+        "yield",
+        "ASK"
+      ],
+      "max_concise_chars": 200,
+      "rationale": "Singapore Airlines' premium focus versus Ryanair's absence of premium reveals market segmentation white space in mid-market business travel."
+    },
+    {
+      "id": "dyn_geographic_revenue_concentration",
+      "name": "Geographic Revenue Concentration",
+      "category": "Market Position",
+      "research_prompt": "Quantify {company}'s revenue exposure by geographic region: domestic, intra-regional (e.g., intra-Europe, intra-Asia), trans-Atlantic, trans-Pacific, Middle East routes, and Latin America. Identify over-dependence on specific markets.\n\nIN SCOPE: Revenue breakdown by region from annual reports, ASK allocation by geography, point-of-sale country data.\n\nNOT IN SCOPE: Route-specific profitability, airport-level data, tourist versus business destination mix.",
+      "example_queries": [
+        "{company} revenue by region domestic international",
+        "{company} transatlantic revenue percentage",
+        "{company} Asia Pacific market exposure",
+        "{company} geographic revenue breakdown 2023"
+      ],
+      "answer_spec": [
+        "Percentage revenue from home market/domestic operations",
+        "Percentage from each major region (Americas, Europe, Asia-Pacific, Middle East/Africa)",
+        "Top 3 country markets by revenue"
+      ],
+      "preferred_source_types": [
+        "official",
+        "regulatory"
+      ],
+      "key_terms": [
+        "revenue by geography",
+        "domestic routes",
+        "transatlantic",
+        "transpacific",
+        "regional markets",
+        "point of sale",
+        "market exposure"
+      ],
+      "max_concise_chars": 200,
+      "rationale": "American Airlines' domestic concentration versus Emirates' long-haul intercontinental model reveals geographic diversification white space."
+    },
+    {
+      "id": "dyn_sustainability_credential_gap",
+      "name": "Sustainability Credential Gap",
+      "category": "Risk & Compliance",
+      "research_prompt": "Evaluate {company}'s carbon intensity metrics (CO2 per RPK), Sustainable Aviation Fuel (SAF) offtake agreements, carbon neutral commitments, and fleet renewal pace for environmental compliance.\n\nIN SCOPE: Emissions per passenger kilometer, SAF procurement volume/percentage, net zero target dates, carbon offset programs, ESG ratings specific to aviation.\n\nNOT IN SCOPE: General CSR initiatives, diversity programs, community donations unrelated to flight operations.",
+      "example_queries": [
+        "{company} CO2 emissions per RPK",
+        "{company} SAF sustainable aviation fuel commitment",
+        "{company} net zero carbon target 2050",
+        "{company} carbon intensity passenger kilometer"
+      ],
+      "answer_spec": [
+        "Grams of CO2 per Revenue Passenger Kilometer (RPK)",
+        "SAF offtake volume or percentage target for 2030",
+        "Net zero commitment year and interim targets"
+      ],
+      "preferred_source_types": [
+        "official",
+        "tier1_news",
+        "regulatory"
+      ],
+      "key_terms": [
+        "CO2",
+        "carbon intensity",
+        "RPK",
+        "SAF",
+        "sustainable aviation fuel",
+        "net zero",
+        "emissions",
+        "climate target"
+      ],
+      "max_concise_chars": 200,
+      "rationale": "Regulatory pressure on carbon intensity creates white space for carriers with advanced SAF hedging and modern fleets versus laggards with high emissions."
+    },
+    {
+      "id": "dyn_loyalty_ecosystem_lock_in",
+      "name": "Loyalty Ecosystem Lock-In",
+      "category": "Customer Retention",
+      "research_prompt": "Assess {company}'s frequent flyer program (FFP) scale, engagement metrics, and third-party revenue generation (co-branded credit cards, hotel/car partners). Focus on program valuation and breakage rates.\n\nIN SCOPE: Number of enrolled members, active members (flying within 12/24 months), non-air revenue from program, miles/points liability on balance sheet.\n\nNOT IN SCOPE: Customer satisfaction scores, redemption rates for specific routes, staff numbers, generic marketing spend.",
+      "example_queries": [
+        "{company} frequent flyer program members",
+        "{company} loyalty program revenue credit card",
+        "{company} miles liability breakage rate",
+        "{company} AAdvantage SkyMiles Qantas Frequent Flyer value"
+      ],
+      "answer_spec": [
+        "Total enrolled members in millions",
+        "Third-party revenue from loyalty program (if disclosed)",
+        "Estimated breakage rate or redemption rate"
+      ],
+      "preferred_source_types": [
+        "official",
+        "tier1_news"
+      ],
+      "key_terms": [
+        "frequent flyer",
+        "loyalty program",
+        "members",
+        "co-branded credit card",
+        "miles liability",
+        "breakage",
+        "third party revenue",
+        "engagement"
+      ],
+      "max_concise_chars": 200,
+      "rationale": "High-margin loyalty ecosystems at Delta and American versus Ryanair's limited program reveal customer retention and ancillary monetization white space."
+    },
+    {
+      "id": "dyn_unit_cost_competitiveness",
+      "name": "Unit Cost Competitiveness",
+      "category": "Financials",
+      "research_prompt": "Calculate {company}'s Cost per Available Seat Kilometer (CASK) or CASM, broken down by fuel versus non-fuel. Compare labor costs per employee and productivity (ASK per employee).\n\nIN SCOPE: CASK/CASM metrics, fuel hedging strategy, labor cost percentage, productivity ratios, ex-fuel unit costs.\n\nNOT IN SCOPE: Ticket prices, yield (RASK), route-specific costs, total operating expenses without unit metrics.",
+      "example_queries": [
+        "{company} CASK cost per available seat kilometer",
+        "{company} CASM ex fuel 2024",
+        "{company} unit cost analysis",
+        "{company} cost per ASK industry comparison"
+      ],
+      "answer_spec": [
+        "CASK (or CASM) total and ex-fuel",
+        "Fuel hedging percentage for current year",
+        "Labor cost as percentage of total costs"
+      ],
+      "preferred_source_types": [
+        "official",
+        "tier1_news",
+        "regulatory"
+      ],
+      "key_terms": [
+        "CASK",
+        "CASM",
+        "cost per available seat kilometer",
+        "unit cost",
+        "ex-fuel cost",
+        "fuel hedge",
+        "productivity",
+        "ASK per employee"
+      ],
+      "max_concise_chars": 200,
+      "rationale": "Ryanair's industry-leading CASK versus legacy carrier cost structures reveals efficiency and operating model white space opportunities."
+    },
+    {
+      "id": "dyn_direct_distribution_penetration",
+      "name": "Direct Distribution Penetration",
+      "category": "Go-to-Market",
+      "research_prompt": "Measure {company}'s reliance on direct channels (website, mobile app) versus Global Distribution Systems (GDS) and Online Travel Agencies (OTA). Focus on NDC (New Distribution Capability) adoption, app functionality depth, and direct booking incentives.\n\nIN SCOPE: Direct booking percentage, NDC implementation status, app features (check-in, disruption management, rebooking), OTA commission costs.\n\nNOT IN SCOPE: Marketing spend, brand awareness, social media presence, traditional advertising channels.",
+      "example_queries": [
+        "{company} direct booking percentage",
+        "{company} NDC new distribution capability",
+        "{company} mobile app features digital strategy",
+        "{company} OTA commission costs"
+      ],
+      "answer_spec": [
+        "Percentage of tickets sold through direct channels (website/app)",
+        "NDC implementation status (Basic/Advanced/Full)",
+        "Key app features enabling direct retention versus competitors"
+      ],
+      "preferred_source_types": [
+        "official",
+        "tier1_news"
+      ],
+      "key_terms": [
+        "direct distribution",
+        "NDC",
+        "New Distribution Capability",
+        "GDS",
+        "OTA",
+        "online travel agency",
+        "direct booking",
+        "mobile app"
+      ],
+      "max_concise_chars": 200,
+      "rationale": "Low-cost carriers' high direct penetration versus legacy reliance on GDS reveals distribution cost reduction and customer data ownership white space."
+    }
+  ],
+  "mission_statement": "This research aims to comprehensively benchmark Qantas, Lufthansa, Ryanair, Delta, Emirates, American Airlines, and Singapore Airlines across 26 strategic parameters to identify competitive advantages, operational efficiencies, and strategic positioning within the global scheduled passenger air transport industry. The analysis will illuminate how divergent business models—full-service legacy carriers, ultra-low-cost operators, and state-backed premium airlines—compete for market share, profitability, and long-term resilience in a post-pandemic, sustainability-pressured environment.",
+  "key_questions": [
+    "How do unit economics (CASK, RASK, yield per RPK) compare across the seven carriers, and what structural factors—fleet composition, labor costs, route mix—drive the widest performance gaps?",
+    "Which carriers are generating the strongest returns on invested capital (ROIC) and free cash flow margins, and how do leverage ratios and credit profiles position each airline for the next industry downturn?",
+    "How do Ryanair's and Emirates' fundamentally different business models (ultra-low-cost vs. hub-premium long-haul) compare on profitability, load factors, and ancillary revenue generation relative to legacy full-service carriers like Delta, American, Lufthansa, and Qantas?",
+    "What is each airline's fleet strategy—average fleet age, order backlog, fuel efficiency trajectory, and exposure to next-generation narrowbody vs. widebody aircraft—and how does this affect their medium-term cost competitiveness?",
+    "How are these carriers progressing on decarbonization commitments (SAF adoption rates, emissions intensity per ASK, carbon offset programs, fleet renewal timelines), and which airlines face the greatest regulatory or reputational risk?",
+    "What role do loyalty programs, joint ventures, alliance memberships, and ancillary revenue streams play in each carrier's competitive moat, and how do customer satisfaction metrics (NPS, on-time performance, premium product ratings) correlate with pricing power?",
+    "How exposed is each airline to geopolitical risk, currency volatility, fuel price shocks, and labor market tightness, and which carriers have the most effective hedging and workforce strategies?",
+    "Which airlines are best positioned to capture growth in the Asia-Pacific, Middle East, and transatlantic corridors over the next five years based on capacity deployment plans, slot portfolios, and competitive route overlap within this set?"
+  ],
+  "hypothesis": "Delta Air Lines and Singapore Airlines, despite operating in different geographies and ownership structures, will emerge as the top-performing carriers on risk-adjusted profitability and customer value metrics, while Ryanair will lead on pure cost efficiency—suggesting that disciplined capital allocation and premium brand positioning generate more durable competitive advantage than cost leadership alone in commercial aviation.",
+  "perspective": "neutral",
+  "audience": "general",
+  "depth": "standard",
+  "focus_companies": [],
+  "known_context": null
+}

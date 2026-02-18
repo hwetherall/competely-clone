@@ -387,6 +387,8 @@ async def create_run(request: RunCreateRequest, background_tasks: BackgroundTask
             concurrency=request.concurrency,
             fast_mode=request.fast_mode,
             venture_context=request.venture_context or "",
+            key_questions=request.key_questions,
+            hypothesis=request.hypothesis or "",
         )
     else:
         dynamic_var_dicts = [d.model_dump() for d in request.dynamic_variables] if request.dynamic_variables else None

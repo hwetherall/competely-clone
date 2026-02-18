@@ -8,6 +8,7 @@ import {
   History,
   Settings,
   BarChart3,
+  FileText,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Separator } from "@/components/ui/separator";
@@ -28,6 +29,11 @@ const navItems: NavItem[] = [
     label: "New Analysis",
     href: "/runs/new",
     icon: PlusCircle,
+  },
+  {
+    label: "Research Plans",
+    href: "/plans",
+    icon: FileText,
   },
   {
     label: "Past Runs",

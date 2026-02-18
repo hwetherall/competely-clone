@@ -97,6 +97,8 @@ class V2Runner:
         concurrency: int = 3,
         fast_mode: bool = False,
         venture_context: str = "",
+        key_questions: Optional[List[str]] = None,
+        hypothesis: str = "",
     ):
         """Entry point for BackgroundTasks: run V2 pipeline and save result."""
         asyncio.run(self._run(
@@ -108,6 +110,8 @@ class V2Runner:
             concurrency=concurrency,
             fast_mode=fast_mode,
             venture_context=venture_context,
+            key_questions=key_questions,
+            hypothesis=hypothesis,
         ))
 
     async def _run(
@@ -120,6 +124,8 @@ class V2Runner:
         concurrency: int = 3,
         fast_mode: bool = False,
         venture_context: str = "",
+        key_questions: Optional[List[str]] = None,
+        hypothesis: str = "",
     ):
         from v2_pipeline import (
             run_v2_analysis,
@@ -152,6 +158,8 @@ class V2Runner:
                 run_id_override=run_id,
                 progress_callback=on_progress,
                 venture_context=venture_context,
+                key_questions=key_questions,
+                hypothesis=hypothesis,
             )
             save_v2_result(result)
             self._update_progress(

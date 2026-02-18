@@ -334,14 +334,14 @@ class LLMClient:
                     raise LLMError(f"API quota exceeded: {error_msg[:200]}")
                 raise LLMError(f"API error in response: {error_msg[:200]}")
             
-            message = choice.get("message", {})
-            content = message.get("content", "")
+            message = choice.get("message") or {}
+            content = message.get("content") or ""
             finish_reason = choice.get("finish_reason", "unknown")
             
             # Handle Tongyi DeepResearch format: it may put thinking in "reasoning" field
             # and final answer in "content". If content is empty, extract from reasoning.
             if not content and "reasoning" in message:
-                reasoning = message.get("reasoning", "")
+                reasoning = message.get("reasoning") or ""
                 # The reasoning contains the model's thinking - extract useful content
                 # For DeepResearch, the final answer appears after reasoning completes
                 logger.debug(f"Using reasoning field ({len(reasoning)} chars)")
@@ -351,7 +351,7 @@ class LLMClient:
             if not content:
                 # Check if there's a delta (streaming response) or other content fields
                 if "delta" in choice:
-                    content = choice["delta"].get("content", "")
+                    content = choice["delta"].get("content") or ""
                 if not content:
                     logger.warning(f"LLM returned empty content. Choice: {choice}")
                     content = ""  # Return empty rather than failing
