@@ -336,6 +336,8 @@ export interface ConfidencePreview {
   suggestions: string[];
 }
 
+export type ParameterPath = "competely" | "avis";
+
 export interface ResearchPlan {
   id: string;
   title: string;
@@ -346,6 +348,7 @@ export interface ResearchPlan {
   suggested_companies: CompanySuggestion[];
   accepted_suggestions: string[];
   industry_context: string;
+  parameter_path: ParameterPath;
   selected_variable_ids: string[];
   dynamic_variables: DynamicVariableDefinition[];
   parameter_contexts: Record<string, string>;

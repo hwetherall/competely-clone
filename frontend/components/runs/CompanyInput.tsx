@@ -90,7 +90,7 @@ export function CompanyInput({
       {/* Suggestions */}
       <div className="flex flex-wrap gap-2">
         <span className="text-xs text-muted-foreground">Suggestions:</span>
-        {["QANTAS", "RyanAir", "Lufthansa", "Delta Airlines", "Emirates"].map((suggestion) => (
+        {["Stripe", "Square", "Adyen", "PayPal", "Klarna"].map((suggestion) => (
           !companies.includes(suggestion) && (
             <button
               key={suggestion}

@@ -1,0 +1,626 @@
+{
+  "id": "plan_20260217_224207_16b5a383",
+  "title": "Research Plan: Omnichannel retail and wholesale commerce",
+  "status": "launched",
+  "created_at": "2026-02-18T05:42:07.038450+00:00",
+  "updated_at": "2026-02-18T05:42:07.068486+00:00",
+  "companies": [
+    {
+      "id": "walmart_inc",
+      "input_name": "Walmart",
+      "official_name": "Walmart Inc.",
+      "industry": "Retail",
+      "description": "Walmart Inc. is an American multinational retail corporation operating a chain of hypermarkets, discount department stores, and grocery stores across 19 countries. The company is a people-led, tech-powered omnichannel retailer with approximately 270 million weekly customers visiting over 10,750 stores worldwide.",
+      "headquarters": "Bentonville, Arkansas, United States",
+      "website": "https://www.walmart.com",
+      "ambiguity_notes": null,
+      "subsidiary_notes": "Walmart is a parent company with distinct operating divisions and major brands. Key divisions include Walmart U.S., Walmart International, Sam's Club (retail warehouses), and Global eCommerce. The company also owns numerous private label brands (Great Value, Sam's Choice, Equate, George, Mainstays, Pioneer Woman, etc.) and operates over 300 subsidiaries globally.",
+      "subsidiaries": [
+        "Sam's Club Inc",
+        "Jet.com Inc",
+        "Flipkart",
+        "Alert Innovation Inc",
+        "Walmart Labs",
+        "Walmart Connect"
+      ],
+      "brand_name": "Walmart"
+    },
+    {
+      "id": "target_corporation",
+      "input_name": "Target",
+      "official_name": "Target Corporation",
+      "industry": "General Merchandise Retail / Discount Retail",
+      "description": "Target Corporation is a major American mass-market retailer operating approximately 2,000 general merchandise discount stores across all 50 U.S. states and the District of Columbia. The company offers a wide range of products including apparel, accessories, beauty, food and beverage, home furnishings, and household goods, and is recognized for its distinctive red bullseye logo and design-focused approach.",
+      "headquarters": "Minneapolis, Minnesota, United States",
+      "website": "https://corporate.target.com",
+      "ambiguity_notes": null,
+      "subsidiary_notes": "Target Corporation is a parent company with multiple subsidiaries and owned brands. Key subsidiaries include Target Brands, Inc. (which oversees private label products), Target Capital Corporation, Target Enterprise, Inc., and Target General Merchandise, Inc. The company also owns Shipt (delivery service) and Roundel (advertising platform). Target operates over 35 subsidiaries overall.",
+      "subsidiaries": [
+        "Target Brands, Inc.",
+        "Target Capital Corporation",
+        "Target Enterprise, Inc.",
+        "Target General Merchandise, Inc.",
+        "Shipt",
+        "Roundel"
+      ],
+      "brand_name": "Target"
+    },
+    {
+      "id": "costco_wholesale_corporation",
+      "input_name": "Costco",
+      "official_name": "Costco Wholesale Corporation",
+      "industry": "Retail - Membership Warehouse Clubs",
+      "description": "Costco Wholesale Corporation operates an international chain of membership-only warehouse club retail stores that sell brand-name merchandise and private-label products at discounted prices. The company also operates gas stations, pharmacies, optometry departments, and other services across its warehouse locations worldwide.",
+      "headquarters": "Issaquah, Washington, United States",
+      "website": "https://www.costco.com",
+      "ambiguity_notes": null,
+      "subsidiary_notes": "Costco operates through regional subsidiaries for international markets (Canada, UK, Japan, Australia, etc.) and has divisions including Costco Wholesale Industries for manufacturing operations. However, these are operational divisions rather than distinct consumer-facing brands.",
+      "subsidiaries": [
+        "Costco Canada Inc",
+        "Costco Wholesale UK Ltd",
+        "Costco Wholesale Japan Ltd",
+        "Costco Wholesale Australia Pty Ltd",
+        "Costco Wholesale International Inc"
+      ],
+      "brand_name": null
+    },
+    {
+      "id": "amazon_com_inc",
+      "input_name": "Amazon",
+      "official_name": "Amazon.com, Inc.",
+      "industry": "E-commerce, Cloud Computing, Retail, Streaming, Technology",
+      "description": "Amazon is a multinational technology and e-commerce conglomerate that operates across multiple business segments including online retail, cloud computing (AWS), physical grocery stores, advertising, and subscription services. The company generates revenue from online stores, third-party seller services, AWS cloud infrastructure, advertising, subscription services (Prime), and physical retail locations.",
+      "headquarters": "Seattle, Washington, USA (primary); Arlington, Virginia, USA (HQ2)",
+      "website": "https://www.amazon.com",
+      "ambiguity_notes": null,
+      "subsidiary_notes": "Amazon is a parent/holding company with distinct subsidiaries and brands across multiple sectors. Key subsidiaries include Amazon Web Services (AWS) for cloud computing, Whole Foods Market for grocery retail, and various technology and entertainment brands. The company operates through three main business segments: North America retail, International retail, and AWS infrastructure services.",
+      "subsidiaries": [
+        "Amazon Web Services (AWS)",
+        "Whole Foods Market",
+        "Twitch Interactive",
+        "Ring",
+        "IMDb",
+        "Audible",
+        "Amazon Robotics",
+        "Zoox",
+        "Kuiper Systems",
+        "Amazon Lab126",
+        "Amazon Pharmacy",
+        "PillPack",
+        "AbeBooks",
+        "Woot!",
+        "Amazon Fresh",
+        "Amazon Go"
+      ],
+      "brand_name": null
+    },
+    {
+      "id": "best_buy",
+      "input_name": "Best Buy",
+      "official_name": "Best Buy Co., Inc.",
+      "industry": "Consumer electronics retail",
+      "description": "Best Buy Co., Inc. is an American multinational consumer electronics retailer that sells a wide range of technology products, appliances, and services including Geek Squad tech support. Headquartered in Richfield, Minnesota, it operates primarily in the United States and Canada with an omnichannel retail model.[1]",
+      "headquarters": "Richfield, Minnesota, USA",
+      "website": "https://www.bestbuy.com",
+      "ambiguity_notes": null,
+      "subsidiary_notes": "Best Buy Co., Inc. is the parent company with key subsidiaries including Geek Squad (tech services), Magnolia Hi-Fi (premium audio-video), and Pacific Sales (high-end appliances); it also operates house brands like Insignia.[2]",
+      "subsidiaries": [
+        "Geek Squad, Inc.",
+        "Magnolia Hi-Fi, LLC",
+        "Pacific Sales Kitchen & Bath Centers, LLC"
+      ],
+      "brand_name": null
+    }
+  ],
+  "suggested_companies": [
+    {
+      "id": "dollar_general",
+      "name": "Dollar General Corporation",
+      "category": "direct_competitor",
+      "rationale": "Operates in discount retail segment with rapid store expansion and strong presence in underserved rural markets, directly competing with Walmart and Target on price-sensitive consumers.",
+      "gap_filled": "Discount/value retail segment - complements Walmart's mass-market positioning with focus on extreme value and convenience stores",
+      "subsidiaries": [],
+      "brand_name": null
+    },
+    {
+      "id": "home_depot",
+      "name": "The Home Depot, Inc.",
+      "category": "direct_competitor",
+      "rationale": "Among top 5 U.S. retailers by revenue ($157.6B), operates in home improvement/DIY category with omnichannel capabilities similar to validated competitors.",
+      "gap_filled": "Category-specific retail dominance - adds specialized retail segment not covered by general merchandisers in your current set",
+      "subsidiaries": [],
+      "brand_name": null
+    },
+    {
+      "id": "carrefour",
+      "name": "Carrefour Group",
+      "category": "international",
+      "rationale": "Europe's largest retailer with significant Asian operations, providing critical international perspective and hypermarket model not represented in current set.",
+      "gap_filled": "International retail presence - essential for understanding global retail dynamics and European/Asian market strategies",
+      "subsidiaries": [],
+      "brand_name": null
+    },
+    {
+      "id": "jd_com",
+      "name": "JD.com, Inc.",
+      "category": "international",
+      "rationale": "China's second-largest e-commerce platform ($158.8B revenue) with logistics infrastructure and marketplace model, representing critical Asian e-commerce competition.",
+      "gap_filled": "Asian e-commerce dominance - captures rapidly growing Chinese market and alternative fulfillment models",
+      "subsidiaries": [],
+      "brand_name": null
+    },
+    {
+      "id": "shein",
+      "name": "SHEIN",
+      "category": "adjacent_disruptor",
+      "rationale": "Ultra-fast fashion e-commerce disruptor using demand-driven production and social commerce, fundamentally challenging traditional retail inventory and pricing models.",
+      "gap_filled": "Digital-native disruptors - represents emerging threat from trend-responsive, low-cost online-first retailers targeting Gen Z",
+      "subsidiaries": [],
+      "brand_name": null
+    },
+    {
+      "id": "temu",
+      "name": "Temu",
+      "category": "dark_horse",
+      "rationale": "Rapidly expanding marketplace with extreme low-price positioning and gamified shopping experience, disrupting consumer expectations around pricing and fulfillment speed.",
+      "gap_filled": "Emerging marketplace disruptors - captures unexpected competitive threat from unconventional players reshaping consumer behavior",
+      "subsidiaries": [],
+      "brand_name": null
+    },
+    {
+      "id": "tjx_companies",
+      "name": "TJX Companies, Inc.",
+      "category": "direct_competitor",
+      "rationale": "Off-price retail leader operating TJ Maxx, Marshalls, and HomeGoods with $35B+ revenue, competing directly on value and treasure-hunt shopping experience.",
+      "gap_filled": "Off-price retail segment - adds specialized discount retail model distinct from traditional mass-market competitors",
+      "subsidiaries": [],
+      "brand_name": null
+    }
+  ],
+  "accepted_suggestions": [
+    "home_depot_inc"
+  ],
+  "effective_company_names": [
+    "Walmart",
+    "Target",
+    "Costco Wholesale Corporation",
+    "Amazon.com, Inc.",
+    "Best Buy Co., Inc."
+  ],
+  "industry_context": "Omnichannel retail and wholesale commerce",
+  "selected_variable_ids": [
+    "unique_value_proposition",
+    "positioning",
+    "differentiation",
+    "target_customer_personas",
+    "users",
+    "use_cases",
+    "key_features",
+    "business_models",
+    "pricing_strategy",
+    "market_share",
+    "market_size",
+    "estimated_revenue",
+    "competitive_positioning_summary",
+    "brand_promise",
+    "customer_segmentation",
+    "dyn_membership_revenue_dependency",
+    "dyn_same_day_fulfillment_coverage",
+    "dyn_private_label_penetration",
+    "dyn_services_attach_revenue",
+    "dyn_marketplace_gmv_mix",
+    "dyn_grocery_fresh_presence",
+    "dyn_bopis_maturity_index",
+    "dyn_store_format_diversity",
+    "dyn_inventory_turnover_efficiency",
+    "dyn_digital_penetration_rate"
+  ],
+  "dynamic_variables": [
+    {
+      "id": "dyn_membership_revenue_dependency",
+      "name": "Membership Revenue Dependency",
+      "category": "Financials",
+      "research_prompt": "Find the percentage of total revenue derived from membership fees, subscription services, or loyalty program fees (not merchandise sales).\n\nIN SCOPE: Annual membership fees (Costco), subscription revenue (Amazon Prime, Walmart+), loyalty program fees, and recurring access fees as disclosed in 10-K filings or earnings reports. Calculate as percentage of total revenue.\n\nNOT IN SCOPE: Credit card revenue sharing, advertising revenue, incidental service fees, or product protection plans underwritten by third parties. Focus strictly on recurring membership/subscription income.",
+      "example_queries": [
+        "{company} membership revenue percentage",
+        "{company} subscription revenue 10-K",
+        "{company} Prime revenue contribution",
+        "{company} membership fee income percentage"
+      ],
+      "answer_spec": [
+        "Percentage of total revenue from membership/subscription fees",
+        "Absolute dollar amount of membership revenue",
+        "Year-over-year growth rate of membership revenue"
+      ],
+      "preferred_source_types": [
+        "official",
+        "tier1_news",
+        "analyst_reports"
+      ],
+      "key_terms": [
+        "membership fees",
+        "subscription revenue",
+        "annual dues",
+        "recurring revenue",
+        "membership income",
+        "loyalty program revenue",
+        "Prime revenue"
+      ],
+      "max_concise_chars": 200,
+      "rationale": "Costco depends on membership fees while Walmart and Amazon rely on hybrid models; this reveals white space in business model innovation between pure retail and membership clubs."
+    },
+    {
+      "id": "dyn_same_day_fulfillment_coverage",
+      "name": "Same-Day Fulfillment Coverage",
+      "category": "Operations & Infrastructure",
+      "research_prompt": "Determine geographic coverage and speed of same-day delivery or fulfillment capabilities (not standard 2-day shipping).\n\nIN SCOPE: Same-day delivery availability by major metro area, fulfillment center proximity to population centers, delivery speed promises (1-hour, 4-hour, same-day), and curbside pickup speed guarantees.\n\nNOT IN SCOPE: Standard 2-day or 5-day shipping coverage, nationwide coverage percentages without metro specificity, or future roadmap promises without current operational capability.",
+      "example_queries": [
+        "{company} same day delivery coverage",
+        "{company} same day delivery markets 2024",
+        "{company} curbside pickup speed",
+        "{company} fulfillment center same day capability"
+      ],
+      "answer_spec": [
+        "Number of metro markets with same-day delivery",
+        "Average delivery time promise (hours)",
+        "Percentage of US population covered"
+      ],
+      "preferred_source_types": [
+        "official",
+        "tier1_news"
+      ],
+      "key_terms": [
+        "same-day delivery",
+        "curbside pickup",
+        "fulfillment centers",
+        "last mile",
+        "delivery speed",
+        "metro coverage",
+        "population coverage"
+      ],
+      "max_concise_chars": 200,
+      "rationale": "Amazon and Target lead in speed while Costco lags; gaps in rapid fulfillment represent white space for convenience-focused entrants."
+    },
+    {
+      "id": "dyn_private_label_penetration",
+      "name": "Private Label Penetration",
+      "category": "Product Strategy",
+      "research_prompt": "Find the percentage of total sales or revenue attributed to private label/store brand products (Kirkland, Amazon Basics, Good & Gather, Great Value, Insignia).\n\nIN SCOPE: Store brand sales percentage, number of private label SKUs, revenue contribution from owned brands, and private label growth rates.\n\nNOT IN SCOPE: Third-party exclusive brands without ownership, licensed merchandise, supplier partnerships without equity, or national brand exclusives.",
+      "example_queries": [
+        "{company} private label sales percentage",
+        "{company} store brand revenue mix",
+        "{company} Kirkland sales percentage",
+        "{company} owned brands revenue contribution"
+      ],
+      "answer_spec": [
+        "Percentage of revenue from private labels",
+        "Number of distinct private label brands",
+        "Top private label category by sales"
+      ],
+      "preferred_source_types": [
+        "official",
+        "tier1_news",
+        "analyst_reports"
+      ],
+      "key_terms": [
+        "private label",
+        "store brand",
+        "owned brand",
+        "Kirkland Signature",
+        "Amazon Basics",
+        "Great Value",
+        "Good & Gather",
+        "private brand penetration"
+      ],
+      "max_concise_chars": 200,
+      "rationale": "Target and Costco leverage strong private labels for margin expansion while Best Buy has minimal presence; white space exists in vertical integration strategies."
+    },
+    {
+      "id": "dyn_services_attach_revenue",
+      "name": "Ancillary Services Revenue",
+      "category": "Business Model",
+      "research_prompt": "Identify revenue from installation, technical support, extended warranties, and other ancillary services (not product sales).\n\nIN SCOPE: Geek Squad revenue (Best Buy), installation services, tech support subscriptions, extended warranty attachment rates, protection plans, and service revenue as percentage of total.\n\nNOT IN SCOPE: Product protection plans underwritten by third parties without revenue share, free customer service, delivery fees, or financing income.",
+      "example_queries": [
+        "{company} services revenue percentage",
+        "{company} installation revenue",
+        "{company} Geek Squad revenue",
+        "{company} extended warranty attach rate"
+      ],
+      "answer_spec": [
+        "Services revenue as percentage of total",
+        "Year-over-year services growth rate",
+        "Primary service categories by revenue"
+      ],
+      "preferred_source_types": [
+        "official",
+        "tier1_news",
+        "analyst_reports"
+      ],
+      "key_terms": [
+        "services revenue",
+        "installation",
+        "tech support",
+        "extended warranty",
+        "Geek Squad",
+        "concierge services",
+        "protection plans",
+        "attach rate"
+      ],
+      "max_concise_chars": 200,
+      "rationale": "Best Buy monetizes services heavily through Geek Squad while pure retailers lack this high-margin attach; white space exists in servitization of retail."
+    },
+    {
+      "id": "dyn_marketplace_gmv_mix",
+      "name": "Third-Party Marketplace Mix",
+      "category": "Business Model",
+      "research_prompt": "Determine the percentage of gross merchandise value (GMV) or sales from third-party marketplace sellers versus first-party (owned inventory) sales.\n\nIN SCOPE: Third-party seller percentage of GMV, marketplace revenue (commissions/fees), 1P vs 3P sales split, and seller count metrics.\n\nNOT IN SCOPE: Total GMV without 1P/3P breakdown, vendor direct shipping without marketplace platform fees, consignment models, or dropship arrangements without marketplace infrastructure.",
+      "example_queries": [
+        "{company} marketplace revenue percentage",
+        "{company} third party seller GMV",
+        "{company} 1P vs 3P sales mix",
+        "{company} marketplace seller count"
+      ],
+      "answer_spec": [
+        "Percentage of GMV from third-party sellers",
+        "Marketplace revenue (fees/commissions)",
+        "Number of active third-party sellers"
+      ],
+      "preferred_source_types": [
+        "official",
+        "tier1_news",
+        "analyst_reports"
+      ],
+      "key_terms": [
+        "marketplace",
+        "third-party sellers",
+        "3P",
+        "first-party",
+        "1P",
+        "GMV",
+        "merchant services",
+        "seller fees",
+        "commission revenue"
+      ],
+      "max_concise_chars": 200,
+      "rationale": "Amazon dominates the marketplace model while Walmart transitions and Target/Costco lack it; white space exists in platform versus inventory risk strategies."
+    },
+    {
+      "id": "dyn_grocery_fresh_presence",
+      "name": "Grocery & Fresh Revenue Mix",
+      "category": "Category Mix",
+      "research_prompt": "Quantify the percentage of revenue derived from food, grocery, and fresh/perishable categories versus general merchandise or electronics.\n\nIN SCOPE: Grocery sales percentage, food revenue mix, fresh/perishable categories, supermarket versus general merchandise revenue split, and consumables growth.\n\nNOT IN SCOPE: Packaged goods without food classification, beverages alone without broader grocery context, or convenience store metrics without supermarket positioning.",
+      "example_queries": [
+        "{company} grocery revenue percentage",
+        "{company} food sales mix",
+        "{company} fresh food revenue",
+        "{company} supermarket sales percentage"
+      ],
+      "answer_spec": [
+        "Percentage of revenue from grocery/food",
+        "Fresh versus packaged food split",
+        "Grocery comparable store sales growth"
+      ],
+      "preferred_source_types": [
+        "official",
+        "tier1_news",
+        "analyst_reports"
+      ],
+      "key_terms": [
+        "grocery",
+        "food sales",
+        "fresh food",
+        "perishables",
+        "supermarket",
+        "consumables",
+        "food revenue",
+        "edible grocery"
+      ],
+      "max_concise_chars": 200,
+      "rationale": "Costco and Walmart derive major revenue from food while Best Buy has none; white space exists in hybrid electronics/grocery models or specialized food retail."
+    },
+    {
+      "id": "dyn_bopis_maturity_index",
+      "name": "BOPIS Capability Maturity",
+      "category": "Customer Experience",
+      "research_prompt": "Assess the sophistication of Buy Online Pickup In-Store (BOPIS) capabilities including curbside, in-store pickup speed, and digital integration.\n\nIN SCOPE: Curbside availability, pickup time guarantees (e.g., 2-hour ready), app integration for pickup notifications, dedicated parking spaces, employee fulfillment processes, and return handling via pickup points.\n\nNOT IN SCOPE: Standard in-store shopping without digital trigger, ship-to-store without pickup notification, or returns processing without purchase context.",
+      "example_queries": [
+        "{company} curbside pickup capabilities",
+        "{company} buy online pickup in store speed",
+        "{company} BOPIS fulfillment time",
+        "{company} drive up service metrics"
+      ],
+      "answer_spec": [
+        "Average order ready time (hours)",
+        "Curbside availability (yes/no)",
+        "App integration features for pickup"
+      ],
+      "preferred_source_types": [
+        "official",
+        "tier1_news"
+      ],
+      "key_terms": [
+        "BOPIS",
+        "curbside pickup",
+        "buy online pickup in store",
+        "drive up",
+        "order pickup",
+        "fulfillment speed",
+        "in-store pickup"
+      ],
+      "max_concise_chars": 200,
+      "rationale": "Target leads in seamless BOPIS while Amazon (physical limited) and Costco lag; white space exists in omnichannel convenience innovation."
+    },
+    {
+      "id": "dyn_store_format_diversity",
+      "name": "Store Format Diversity",
+      "category": "Operations & Infrastructure",
+      "research_prompt": "Analyze the variety of physical store formats (supercenters, warehouses, small formats, urban stores, specialty) and their strategic distribution.\n\nIN SCOPE: Store count by format type (e.g., Target Express, Walmart Neighborhood Market, Costco Business Centers), square footage ranges, urban versus suburban distribution, and format-specific revenue contribution.\n\nNOT IN SCOPE: Total store count without format breakdown, international stores without format context, or planned formats without existing physical presence.",
+      "example_queries": [
+        "{company} store formats types",
+        "{company} small format stores count",
+        "{company} urban store locations",
+        "{company} warehouse vs supercenter count"
+      ],
+      "answer_spec": [
+        "Number of distinct store formats",
+        "Square footage range by format",
+        "Percentage of stores in urban (vs suburban/rural) locations"
+      ],
+      "preferred_source_types": [
+        "official",
+        "tier1_news"
+      ],
+      "key_terms": [
+        "store formats",
+        "supercenters",
+        "neighborhood markets",
+        "warehouse clubs",
+        "small format",
+        "urban stores",
+        "store footprint",
+        "square footage"
+      ],
+      "max_concise_chars": 200,
+      "rationale": "Target innovates with small urban formats while Costco sticks to warehouses and Best Buy to big boxes; white space exists in format innovation for dense urban or rural markets."
+    },
+    {
+      "id": "dyn_inventory_turnover_efficiency",
+      "name": "Inventory Turnover Efficiency",
+      "category": "Financials",
+      "research_prompt": "Calculate or find inventory turnover ratio (cost of goods sold divided by average inventory) to assess working capital efficiency.\n\nIN SCOPE: Annual inventory turns, days inventory outstanding (DIO), supply chain efficiency metrics from 10-K or analyst reports, and historical trends.\n\nNOT IN SCOPE: Gross margin alone, sales per square foot (different metric), inventory value without turnover context, or stockout rates without inventory velocity.",
+      "example_queries": [
+        "{company} inventory turnover ratio",
+        "{company} inventory turns 2024",
+        "{company} days inventory outstanding",
+        "{company} supply chain efficiency metrics"
+      ],
+      "answer_spec": [
+        "Inventory turnover ratio (annual)",
+        "Days inventory outstanding (DIO)",
+        "Trend versus prior year"
+      ],
+      "preferred_source_types": [
+        "official",
+        "analyst_reports",
+        "regulatory"
+      ],
+      "key_terms": [
+        "inventory turnover",
+        "inventory turns",
+        "days inventory outstanding",
+        "DIO",
+        "working capital",
+        "supply chain efficiency",
+        "inventory management"
+      ],
+      "max_concise_chars": 200,
+      "rationale": "Costco achieves exceptional turns compared to Best Buy or Walmart; white space exists in supply chain optimization for capital efficiency."
+    },
+    {
+      "id": "dyn_digital_penetration_rate",
+      "name": "Digital Sales Penetration",
+      "category": "Channel Mix",
+      "research_prompt": "Find the percentage of total sales completed through digital channels (website, app) versus physical stores.\n\nIN SCOPE: E-commerce sales percentage, digital penetration, online sales growth, app-based sales contribution, and digital comparable sales metrics.\n\nNOT IN SCOPE: Digital influence on store sales (research online buy offline) without transaction attribution, total GMV without channel breakdown, or traffic metrics without conversion data.",
+      "example_queries": [
+        "{company} e-commerce sales percentage",
+        "{company} digital penetration rate",
+        "{company} online sales revenue",
+        "{company} omnichannel sales mix"
+      ],
+      "answer_spec": [
+        "Digital sales as percentage of total",
+        "Year-over-year digital growth rate",
+        "Mobile app sales contribution"
+      ],
+      "preferred_source_types": [
+        "official",
+        "tier1_news",
+        "analyst_reports"
+      ],
+      "key_terms": [
+        "e-commerce",
+        "digital sales",
+        "online penetration",
+        "omnichannel",
+        "digital revenue",
+        "web sales",
+        "app sales",
+        "comparable digital sales"
+      ],
+      "max_concise_chars": 200,
+      "rationale": "Amazon is digital-native while Costco remains under 10% digital; white space exists in digital-native approaches to traditional retail categories."
+    }
+  ],
+  "parameter_contexts": {
+    "unique_value_proposition": "How each player positions its core promise (EDLP, treasure hunt, curation, convenience, expertise) shapes where white space remains in value perception.",
+    "positioning": "Market tier positioning across warehouse clubs, supercenters, digital marketplaces, and specialty electronics reveals coverage gaps between mass-market and premium segments.",
+    "differentiation": "Distinctive capabilities like private label strength, logistics networks, or tech support services highlight saturated versus underserved competitive niches.",
+    "target_customer_personas": "Demographic and psychographic targeting (suburban families, urban millennials, tech enthusiasts, small businesses) reveals underserved customer segments.",
+    "users": "Customer base scale, visit frequency, and loyalty metrics indicate market penetration depth and switching costs across the competitive set.",
+    "use_cases": "Shopping occasions and need states (weekly grocery stock-up, electronics upgrade, bulk buying, emergency replacement) reveal unmet consumer scenarios.",
+    "key_features": "Core service offerings (curbside pickup, same-day delivery, tech installation, warehouse shopping experience) show feature parity gaps and innovation opportunities.",
+    "business_models": "Revenue architecture variations (membership fees, advertising, merchandise margin, marketplace commissions, services) reveal structural white space in monetization.",
+    "pricing_strategy": "EDLP versus high-low promotional strategies versus membership access fees highlight value proposition gaps and pricing power differentials.",
+    "market_share": "Category-specific share dynamics in grocery, electronics, and general merchandise reveal consolidation versus fragmentation opportunities.",
+    "market_size": "Segment TAM expansion in e-commerce, warehouse clubs, and specialty retail indicates room for new entrants or category redefinition.",
+    "estimated_revenue": "Scale comparison reveals resource asymmetries between the digital giant, warehouse leader, and specialty players, indicating niche viability."
+  },
+  "mission_statement": "This research aims to comprehensively evaluate the omnichannel retail and wholesale strategies of Walmart, Target, Costco, Amazon, and Best Buy across 25 competitive parameters to identify which players are best positioned for sustained market share growth. By analyzing digital integration, supply chain capabilities, pricing strategies, customer experience, and emerging commerce models, we seek to uncover the structural advantages and vulnerabilities that will define competitive outcomes over the next 3-5 years.",
+  "key_questions": [
+    "How do the five competitors compare on omnichannel maturity\u2014specifically the seamless integration of online ordering, in-store fulfillment (BOPIS/curbside), same-day delivery, and returns across channels?",
+    "What are the relative investments and capabilities in supply chain infrastructure (automation, last-mile logistics, micro-fulfillment centers, and inventory management) and how do these translate into cost advantages or speed-to-customer?",
+    "How does each company's membership/loyalty ecosystem (Walmart+, Target Circle, Costco Membership, Amazon Prime, Best Buy Totaltech) drive customer retention, average order value, and lifetime value, and which model is gaining share fastest?",
+    "What role do advertising/media networks (Walmart Connect, Roundel, Amazon Ads, Best Buy Ads) and marketplace/third-party seller platforms play in each company's margin structure and competitive positioning?",
+    "How do private-label and exclusive brand strategies differ across the competitive set, and which companies are most effectively using owned brands to defend against price competition and improve gross margins?",
+    "To what extent are AI, personalization, and data analytics being deployed across merchandising, pricing, demand forecasting, and customer engagement\u2014and which company has the most defensible data advantage?",
+    "How do physical store footprint strategies (new formats, store remodels, closures, square footage optimization) compare, and which approach is generating the highest revenue per square foot and return on invested capital?",
+    "What are the key financial performance differentiators\u2014revenue growth trajectory, operating margin trends, capital efficiency, and free cash flow generation\u2014and how do these metrics correlate with each company's omnichannel investment intensity?"
+  ],
+  "hypothesis": "Walmart's aggressive convergence of physical retail scale with digital capabilities (Walmart+, marketplace expansion, Walmart Connect, and automated fulfillment) is closing the omnichannel gap with Amazon faster than the market recognizes, positioning Walmart to capture disproportionate incremental e-commerce share among the brick-and-mortar competitors over the next three years.",
+  "perspective": "neutral",
+  "audience": "general",
+  "depth": "deep",
+  "focus_companies": [],
+  "known_context": null,
+  "graveyard_enabled": true,
+  "graveyard_companies": [
+    {
+      "name": "Kmart Corporation",
+      "years_active": "1962-2024",
+      "peak_description": "Once the largest discount retailer in the United States with over 2,000 stores, Kmart dominated the discount retail space before Walmart emerged as a stronger competitor. The company was a household name for affordable general merchandise throughout the 1980s and 1990s.",
+      "reason_summary": "Failed to compete on price with Walmart, poor inventory management, and inability to adapt to changing retail landscape; filed for Chapter 11 bankruptcy in 2002, merged with Sears in 2005, and ultimately liquidated by 2024.",
+      "confidence": "high"
+    },
+    {
+      "name": "Circuit City Stores, Inc.",
+      "years_active": "1949-2009",
+      "peak_description": "A $12 billion electronics retailer with over 700 stores at its peak, Circuit City was the dominant consumer electronics chain in the United States during the 1990s and early 2000s, known for its red-jacketed salespeople and extensive product selection.",
+      "reason_summary": "Catastrophic operational decisions including mass firing of 3,400 experienced salespeople in 2007, failure to invest in e-commerce, high debt levels, and inability to compete with Best Buy and Amazon; filed for bankruptcy in November 2008 and liquidated by March 2009.",
+      "confidence": "high"
+    },
+    {
+      "name": "Toys 'R' Us, Inc.",
+      "years_active": "1948-2018",
+      "peak_description": "The world's largest toy retailer with over 700 stores globally at its peak, Toys 'R' Us dominated the toy retail industry for decades and was a cultural icon for toy shopping, particularly during holiday seasons.",
+      "reason_summary": "Burdened by $5+ billion debt from a 2005 leveraged buyout, unable to adapt to e-commerce competition from Amazon and Walmart, and declining sales; filed for Chapter 11 bankruptcy in September 2017 and liquidated most U.S. stores by 2018.",
+      "confidence": "high"
+    },
+    {
+      "name": "Blockbuster Entertainment, Inc.",
+      "years_active": "1985-2014",
+      "peak_description": "Once valued at $3 billion with over 9,000 video rental stores worldwide, Blockbuster was the dominant video rental chain, with stores in nearly every American neighborhood and a cultural fixture for weekend movie rentals.",
+      "reason_summary": "Rejected acquisition of Netflix for $50 million in 2000, failed to adapt business model to streaming and online rental services, accumulated nearly $1 billion in debt; filed for bankruptcy in September 2010 and was acquired by Dish Network.",
+      "confidence": "high"
+    },
+    {
+      "name": "RadioShack Corporation",
+      "years_active": "1921-2017",
+      "peak_description": "A $5 billion electronics and components retailer with approximately 7,000 stores at its peak, RadioShack was a trusted destination for electronics hobbyists, technicians, and consumers seeking computer components and consumer electronics.",
+      "reason_summary": "Debt from predatory lending agreements that restricted store closures, failure to adapt to online electronics retail and big-box competition from Best Buy and Walmart, and inability to modernize inventory; filed for Chapter 11 bankruptcy in February 2015, again in 2017, and liquidated most stores by 2017.",
+      "confidence": "high"
+    }
+  ],
+  "confidence_preview": null,
+  "clarification_log": [],
+  "run_id": "v2_run_20260217_224207"
+}

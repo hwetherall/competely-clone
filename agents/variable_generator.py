@@ -1,6 +1,6 @@
 """
 Variable generator: analyzes the Set of Competitors (SoC) and produces
-contextual parameter recommendations using a strategic LLM (e.g. kimi-k2.5).
+contextual parameter recommendations using a strategic LLM (e.g. deepseek-v3.2).
 
 - Tier 2: include/exclude recommendations for "sometimes" variables
 - Tier 3: industry-specific dynamic variables with full research definitions
@@ -176,18 +176,20 @@ Generate always_parameter_contexts for EVERY always-included variable listed in 
 
 
 def _extract_result_json(content: str) -> dict:
-    """Extract JSON from <result>...</result> tags. Handles nested braces."""
+    """Extract JSON from <result>...</result> tags, or fall back to bare JSON."""
     start_tag = "<result>"
     end_tag = "</result>"
     i = content.find(start_tag)
-    if i == -1:
-        raise ValueError("Could not find <result> in LLM response")
-    start = i + len(start_tag)
-    j = content.find(end_tag, start)
-    if j == -1:
-        raw_block = content[start:].strip()
+    if i != -1:
+        start = i + len(start_tag)
+        j = content.find(end_tag, start)
+        if j == -1:
+            raw_block = content[start:].strip()
+        else:
+            raw_block = content[start:j].strip()
     else:
-        raw_block = content[start:j].strip()
+        logger.warning("<result> tags not found in LLM response; attempting bare JSON extraction")
+        raw_block = content.strip()
     # Find first { and then match braces to get full JSON
     brace_start = raw_block.find("{")
     if brace_start == -1:

@@ -521,6 +521,128 @@ def format_graveyard_summaries_for_postmortem(reports: list) -> str:
     return "\n".join(lines) if lines else "No reports."
 
 
+# =============================================================================
+# AVIS Path: Executive Brief with AVIS Analytical Frameworks
+# =============================================================================
+
+AVIS_EXECUTIVE_BRIEF_SYSTEM = """You are a senior VC partner synthesizing a competitive landscape analysis using the AVIS framework (Innovera, Chapter 4: Competitive Analysis). Your output must include the standard executive brief PLUS three AVIS-specific analytical frameworks: a Moat Analysis Grid, a Threat Matrix, and a Feature & Value Curve assessment. Be concise, specific, and actionable. Frame everything through the lens of: can a new venture win here?"""
+
+AVIS_EXECUTIVE_BRIEF_PROMPT = """Synthesize an AVIS executive brief from the following parameter-level competitive analyses.
+
+Companies in scope: {companies_list}
+
+Parameter reports (headline + executive summary + top rankings + trends + white space per parameter):
+{parameter_summaries}
+{venture_context_block}
+INSTRUCTIONS:
+Produce ALL of the following sections. The first 6 sections follow the standard format; sections 7-9 are AVIS-specific analytical frameworks.
+
+1. **brief**: A single paragraph (4-8 sentences) answering: What is the overall competitive landscape? Who leads where? Is there room for a new entrant? What are the structural dynamics?
+
+2. **key_themes**: 3-6 cross-cutting strategic themes spanning multiple AVIS dimensions.
+
+3. **trends**: 3-7 directional shifts — what is CHANGING and WHERE things are headed.
+
+4. **white_space_opportunities**: 3-7 structured opportunities. For EACH:
+   - "opportunity": The unoccupied position or underserved gap
+   - "why_it_exists": Structural dynamics creating this opening
+   - "who_is_closest": Which existing player is best positioned
+   - "entry_difficulty": "Low", "Medium", or "High"
+   {venture_ws_instruction}
+
+5. **white_space_matrix**: Categorize ALL gaps:
+   - "segment_gaps": Customer segments nobody serves well
+   - "product_gaps": Capabilities nobody offers
+   - "business_model_gaps": Monetization approaches nobody has tried
+   - "geographic_gaps": Markets nobody addresses
+   {venture_matrix_instruction}
+
+6. **next_steps**: Actionable recommendations in workstream buckets:
+   - "investigate_further": Things needing deeper research
+   - "quick_wins": Low-effort, high-signal actions
+   - "strategic_bets": Bigger moves with outsized payoff
+   - "monitor_and_defend": Competitive moves to watch
+   Each item: {{"action": "...", "rationale": "...", "priority": "High"/"Medium"/"Low"}}
+   {venture_ns_instruction}
+
+7. **moat_analysis_grid**: For EACH company, assess defensibility sources. Array of objects:
+   - "company": Company name
+   - "moat_sources": Object mapping moat type to assessment:
+     - "brand": "Strong" / "Moderate" / "Weak" / "None" + one-line explanation
+     - "data": same format
+     - "switching_costs": same format
+     - "ip_patents": same format
+     - "network_effects": same format
+     - "regulatory": same format
+     - "scale_economies": same format
+   - "overall_durability": "High" / "Medium" / "Low"
+   - "durability_rationale": One sentence on whether this moat will hold over 3-5 years
+
+8. **threat_matrix**: Head-to-head risk assessment. Array of objects, one per company:
+   - "company": Company name
+   - "beats_others_on": List of dimensions where this company wins (e.g. ["pricing", "brand trust"])
+   - "loses_to_others_on": List of dimensions where competitors win
+   - "biggest_threat_from": Which specific competitor is the biggest threat and why (one sentence)
+   - "stealth_threats": Any emerging or non-obvious threats (one sentence, or "None identified")
+
+9. **value_curve_assessment**: Feature/value curve comparison. Object with:
+   - "dimensions": List of 6-10 comparison dimensions most relevant to this space (e.g. "Price competitiveness", "Enterprise readiness", "UX quality")
+   - "company_scores": Object mapping company name to object mapping dimension to score (1-5, where 5 is leader)
+   - "parity_zones": List of dimensions where most competitors cluster (low differentiation)
+   - "differentiation_zones": List of dimensions where companies diverge significantly
+   - "white_space_dimensions": Dimensions where NO company scores above 3 (unserved needs)
+
+Output your response as JSON inside <executive_json> tags:
+
+<executive_json>
+{{
+  "brief": "...",
+  "key_themes": ["..."],
+  "trends": ["..."],
+  "white_space_opportunities": [...],
+  "white_space_matrix": {{...}},
+  "next_steps": {{...}},
+  "moat_analysis_grid": [
+    {{
+      "company": "Company A",
+      "moat_sources": {{
+        "brand": {{"strength": "Strong", "detail": "..."}},
+        "data": {{"strength": "Moderate", "detail": "..."}},
+        "switching_costs": {{"strength": "Weak", "detail": "..."}},
+        "ip_patents": {{"strength": "None", "detail": "..."}},
+        "network_effects": {{"strength": "Strong", "detail": "..."}},
+        "regulatory": {{"strength": "None", "detail": "..."}},
+        "scale_economies": {{"strength": "Moderate", "detail": "..."}}
+      }},
+      "overall_durability": "High",
+      "durability_rationale": "..."
+    }}
+  ],
+  "threat_matrix": [
+    {{
+      "company": "Company A",
+      "beats_others_on": ["dimension1", "dimension2"],
+      "loses_to_others_on": ["dimension3"],
+      "biggest_threat_from": "Company B poses the greatest threat because...",
+      "stealth_threats": "..."
+    }}
+  ],
+  "value_curve_assessment": {{
+    "dimensions": ["Price", "UX", "Enterprise readiness", "..."],
+    "company_scores": {{
+      "Company A": {{"Price": 3, "UX": 5, "Enterprise readiness": 4}},
+      "Company B": {{"Price": 5, "UX": 3, "Enterprise readiness": 2}}
+    }},
+    "parity_zones": ["dimension where everyone is similar"],
+    "differentiation_zones": ["dimension with high variance"],
+    "white_space_dimensions": ["dimension nobody serves well"]
+  }}
+}}
+</executive_json>
+
+Your AVIS executive brief:"""
+
+
 def build_venture_context_block(venture_context: str) -> dict:
     """Build the venture context block and per-section instructions for the executive prompt."""
     if not venture_context or not venture_context.strip():

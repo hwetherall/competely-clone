@@ -90,7 +90,7 @@ export function useVariablesList() {
   });
 }
 
-export async function generateVariables(request: { companies: string[]; company_profiles?: string[] }): Promise<VariableGenerationResponse> {
+export async function generateVariables(request: { companies: string[]; company_profiles?: string[]; parameter_path?: string }): Promise<VariableGenerationResponse> {
   return fetchAPI<VariableGenerationResponse>("/api/variables/generate", {
     method: "POST",
     body: JSON.stringify(request),

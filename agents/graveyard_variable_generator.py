@@ -77,15 +77,17 @@ Generate exactly 5 parameters. Now output the JSON:"""
 
 
 def _extract_result_json(content: str) -> dict:
-    """Extract JSON from <result>...</result> tags."""
+    """Extract JSON from <result>...</result> tags, or fall back to bare JSON."""
     start_tag = "<result>"
     end_tag = "</result>"
     i = content.find(start_tag)
-    if i == -1:
-        raise ValueError("Could not find <result> in LLM response")
-    start = i + len(start_tag)
-    j = content.find(end_tag, start)
-    raw_block = content[start:j].strip() if j != -1 else content[start:].strip()
+    if i != -1:
+        start = i + len(start_tag)
+        j = content.find(end_tag, start)
+        raw_block = content[start:j].strip() if j != -1 else content[start:].strip()
+    else:
+        logger.warning("<result> tags not found in LLM response; attempting bare JSON extraction")
+        raw_block = content.strip()
     brace_start = raw_block.find("{")
     if brace_start == -1:
         raise ValueError("No JSON object in result block")

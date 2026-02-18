@@ -90,6 +90,7 @@ export default function NewPlanPage() {
   const updateIntel = (stepKey: string, patch: Partial<IntelStepState>) =>
     setIntelByStep((prev) => ({ ...prev, [stepKey]: { ...(prev[stepKey] ?? emptyIntel), ...patch } }));
 
+  const [parameterPath, setParameterPath] = useState<"competely" | "avis">("competely");
   const [variableData, setVariableData] = useState<VariableGenerationResponse | null>(null);
   const [selectedVariableIds, setSelectedVariableIds] = useState<string[]>([]);
   const [dynamicVariableDefs, setDynamicVariableDefs] = useState<DynamicVariableDefinition[]>([]);
@@ -207,6 +208,13 @@ export default function NewPlanPage() {
     return base;
   };
 
+  const skipHandlers: Record<string, () => void> = {
+    suggestions: () => handleSuggestionsIntelSkip(),
+    parameters: () => handleParamsIntelSkip(),
+    goal: () => handleGoalIntelSkip(),
+    audience: () => handleAudienceIntelSkip(),
+  };
+
   const handleFetchIntel = async (stepKey: string) => {
     if (companies.length < 2) return;
     try {
@@ -214,6 +222,10 @@ export default function NewPlanPage() {
         step: stepKey,
         context: buildIntelContext(stepKey),
       });
+      if (res.questions.length === 0) {
+        skipHandlers[stepKey]?.();
+        return;
+      }
       updateIntel(stepKey, { questions: res.questions, followUpGroups: [], answers: [], phase: "questions" });
     } catch (e) {
       console.error(e);
@@ -344,6 +356,7 @@ export default function NewPlanPage() {
       const res = await generateVariables.mutateAsync({
         companies: list,
         company_profiles: ["public_mature"],
+        parameter_path: parameterPath,
       });
       setVariableData(res);
       setSelectedVariableIds(getDefaultSelection(res));
@@ -397,6 +410,7 @@ export default function NewPlanPage() {
     accepted_suggestions: acceptedSuggestionIds,
     effective_company_names: finalCompanyNames,
     industry_context: variableData?.industry_context ?? "",
+    parameter_path: parameterPath,
     selected_variable_ids: selectedVariableIds,
     dynamic_variables: dynamicVariableDefs,
     parameter_contexts: variableData?.always_parameter_contexts ?? {},
@@ -752,17 +766,64 @@ export default function NewPlanPage() {
 
         {step === 3 && (() => {
           const pi = getIntel("parameters");
+          const pathNotChosen = !variableData && pi.phase === "questions";
           return (
             <Card>
               <CardHeader>
                 <CardTitle>Step 3: Parameters</CardTitle>
                 <CardDescription>
-                  {pi.phase === "questions" && !variableData
-                    ? "Answer a few questions to get better-targeted research parameters."
+                  {pathNotChosen
+                    ? "Choose your analysis framework, then we'll generate parameters."
                     : "Generate and select research parameters. Add custom ones if needed."}
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
+                {/* Path selector: Competely vs AVIS */}
+                {!variableData && (
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    <button
+                      type="button"
+                      onClick={() => setParameterPath("competely")}
+                      className={`relative rounded-xl border-2 p-5 text-left transition-all ${
+                        parameterPath === "competely"
+                          ? "border-primary bg-primary/5 shadow-sm"
+                          : "border-muted hover:border-muted-foreground/30"
+                      }`}
+                    >
+                      <div className="flex items-center gap-2 mb-2">
+                        <span className="text-lg">📊</span>
+                        <h4 className="font-semibold text-sm">Competely Path</h4>
+                      </div>
+                      <p className="text-xs text-muted-foreground leading-relaxed">
+                        Product-comparison lens. Best for understanding how products stack up on features, pricing, customers, and market share.
+                      </p>
+                      {parameterPath === "competely" && (
+                        <span className="absolute top-3 right-3 h-2 w-2 rounded-full bg-primary" />
+                      )}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setParameterPath("avis")}
+                      className={`relative rounded-xl border-2 p-5 text-left transition-all ${
+                        parameterPath === "avis"
+                          ? "border-primary bg-primary/5 shadow-sm"
+                          : "border-muted hover:border-muted-foreground/30"
+                      }`}
+                    >
+                      <div className="flex items-center gap-2 mb-2">
+                        <span className="text-lg">🏛️</span>
+                        <h4 className="font-semibold text-sm">AVIS Path</h4>
+                      </div>
+                      <p className="text-xs text-muted-foreground leading-relaxed">
+                        Investment-thesis lens (Innovera AVIS framework). Evaluates moats, funding, GTM, team, IP defensibility, and exit readiness.
+                      </p>
+                      {parameterPath === "avis" && (
+                        <span className="absolute top-3 right-3 h-2 w-2 rounded-full bg-primary" />
+                      )}
+                    </button>
+                  </div>
+                )}
+
                 {/* Phase 1: Intelligence questions (before parameter generation) */}
                 {pi.phase === "questions" && !variableData && (
                   <>
@@ -1022,6 +1083,7 @@ export default function NewPlanPage() {
                   suggested_companies: suggestions,
                   accepted_suggestions: acceptedSuggestionIds,
                   industry_context: variableData?.industry_context,
+                  parameter_path: parameterPath,
                   selected_variable_ids: selectedVariableIds,
                   dynamic_variables: dynamicVariableDefs,
                   parameter_contexts: variableData?.always_parameter_contexts,

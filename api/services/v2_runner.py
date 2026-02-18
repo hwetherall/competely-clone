@@ -21,10 +21,17 @@ def _build_variable_lookup(
     variable_ids: List[str],
     dynamic_variables: Optional[List[Dict[str, Any]]] = None,
     parameter_contexts: Optional[Dict[str, str]] = None,
+    parameter_path: str = "competely",
 ):
     """Build variable_id -> VariableDefinition for V2 pipeline."""
     from dataclasses import replace
     from config.variables import VariableDefinition, get_variable
+
+    # For AVIS path, also check AVIS variable definitions
+    avis_lookup_fn = None
+    if parameter_path == "avis":
+        from config.avis_variables import get_avis_variable
+        avis_lookup_fn = get_avis_variable
 
     lookup = {}
     dynamic_by_id = {d["id"]: d for d in (dynamic_variables or [])}
@@ -44,7 +51,15 @@ def _build_variable_lookup(
                 tier="dynamic",
             )
         else:
-            v = get_variable(var_id)
+            # Try AVIS variables first if on AVIS path
+            v = None
+            if avis_lookup_fn:
+                try:
+                    v = avis_lookup_fn(var_id)
+                except ValueError:
+                    pass
+            if v is None:
+                v = get_variable(var_id)
         if parameter_contexts and var_id in parameter_contexts and parameter_contexts[var_id]:
             v = replace(v, parameter_context=parameter_contexts[var_id])
         lookup[var_id] = v
@@ -101,6 +116,7 @@ class V2Runner:
         hypothesis: str = "",
         graveyard_companies: Optional[List[str]] = None,
         industry_context: str = "",
+        parameter_path: str = "competely",
     ):
         """Entry point for BackgroundTasks: run V2 pipeline and save result."""
         asyncio.run(self._run(
@@ -116,6 +132,7 @@ class V2Runner:
             hypothesis=hypothesis,
             graveyard_companies=graveyard_companies,
             industry_context=industry_context,
+            parameter_path=parameter_path,
         ))
 
     async def _run(
@@ -132,6 +149,7 @@ class V2Runner:
         hypothesis: str = "",
         graveyard_companies: Optional[List[str]] = None,
         industry_context: str = "",
+        parameter_path: str = "competely",
     ):
         from v2_pipeline import (
             run_v2_analysis,
@@ -144,7 +162,7 @@ class V2Runner:
         self.start_time = time.time()
         self.started_at = datetime.now().isoformat()
         variable_lookup = _build_variable_lookup(
-            variables, dynamic_variables, parameter_contexts
+            variables, dynamic_variables, parameter_contexts, parameter_path
         )
         total_cells = len(companies) * len(variables)
 
@@ -168,6 +186,7 @@ class V2Runner:
                 hypothesis=hypothesis,
                 graveyard_companies=graveyard_companies,
                 industry_context=industry_context,
+                parameter_path=parameter_path,
             )
             save_v2_result(result)
             self._update_progress(

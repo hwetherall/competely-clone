@@ -18,6 +18,8 @@ from agents.v2_schemas import (
 from agents.v2_prompts import (
     EXECUTIVE_BRIEF_SYSTEM,
     EXECUTIVE_BRIEF_PROMPT,
+    AVIS_EXECUTIVE_BRIEF_SYSTEM,
+    AVIS_EXECUTIVE_BRIEF_PROMPT,
     format_parameter_summaries_for_executive,
     build_venture_context_block,
 )
@@ -42,15 +44,23 @@ class ExecutiveAgent:
         companies_list: str,
         reports: List[ComparativeReport],
         venture_context: str = "",
+        parameter_path: str = "competely",
     ) -> ExecutiveBrief:
         """
         Produce ExecutiveBrief from parameter report summaries.
         Uses headline, executive_summary, rankings, trends, and white_space per report.
         Optionally personalizes white space and next steps with venture_context.
+        When parameter_path='avis', uses AVIS-specific prompts that produce
+        Moat Grid, Threat Matrix, and Value Curve frameworks.
         """
         parameter_summaries = format_parameter_summaries_for_executive(reports)
         vc_parts = build_venture_context_block(venture_context)
-        prompt = EXECUTIVE_BRIEF_PROMPT.format(
+
+        use_avis = parameter_path == "avis"
+        system_prompt = AVIS_EXECUTIVE_BRIEF_SYSTEM if use_avis else EXECUTIVE_BRIEF_SYSTEM
+        brief_template = AVIS_EXECUTIVE_BRIEF_PROMPT if use_avis else EXECUTIVE_BRIEF_PROMPT
+
+        prompt = brief_template.format(
             companies_list=companies_list,
             parameter_summaries=parameter_summaries,
             venture_context_block=vc_parts["venture_context_block"],
@@ -61,7 +71,7 @@ class ExecutiveAgent:
         try:
             response = await self.llm_client.complete_simple(
                 prompt=prompt,
-                system_prompt=EXECUTIVE_BRIEF_SYSTEM,
+                system_prompt=system_prompt,
                 temperature=0.5,
                 max_tokens=12000,
                 model_override=EXECUTIVE_MODEL,
@@ -89,7 +99,10 @@ class ExecutiveAgent:
                         white_space_matrix=parsed.get("white_space_matrix", {}),
                         next_steps=next_steps,
                         venture_context=venture_context,
-                        metadata={"model": EXECUTIVE_MODEL},
+                        metadata={"model": EXECUTIVE_MODEL, "parameter_path": parameter_path},
+                        moat_analysis_grid=parsed.get("moat_analysis_grid", []),
+                        threat_matrix=parsed.get("threat_matrix", []),
+                        value_curve_assessment=parsed.get("value_curve_assessment", {}),
                     )
         except Exception as e:
             logger.warning(f"Executive brief failed: {e}")

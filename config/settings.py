@@ -52,7 +52,7 @@ SUMMARIZE_MODEL: str = os.getenv("SUMMARIZE_MODEL", "deepseek/deepseek-v3.2")
 
 # Variable generator: fast model for strategic parameter generation (OpenRouter)
 VARIABLE_GENERATOR_MODEL: str = os.getenv(
-    "VARIABLE_GENERATOR_MODEL", "moonshotai/kimi-k2.5"
+    "VARIABLE_GENERATOR_MODEL", "deepseek/deepseek-v3.2"
 )
 
 # Legacy alias for backward compatibility (defaults to RESEARCH_MODEL)

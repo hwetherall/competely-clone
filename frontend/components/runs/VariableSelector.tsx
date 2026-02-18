@@ -51,6 +51,11 @@ export function SmartVariableSelector({
       {data.industry_context && (
         <p className="text-sm text-muted-foreground">
           Detected context: <span className="font-medium">{data.industry_context}</span>
+          {data.always_variables.some(v => v.id.startsWith("avis_")) && (
+            <span className="ml-2 inline-flex items-center rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary">
+              AVIS Framework
+            </span>
+          )}
         </p>
       )}
 

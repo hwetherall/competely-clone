@@ -161,6 +161,7 @@ async def run_v2_analysis(
     hypothesis: str = "",
     graveyard_companies: Optional[List[str]] = None,
     industry_context: str = "",
+    parameter_path: str = "competely",
 ) -> V2RunResult:
     variable_ids: List[str] = []
     variable_lookup: Dict[str, VariableDefinition] = {}
@@ -374,7 +375,7 @@ async def run_v2_analysis(
         if a:
             reports_for_exec.append(ComparativeReport.from_dict(a))
     companies_list = ", ".join(companies)
-    executive = await executive_agent.synthesize_brief(companies_list, reports_for_exec, venture_context=venture_context)
+    executive = await executive_agent.synthesize_brief(companies_list, reports_for_exec, venture_context=venture_context, parameter_path=parameter_path)
     phase4_elapsed = time.time() - phase4_start
     print(f"  Phase 4 completed in {format_time(phase4_elapsed)}")
 
@@ -593,6 +594,7 @@ async def run_v2_analysis(
             "concurrency": concurrency,
             "fast_mode": fast_mode,
             "graveyard_enabled": bool(graveyard_companies),
+            "parameter_path": parameter_path,
         },
         graveyard_companies=gy_companies_data,
         graveyard_intelligence=gy_intelligence,

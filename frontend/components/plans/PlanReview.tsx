@@ -161,6 +161,9 @@ export function PlanReview({
                 <Badge variant="secondary" className="px-2 py-0.5">
                   {parameters.length} Parameters
                 </Badge>
+                <Badge variant={plan.parameter_path === "avis" ? "default" : "secondary"} className="px-2 py-0.5">
+                  {plan.parameter_path === "avis" ? "AVIS" : "Competely"} Framework
+                </Badge>
                 <Badge variant="secondary" className="px-2 py-0.5 capitalize">
                   {plan.depth ?? "Standard"} Depth
                 </Badge>

@@ -172,6 +172,7 @@ async def validate_companies_endpoint(request: ValidateCompaniesRequest):
             clarifications=[_clarification_to_schema(q) for q in clarifications],
         )
     except Exception as e:
+        logger.exception("Company validation failed")
         raise HTTPException(status_code=502, detail=f"Company validation failed: {str(e)}")
 
 
@@ -348,6 +349,7 @@ async def create_plan(request: PlanCreateRequest):
         "accepted_suggestions": request.accepted_suggestions,
         "effective_company_names": request.effective_company_names,
         "industry_context": request.industry_context,
+        "parameter_path": request.parameter_path,
         "selected_variable_ids": request.selected_variable_ids,
         "dynamic_variables": [d.model_dump() for d in request.dynamic_variables],
         "parameter_contexts": request.parameter_contexts,
@@ -509,6 +511,8 @@ async def launch_plan(plan_id: str, background_tasks: BackgroundTasks):
             g.get("name", "") for g in plan["graveyard_companies"] if g.get("name")
         ]
 
+    parameter_path = plan.get("parameter_path", "competely")
+
     v2_runner = V2Runner()
     background_tasks.add_task(
         v2_runner.run_sync,
@@ -524,6 +528,7 @@ async def launch_plan(plan_id: str, background_tasks: BackgroundTasks):
         hypothesis=plan.get("hypothesis", ""),
         graveyard_companies=graveyard_company_names,
         industry_context=plan.get("industry_context", ""),
+        parameter_path=parameter_path,
     )
 
     plan["status"] = "launched"

@@ -437,57 +437,72 @@ Output JSON inside <result>...</result> with key "questions": array of {{ "id": 
 # Intelligence Questions (Llama 4 Maverick)
 # =============================================================================
 
-INTELLIGENCE_SYSTEM = """You are a strategy consultant preparing a competitive intelligence study. Before generating analysis, you ask smart, targeted questions to understand what the user cares about most. Your questions should be strategic and specific to the companies and industry provided. Each question should have 3-5 concrete options. Output ONLY valid JSON inside <result>...</result>."""
+INTELLIGENCE_SYSTEM = """You are a sharp associate at BCG. Your client has given you a set of companies and asked for a competitive analysis. Before diving in, you ask the ONE question that will most improve your output — like a consultant who respects the client's time but knows that a single well-placed question is worth ten pages of unfocused research.
+
+PRINCIPLES:
+- The companies the user entered ARE the strongest signal of their intent. Never ask them to confirm what is already obvious (e.g. "what industry is this?" when they entered four payment companies).
+- Ask exactly 1 question per step. Not zero (you need direction), not three (you're wasting their time). The rare exception is 0 questions when the step instructions say to skip, or 2 when the step instructions say there's genuine ambiguity.
+- Your question should be the one that, if answered differently, would produce a meaningfully different output. If every answer leads to roughly the same result, don't ask.
+- Frame questions as a strategist would: direct, concrete, with options that represent real strategic forks.
+
+Each question must have 3-5 concrete options grounded in the specific companies and industry. Output ONLY valid JSON inside <result>...</result>."""
 
 INTELLIGENCE_STEP_INSTRUCTIONS = {
     "suggestions": (
-        "The user has entered a set of competitors and we need to suggest additional companies. "
-        "Generate 2-3 questions that will guide WHICH types of competitors to suggest. "
-        "Focus on:\n"
-        "1. Competitor TYPE preference: geographic proximity, business model similarity, "
-        "adjacent/disruptive players, dark horses/outliers\n"
-        "2. If geographic is relevant: which geographies matter\n"
-        "3. Strategic lens: what gap in the competitive set should we fill?\n\n"
-        "Make options concrete and specific to the industry/companies provided. "
-        "For example, for airlines: options might be 'Low-cost carriers', 'Full-service premium', "
-        "'Regional/domestic', 'Cargo-focused'. For geography: list actual regions where competitors exist."
+        "The user has entered companies and we need to suggest additional ones to round out the set. "
+        "Think of it this way: the client said 'Analyze these companies, and any others you think "
+        "are appropriate.' Your job is to ask the ONE question that defines what 'appropriate' means.\n\n"
+        "Generate exactly 1 question. The question should present 3-5 options that represent "
+        "genuinely different directions for expanding the competitive set. Each option should lead "
+        "to a meaningfully different list of suggested companies.\n\n"
+        "Good framing patterns (adapt to the specific companies/industry):\n"
+        "- 'When we expand the set beyond [companies], what direction matters most?'\n"
+        "- 'What type of additional competitors would be most valuable for this analysis?'\n\n"
+        "The options should be specific to the industry, not generic. For example:\n"
+        "- For payment companies: 'Emerging BNPL/embedded finance players', 'International payment "
+        "networks (Asia, LatAm)', 'Vertical-specific processors (healthcare, B2B)', 'Infrastructure "
+        "layer (banking-as-a-service, card networks)'\n"
+        "- For airlines: 'Low-cost carriers', 'Gulf/Asian premium carriers', 'Regional/domestic players', "
+        "'Adjacent (rail, charter)'\n\n"
+        "NEVER ask:\n"
+        "- What industry these companies are in (obvious from the set)\n"
+        "- Which features to compare (irrelevant to which companies to suggest)\n"
+        "- Geographic questions as a separate question (fold geography into the main options if relevant)"
     ),
     "parameters": (
-        "The user is about to select research parameters/dimensions for comparing these companies. "
-        "Generate 2-3 questions about what analytical lens matters most.\n"
-        "Focus on:\n"
-        "1. Primary analysis focus: financial performance, product/service quality, "
-        "technology/innovation, market positioning, customer experience, operations/supply chain\n"
-        "2. Business context: B2B vs B2C weighting, regulatory environment importance, "
-        "ESG/sustainability focus\n"
-        "3. Depth preference: breadth across many dimensions vs deep-dive on fewer\n\n"
-        "Make options concrete and specific to the industry. For example, for airlines: "
-        "'Route network & fleet', 'Pricing & yield management', 'Loyalty programs', "
-        "'On-time performance', 'Sustainability commitments'."
+        "The user is about to select research parameters/dimensions. The system will automatically "
+        "generate industry-specific parameters, so the defaults are already solid.\n\n"
+        "Generate exactly 1 question about the STRATEGIC LENS for the analysis — not specific "
+        "parameter categories (those are too granular), but the high-level perspective that shapes "
+        "what matters. Think: what kind of comparison is this?\n\n"
+        "This question MUST have allow_multiple: true — users will often want 2-3 lenses combined.\n\n"
+        "Good framing: 'How should we frame this comparison?' or 'What lens matters most?'\n"
+        "Options should be broad strategic perspectives, for example:\n"
+        "- Product and technology (how their offerings work and differ)\n"
+        "- Financial and business model mechanics (how they make money, unit economics, scale)\n"
+        "- Market positioning and competitive dynamics (who's winning, where the gaps are)\n"
+        "- Customer and go-to-market (who they sell to, how they acquire and retain)\n\n"
+        "Adapt these to the specific industry but keep them at the STRATEGIC level, not the "
+        "operational level. Never list specific parameter names as options."
     ),
     "goal": (
-        "The user is about to define the research mission and key questions. "
-        "Generate 2-3 questions about what they want to learn and why.\n"
-        "Focus on:\n"
-        "1. Strategic intent: Are you evaluating a new market entry, defending an incumbent position, "
-        "assessing an investment, benchmarking for improvement, or exploring M&A targets?\n"
-        "2. Decision horizon: Is this for an immediate decision (next quarter), "
-        "medium-term strategy (1-2 years), or long-range planning (3-5 years)?\n"
-        "3. Key concern: What keeps you up at night about this competitive landscape? "
-        "(pricing pressure, disruption risk, market share erosion, regulatory change, etc.)\n\n"
-        "Make options concrete and relevant to the specific companies/industry provided."
+        "The user is about to define the research mission and key questions.\n\n"
+        "Generate exactly 1 question about STRATEGIC INTENT — this is the single most important "
+        "thing that shapes the entire research mission. The question is essentially: 'Why are you "
+        "running this analysis?'\n\n"
+        "Options should include forks like:\n"
+        "- Evaluating whether to enter this market as a new venture\n"
+        "- Benchmarking an existing position against competitors\n"
+        "- Investment due diligence / thesis validation\n"
+        "- M&A target screening\n"
+        "- Understanding competitive dynamics for a specific decision\n\n"
+        "Adapt options to be specific to the industry and companies provided."
     ),
     "audience": (
-        "The user is configuring who will read this report and how deep to go. "
-        "Generate 2-3 questions about report consumption and format.\n"
-        "Focus on:\n"
-        "1. Primary reader: C-suite/board (high-level), strategy team (detailed), "
-        "product/engineering team (technical), investors/analysts (financial)\n"
-        "2. Report purpose: Decision support for a specific initiative, ongoing competitive monitoring, "
-        "onboarding/education, or investor presentation\n"
-        "3. Detail level: Executive summary with key takeaways, balanced overview with supporting data, "
-        "or deep analytical dive with full evidence\n\n"
-        "Make options concrete. Consider that different audiences need different emphasis."
+        "The user is configuring who will read this report.\n\n"
+        "Return {\"questions\": []}. The system defaults to a balanced, professional analysis "
+        "that works for most audiences. The audience step already has its own UI controls for "
+        "selecting audience type and depth — intelligence questions here would be redundant."
     ),
 }
 
@@ -551,13 +566,14 @@ Additional context: {json.dumps({k: v for k, v in context.items() if k not in ("
 
 {instruction}
 
-Output JSON inside <result>...</result> with key "questions": array of objects, each with:
-- "id": unique snake_case id (e.g. "competitor_type", "geography_focus")
+IMPORTANT: If the companies and context make the intent clear, return {{"questions": []}}. Only ask when a question would materially change the output.
+
+If you DO generate questions, output JSON inside <result>...</result> with key "questions": array of objects, each with:
+- "id": unique snake_case id (e.g. "strategic_intent", "model_focus")
 - "question": the question text (clear, concise)
 - "options": array of {{"id": "opt_id", "label": "short label", "description": "optional one-line explanation"}}
 - "allow_multiple": boolean (true if user can pick more than one)
 - "context": optional string explaining why this question matters
-- "follow_up_hint": optional string hinting what follow-up might come (e.g. "Selecting geography will let you pick specific regions")
 
 Make options specific and grounded in the actual companies/industry. Do NOT use generic options."""
 
@@ -609,15 +625,22 @@ The user just answered question "{question_id}" by selecting: {selected_options}
 Previous answers so far:
 {prev_summary if prev_summary else "(none)"}
 
-Generate 0-2 follow-up questions that drill deeper based on the answer.
-For example:
-- If they chose "Geographic competitors" -> ask "Which geographies?" with specific regions where competitors in this industry exist
-- If they chose "Business model" -> ask "Which business models?" with models relevant to the industry
-- If the answer is already specific enough, return an empty questions array
+Decide whether a follow-up question is needed. In MOST cases, the answer is NO — return {{"questions": []}}.
 
-Output JSON inside <result>...</result> with key "questions" (array, can be empty).
-Same format: id, question, options (with id, label, description), allow_multiple, context, follow_up_hint.
-Make options specific to the industry. Do NOT generate follow-ups if the answer is already specific enough."""
+The user's selection is almost always specific enough. Do NOT drill deeper just because you can.
+
+Only generate a follow-up (maximum 1) if:
+- The user selected "Other" and the free-text response is genuinely ambiguous
+- The answer reveals a real fork that wasn't anticipated by the original question
+
+NEVER follow up to ask for more granularity on a clear answer. Examples of when NOT to follow up:
+- User selected a competitor type → clear, no follow-up needed
+- User selected a geography → clear, do not ask about specific countries
+- User selected a feature area → clear, do not ask about sub-features
+- User selected a gap type → clear, proceed with it
+
+Output JSON inside <result>...</result> with key "questions" (array, almost always empty).
+Same format: id, question, options (with id, label, description), allow_multiple, context, follow_up_hint."""
 
     content = await client.complete_simple(
         prompt=user_prompt,

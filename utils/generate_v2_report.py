@@ -107,12 +107,28 @@ def generate_v2_html(data, output_path):
             return "<p>" + new_inner + "</p>"
         return re.sub(r"<p>(.*?)</p>", process_paragraph, html_content, flags=re.DOTALL)
 
+    _avatar_colors = ["#6366f1", "#0891b2", "#059669", "#d97706", "#dc2626", "#7c3aed", "#db2777", "#2563eb"]
+    def _avatar_color(idx):
+        return _avatar_colors[idx % len(_avatar_colors)]
+
     companies = data.get("companies", [])
     parameters = data.get("parameters", [])
     parameter_definitions = data.get("parameter_definitions", {})
     analyses = data.get("analyses", {})
     executive = data.get("executive", {})
     metadata = data.get("metadata", {})
+    parameter_path = metadata.get("parameter_path", "competely")
+    is_avis = parameter_path == "avis"
+
+    # Graveyard / Post-Mortem Intelligence data
+    postmortem = data.get("postmortem_brief", {})
+    graveyard_cos = data.get("graveyard_companies", [])
+    graveyard_analyses = data.get("graveyard_analyses", {})
+    has_graveyard = bool(postmortem and postmortem.get("failure_patterns"))
+
+    risk_overlay_map = {}
+    for ro in postmortem.get("risk_overlays", []):
+        risk_overlay_map[ro.get("white_space_opportunity", "")] = ro
 
     def param_name(pid):
         return parameter_definitions.get(pid, {}).get("name", pid)
@@ -149,7 +165,69 @@ def generate_v2_html(data, output_path):
             "confidence": a.get("confidence", "unknown"),
         }
 
+    # Add graveyard analyses to modal_data for deep-dive modals
+    for gy_pid, gy_a in graveyard_analyses.items():
+        gy_full_md = gy_a.get("full_report_markdown", "")
+        gy_full_md_bolded = bold_lead_in_markdown(gy_full_md)
+        gy_full_html = markdown.markdown(gy_full_md_bolded, extensions=["extra"]) if gy_full_md else "<p>No full report.</p>"
+        gy_full_html = bold_lead_in_html(gy_full_html)
+        gy_ws_raw = gy_a.get("white_space", []) or []
+        gy_tr_raw = gy_a.get("trends", []) or []
+        modal_data[gy_pid] = {
+            "parameter_name": gy_a.get("parameter_name", gy_pid),
+            "executive_summary": gy_a.get("executive_summary", ""),
+            "positioning_table": gy_a.get("positioning_table", []),
+            "full_report_html": gy_full_html,
+            "white_space": gy_ws_raw,
+            "white_space_display": [bold_lead(w) for w in gy_ws_raw],
+            "trends": gy_tr_raw,
+            "trends_display": [bold_lead(t) for t in gy_tr_raw],
+            "sources": gy_a.get("sources", []),
+            "confidence": gy_a.get("confidence", "unknown"),
+        }
+
     brief = executive.get("brief", "No executive brief generated.")
+
+    def extract_tldr(text, max_sentences=2):
+        """Pull the first 1-2 sentences as a TL;DR / BLUF."""
+        import re
+        sentences = re.split(r'(?<=[.!?])\s+(?=[A-Z])', text.strip())
+        tldr_parts = sentences[:max_sentences]
+        return " ".join(tldr_parts).strip()
+
+    def bold_company_names(escaped_html, company_list):
+        """Wrap known company names in <strong> tags (single-pass, longest-match)."""
+        import re
+        _legal_suffixes = re.compile(
+            r',?\s*\b(Inc\.?|LLC|Ltd\.?|Co\.?|Corp\.?|Corporation|Incorporated|Company|Stores|Entertainment)\b[.,]*\s*',
+            re.IGNORECASE,
+        )
+        names = set()
+        for c in company_list:
+            clean = _legal_suffixes.sub("", c).strip().rstrip(",. ")
+            clean = re.sub(r'\.\w+$', '', clean)
+            if clean and len(clean) > 2:
+                names.add(clean)
+            first_word = clean.split()[0] if clean else ""
+            if first_word and len(first_word) > 3 and first_word != clean:
+                names.add(first_word)
+        escaped_names = sorted(
+            [html_escape.escape(n) for n in names], key=len, reverse=True
+        )
+        alt = "|".join(re.escape(n) for n in escaped_names)
+        if not alt:
+            return escaped_html
+        pattern = re.compile(r'(?<!\w)(' + alt + r')(?!\w)')
+        # Single pass: only bold text outside of HTML tags
+        parts = re.split(r'(<[^>]*>)', escaped_html)
+        for i, part in enumerate(parts):
+            if not part.startswith("<"):
+                parts[i] = pattern.sub(r'<strong>\1</strong>', part)
+        return "".join(parts)
+
+    brief_tldr = extract_tldr(brief)
+    brief_rest = brief[len(brief_tldr):].strip() if brief_tldr != brief else ""
+
     key_themes = executive.get("key_themes", [])
     trends = executive.get("trends", [])
     ws_opportunities = executive.get("white_space_opportunities", [])
@@ -195,49 +273,199 @@ def generate_v2_html(data, output_path):
             """
         cards_html += "</div></div>"
 
-    # Key themes as horizontal pill/tag cards (colored left border)
+    # Key themes: scannable headline + smaller detail text
     themes_html = ""
     if key_themes:
-        themes_html = '<div class="grid gap-3 sm:grid-cols-2">' + "".join(
-            f'<div class="flex rounded-lg border border-slate-200 bg-white p-4 border-l-4 border-l-indigo-500 hover:border-l-indigo-600 transition-colors"><p class="text-sm text-slate-700 leading-relaxed">{bold_lead(t)}</p></div>'
-            for t in key_themes
-        ) + '</div>'
+        theme_cards = []
+        for t in key_themes:
+            if ":" in t:
+                idx = t.index(":")
+                headline = t[:idx].strip()
+                detail = t[idx + 1:].strip()
+                theme_cards.append(
+                    f'<div class="rounded-lg border border-slate-200 bg-white p-4 border-l-4 border-l-indigo-500 hover:border-l-indigo-600 hover:shadow-sm transition-all">'
+                    f'<h4 class="font-semibold text-slate-900 text-sm mb-1.5">{html_escape.escape(headline)}</h4>'
+                    f'<p class="text-xs text-slate-500 leading-relaxed">{html_escape.escape(detail)}</p>'
+                    f'</div>'
+                )
+            else:
+                theme_cards.append(
+                    f'<div class="rounded-lg border border-slate-200 bg-white p-4 border-l-4 border-l-indigo-500 hover:border-l-indigo-600 hover:shadow-sm transition-all">'
+                    f'<p class="text-sm text-slate-700 leading-relaxed">{html_escape.escape(t)}</p>'
+                    f'</div>'
+                )
+        themes_html = '<div class="grid gap-3 sm:grid-cols-2">' + "".join(theme_cards) + '</div>'
 
-    # Trends section - numbered cards with gradient
+    # Company short-name + avatar color mapping for impact pills
+    import re as _re
+    _legal_sfx = _re.compile(
+        r',?\s*\b(Inc\.?|LLC|Ltd\.?|Co\.?|Corp\.?|Corporation|Incorporated|Company|Stores|Entertainment)\b[.,]*\s*',
+        _re.IGNORECASE,
+    )
+    _generic_words = {"wholesale", "holdings", "group", "enterprises", "industries", "international", "services"}
+    company_pill_info = []  # [(search_pattern, display_name, initial, color_hex)]
+    for ci, c in enumerate(companies):
+        clean = _legal_sfx.sub("", c).strip().rstrip(",. ")
+        clean = _re.sub(r'\.\w+$', '', clean)
+        words = clean.split() if clean else [c]
+        first_word = words[0]
+        display = first_word if len(words) > 1 and words[-1].lower() in _generic_words else (clean or c)
+        search_key = first_word.lower()
+        company_pill_info.append((search_key, display, display[0], _avatar_color(ci)))
+
+    def detect_company_pills(text):
+        pills = []
+        text_lower = text.lower()
+        for search_key, display, initial, color in company_pill_info:
+            if _re.search(r'(?<!\w)' + _re.escape(search_key) + r'(?!\w)', text_lower):
+                pills.append(
+                    f'<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium text-white" '
+                    f'style="background:{color}">{html_escape.escape(initial)}&nbsp;{html_escape.escape(display)}</span>'
+                )
+        return "".join(pills)
+
+    # Trends section - numbered cards with company impact pills
     trends_html = ""
     if trends:
-        trends_html = '<div class="space-y-3">' + "".join(
-            f'<div class="flex gap-4 rounded-lg bg-gradient-to-r from-slate-50 to-white border border-slate-200 p-4 items-start">'
-            f'<span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-indigo-100 text-indigo-700 font-semibold text-sm">{i}</span>'
-            f'<p class="text-sm text-slate-700 leading-relaxed flex-1">{bold_lead(t)}</p>'
-            f'</div>'
-            for i, t in enumerate(trends, 1)
-        ) + '</div>'
+        card_items = []
+        for i, t in enumerate(trends, 1):
+            pills = detect_company_pills(t)
+            pills_row = f'<div class="flex flex-wrap gap-1.5 mt-2.5">{pills}</div>' if pills else ""
+            card_items.append(
+                f'<div class="flex gap-4 rounded-lg bg-gradient-to-r from-slate-50 to-white border border-slate-200 p-4 items-start">'
+                f'<span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-indigo-100 text-indigo-700 font-semibold text-sm">{i}</span>'
+                f'<div class="flex-1">'
+                f'<p class="text-sm text-slate-700 leading-relaxed">{bold_lead(t)}</p>'
+                f'{pills_row}'
+                f'</div>'
+                f'</div>'
+            )
+        trends_html = '<div class="space-y-3">' + "".join(card_items) + '</div>'
 
     # White Space Opportunities (Option B) - numbered circle badge + colored sidebar stripe
     stripe_color = {"Low": "border-l-emerald-500", "Medium": "border-l-amber-500", "High": "border-l-rose-500"}
+    risk_badge_colors = {
+        "High": ("bg-rose-50 border-rose-200", "text-rose-700 bg-rose-100 border-rose-200"),
+        "Medium": ("bg-amber-50 border-amber-200", "text-amber-700 bg-amber-100 border-amber-200"),
+        "Low": ("bg-emerald-50 border-emerald-200", "text-emerald-700 bg-emerald-100 border-emerald-200"),
+    }
+
+    difficulty_badge = {
+        "High": "text-rose-700 bg-rose-50 border-rose-200",
+        "Medium": "text-amber-700 bg-amber-50 border-amber-200",
+        "Low": "text-emerald-700 bg-emerald-50 border-emerald-200",
+    }
+
     ws_opps_html = ""
     if ws_opportunities:
         ws_opps_html = '<div class="space-y-4">'
         for i, opp in enumerate(ws_opportunities, 1):
             opportunity = html_escape.escape(opp.get("opportunity", ""))
-            why = html_escape.escape(opp.get("why_it_exists", ""))
+            opp_raw = opp.get("opportunity", "")
+            why_raw = opp.get("why_it_exists", "")
+            why = html_escape.escape(why_raw)
             closest = html_escape.escape(opp.get("who_is_closest", ""))
             difficulty = opp.get("entry_difficulty", "")
             stripe = stripe_color.get(difficulty, "border-l-slate-400")
+            diff_cls = difficulty_badge.get(difficulty, "text-slate-600 bg-slate-50 border-slate-200")
+
+            # Extract first sentence as preview for "Why it exists"
+            why_sentences = _re.split(r'(?<=[.!?])\s+(?=[A-Z])', why_raw.strip())
+            why_preview = html_escape.escape(why_sentences[0]) if why_sentences else why
+            why_has_more = len(why_sentences) > 1
+
+            # Company pills from the full card text
+            full_text = opp_raw + " " + opp.get("why_it_exists", "") + " " + opp.get("who_is_closest", "")
+            pills = detect_company_pills(full_text)
+
+            matched_overlay = None
+            for ro_key, ro_val in risk_overlay_map.items():
+                if opp_raw and opp_raw in ro_key:
+                    matched_overlay = ro_val
+                    break
+
             ws_opps_html += (
-                f'<div class="flex rounded-lg border border-slate-200 bg-white {stripe} border-l-4 overflow-hidden">'
-                f'<div class="p-5 flex-1">'
+                f'<div class="rounded-lg border border-slate-200 bg-white {stripe} border-l-4 overflow-hidden">'
+                f'<div class="p-5">'
+                # Title row with number badge, title, and difficulty badge inline
                 f'<div class="flex items-start gap-3 mb-3">'
                 f'<span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-indigo-600 text-white font-bold text-sm">{i}</span>'
-                f'<h4 class="font-semibold text-slate-900 text-base leading-snug pt-0.5">{opportunity}</h4>'
+                f'<div class="flex-1 min-w-0">'
+                f'<div class="flex items-start justify-between gap-3">'
+                f'<h4 class="font-semibold text-slate-900 text-base leading-snug">{opportunity}</h4>'
+                f'<span class="shrink-0 px-2.5 py-0.5 rounded-full text-xs font-semibold border {diff_cls}">{html_escape.escape(difficulty)} Difficulty</span>'
                 f'</div>'
-                f'<p class="text-sm text-slate-600 mb-2 pl-12"><span class="font-medium text-slate-700">Why it exists:</span> {why}</p>'
-                f'<p class="text-sm text-slate-600 pl-12"><span class="font-medium text-slate-700">Best positioned:</span> {closest}</p>'
                 f'</div>'
-                f'<div class="w-20 shrink-0 flex items-center justify-center py-4 bg-slate-100 border-l border-slate-200"><span class="text-xs font-semibold text-slate-600 uppercase">{html_escape.escape(difficulty)}</span></div>'
                 f'</div>'
             )
+
+            # "Why it exists" with truncation
+            if why_has_more:
+                uid = f"ws-why-{i}"
+                ws_opps_html += (
+                    f'<div class="pl-12 mb-3">'
+                    f'<p class="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Why it exists</p>'
+                    f'<p class="text-sm text-slate-600 leading-relaxed" id="{uid}-preview">{why_preview} '
+                    f'<button onclick="document.getElementById(\'{uid}-preview\').style.display=\'none\';document.getElementById(\'{uid}-full\').style.display=\'block\';" '
+                    f'class="text-indigo-600 hover:text-indigo-700 font-medium text-sm">Show more</button></p>'
+                    f'<div id="{uid}-full" style="display:none">'
+                    f'<p class="text-sm text-slate-600 leading-relaxed">{why} '
+                    f'<button onclick="document.getElementById(\'{uid}-full\').style.display=\'none\';document.getElementById(\'{uid}-preview\').style.display=\'block\';" '
+                    f'class="text-indigo-600 hover:text-indigo-700 font-medium text-sm">Show less</button></p>'
+                    f'</div>'
+                    f'</div>'
+                )
+            else:
+                ws_opps_html += (
+                    f'<div class="pl-12 mb-3">'
+                    f'<p class="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Why it exists</p>'
+                    f'<p class="text-sm text-slate-600 leading-relaxed">{why}</p>'
+                    f'</div>'
+                )
+
+            # "Best positioned" as a highlighted row with company pills
+            ws_opps_html += (
+                f'<div class="ml-12 rounded-lg bg-slate-50 border border-slate-100 px-4 py-3 flex flex-col gap-2">'
+                f'<div class="flex items-start gap-2">'
+                f'<svg class="w-4 h-4 text-indigo-500 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">'
+                f'<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/></svg>'
+                f'<p class="text-sm text-slate-700"><span class="font-medium text-slate-900">Best positioned:</span> {closest}</p>'
+                f'</div>'
+            )
+            if pills:
+                ws_opps_html += f'<div class="flex flex-wrap gap-1.5">{pills}</div>'
+            ws_opps_html += '</div>'
+
+            ws_opps_html += '</div>'  # close p-5
+
+            if matched_overlay:
+                rl = matched_overlay.get("risk_level", "Medium")
+                panel_cls, badge_cls = risk_badge_colors.get(rl, ("bg-slate-50 border-slate-200", "text-slate-700 bg-slate-100 border-slate-200"))
+                precedent = html_escape.escape(matched_overlay.get("historical_precedent", ""))
+                mitigation = html_escape.escape(matched_overlay.get("mitigation_guidance", ""))
+                ws_opps_html += (
+                    f'<details class="border-t border-slate-100 group/risk">'
+                    f'<summary class="px-5 py-3 text-sm font-medium text-slate-500 cursor-pointer hover:bg-slate-50 transition-colors flex items-center gap-2">'
+                    f'<svg class="w-4 h-4 text-slate-400 shrink-0 transition-transform group-open/risk:rotate-90" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>'
+                    f'<span>Historical Risk Assessment</span>'
+                    f'<span class="ml-auto px-2.5 py-0.5 rounded-full text-xs font-semibold border {badge_cls}">{html_escape.escape(rl)} Risk</span>'
+                    f'</summary>'
+                    f'<div class="px-5 pb-5 pt-1">'
+                    f'<div class="grid md:grid-cols-2 gap-4">'
+                    f'<div class="rounded-lg {panel_cls} border p-4">'
+                    f'<p class="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Historical Precedent</p>'
+                    f'<p class="text-sm text-slate-700 leading-relaxed">{precedent}</p>'
+                    f'</div>'
+                    f'<div class="rounded-lg bg-slate-50 border border-slate-200 p-4">'
+                    f'<p class="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Mitigation Guidance</p>'
+                    f'<p class="text-sm text-slate-700 leading-relaxed">{mitigation}</p>'
+                    f'</div>'
+                    f'</div>'
+                    f'</div>'
+                    f'</details>'
+                )
+
+            ws_opps_html += '</div>'
         ws_opps_html += '</div>'
 
     # White Space Matrix (Option C) - icons, color, count badge
@@ -305,84 +533,426 @@ def generate_v2_html(data, output_path):
                 next_steps_html += '</div>'
                 next_steps_html += f'<p class="text-xs text-slate-500 mb-4">{desc}</p>'
                 next_steps_html += '<div class="space-y-3">'
-                for item in items:
+                for j, item in enumerate(items):
                     action = html_escape.escape(item.get("action", ""))
                     rationale = html_escape.escape(item.get("rationale", ""))
                     priority = item.get("priority", "")
                     dot = pri_dot.get(priority, "bg-slate-400")
+                    rid = f"ns-{key}-{j}"
                     next_steps_html += (
-                        f'<div class="rounded-lg border border-slate-100 bg-slate-50/50 p-4">'
-                        f'<div class="flex items-start gap-3 mb-2">'
+                        f'<div class="rounded-lg border border-slate-100 bg-slate-50/50 p-4 cursor-pointer hover:border-slate-300 transition-colors" '
+                        f'onclick="var el=document.getElementById(\'{rid}\');el.style.display=el.style.display===\'none\'?\'block\':\'none\'">'
+                        f'<div class="flex items-start gap-3">'
                         f'<span class="mt-1.5 h-2 w-2 shrink-0 rounded-full {dot}"></span>'
                         f'<p class="text-sm font-medium text-slate-900 flex-1">{action}</p>'
+                        f'<svg class="w-4 h-4 text-slate-400 shrink-0 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>'
                         f'</div>'
-                        f'<p class="text-xs text-slate-500 pl-5">{rationale}</p>'
+                        f'<p id="{rid}" class="text-xs text-slate-500 pl-5 mt-2" style="display:none">{rationale}</p>'
                         f'</div>'
                     )
                 next_steps_html += '</div></div>'
         next_steps_html += '</div>'
 
-    # Post-Mortem Intelligence section
-    postmortem = data.get("postmortem_brief", {})
-    graveyard_cos = data.get("graveyard_companies", [])
+    # =========================================================================
+    # AVIS-specific analytical frameworks
+    # =========================================================================
+    avis_frameworks_html = ""
+    if is_avis:
+        avis_parts = []
+
+        # --- Moat Analysis Grid ---
+        moat_grid = executive.get("moat_analysis_grid", [])
+        if moat_grid:
+            moat_type_labels = {
+                "brand": ("Brand", "indigo"),
+                "data": ("Data", "emerald"),
+                "switching_costs": ("Switching Costs", "violet"),
+                "ip_patents": ("IP & Patents", "blue"),
+                "network_effects": ("Network Effects", "amber"),
+                "regulatory": ("Regulatory", "rose"),
+                "scale_economies": ("Scale Economies", "cyan"),
+            }
+            strength_colors = {
+                "Strong": "bg-emerald-100 text-emerald-800 border-emerald-200",
+                "Moderate": "bg-amber-100 text-amber-800 border-amber-200",
+                "Weak": "bg-rose-100 text-rose-800 border-rose-200",
+                "None": "bg-slate-100 text-slate-500 border-slate-200",
+            }
+            durability_colors = {
+                "High": "bg-emerald-600",
+                "Medium": "bg-amber-500",
+                "Low": "bg-rose-500",
+            }
+
+            avis_parts.append(
+                '<details class="print-expand border-t border-slate-200" id="moat-grid">'
+                '<summary class="p-6 font-semibold text-slate-800 cursor-pointer hover:bg-slate-50 transition-colors">'
+                'AVIS: Moat Analysis Grid</summary>'
+                '<div class="px-6 pb-6 pt-2">'
+                '<p class="text-sm text-slate-500 mb-4">Defensibility assessment across 7 moat dimensions per competitor.</p>'
+                '<div class="space-y-4">'
+            )
+            for entry in moat_grid:
+                co = html_escape.escape(entry.get("company", ""))
+                dur = entry.get("overall_durability", "Medium")
+                dur_dot = durability_colors.get(dur, "bg-slate-400")
+                dur_rationale = html_escape.escape(entry.get("durability_rationale", ""))
+                sources = entry.get("moat_sources", {})
+
+                moat_cells = ""
+                for mtype, (label, _color) in moat_type_labels.items():
+                    src = sources.get(mtype, {})
+                    if isinstance(src, dict):
+                        strength = src.get("strength", "None")
+                        detail = html_escape.escape(src.get("detail", ""))
+                    else:
+                        strength = str(src) if src else "None"
+                        detail = ""
+                    cls = strength_colors.get(strength, strength_colors["None"])
+                    moat_cells += (
+                        f'<div class="flex items-center justify-between py-2 border-b border-slate-100 last:border-0">'
+                        f'<span class="text-sm text-slate-600 font-medium">{label}</span>'
+                        f'<div class="flex items-center gap-2">'
+                        f'<span class="px-2 py-0.5 rounded-full text-xs font-semibold border {cls}">{html_escape.escape(strength)}</span>'
+                        f'</div>'
+                        f'</div>'
+                    )
+                    if detail:
+                        moat_cells += f'<p class="text-xs text-slate-500 pb-2 -mt-1 pl-2">{detail}</p>'
+
+                avis_parts.append(
+                    f'<div class="rounded-xl border border-slate-200 bg-white overflow-hidden">'
+                    f'<div class="bg-slate-800 px-5 py-3 flex items-center justify-between">'
+                    f'<h4 class="font-semibold text-white">{co}</h4>'
+                    f'<div class="flex items-center gap-2">'
+                    f'<span class="h-2.5 w-2.5 rounded-full {dur_dot}"></span>'
+                    f'<span class="text-xs text-slate-300 font-medium">{html_escape.escape(dur)} Durability</span>'
+                    f'</div></div>'
+                    f'<div class="p-5">{moat_cells}'
+                    f'<p class="text-xs text-slate-500 mt-3 italic">{dur_rationale}</p>'
+                    f'</div></div>'
+                )
+            avis_parts.append('</div></div></details>')
+
+        # --- Threat Matrix ---
+        threat_matrix = executive.get("threat_matrix", [])
+        if threat_matrix:
+            avis_parts.append(
+                '<details class="print-expand border-t border-slate-200" id="threat-matrix">'
+                '<summary class="p-6 font-semibold text-slate-800 cursor-pointer hover:bg-slate-50 transition-colors">'
+                'AVIS: Threat Matrix</summary>'
+                '<div class="px-6 pb-6 pt-2">'
+                '<p class="text-sm text-slate-500 mb-4">Head-to-head competitive risk assessment per company.</p>'
+                '<div class="grid gap-4 md:grid-cols-2">'
+            )
+            for entry in threat_matrix:
+                co = html_escape.escape(entry.get("company", ""))
+                beats = entry.get("beats_others_on", [])
+                loses = entry.get("loses_to_others_on", [])
+                biggest = html_escape.escape(entry.get("biggest_threat_from", ""))
+                stealth = html_escape.escape(entry.get("stealth_threats", ""))
+
+                beats_html = "".join(
+                    f'<span class="inline-block px-2 py-0.5 rounded-full text-xs bg-emerald-100 text-emerald-800 border border-emerald-200 mr-1 mb-1">{html_escape.escape(b)}</span>'
+                    for b in beats
+                )
+                loses_html = "".join(
+                    f'<span class="inline-block px-2 py-0.5 rounded-full text-xs bg-rose-100 text-rose-800 border border-rose-200 mr-1 mb-1">{html_escape.escape(l)}</span>'
+                    for l in loses
+                )
+
+                avis_parts.append(
+                    f'<div class="rounded-xl border border-slate-200 bg-white p-5">'
+                    f'<h4 class="font-semibold text-slate-900 mb-3">{co}</h4>'
+                    f'<div class="space-y-2 text-sm">'
+                    f'<div><span class="text-xs font-semibold text-slate-500 uppercase">Wins on:</span><div class="mt-1">{beats_html or "<span class=\'text-slate-400 text-xs\'>None identified</span>"}</div></div>'
+                    f'<div><span class="text-xs font-semibold text-slate-500 uppercase">Loses on:</span><div class="mt-1">{loses_html or "<span class=\'text-slate-400 text-xs\'>None identified</span>"}</div></div>'
+                    f'<div class="pt-2 border-t border-slate-100"><span class="text-xs font-semibold text-slate-500 uppercase">Biggest threat:</span><p class="text-xs text-slate-600 mt-0.5">{biggest}</p></div>'
+                )
+                if stealth and stealth.lower() != "none identified":
+                    avis_parts.append(
+                        f'<div><span class="text-xs font-semibold text-amber-600 uppercase">Stealth threats:</span>'
+                        f'<p class="text-xs text-slate-600 mt-0.5">{stealth}</p></div>'
+                    )
+                avis_parts.append('</div></div>')
+
+            avis_parts.append('</div></div></details>')
+
+        # --- Value Curve Assessment ---
+        value_curve = executive.get("value_curve_assessment", {})
+        dimensions = value_curve.get("dimensions", [])
+        scores = value_curve.get("company_scores", {})
+        if dimensions and scores:
+            parity = value_curve.get("parity_zones", [])
+            diff = value_curve.get("differentiation_zones", [])
+            ws_dims = value_curve.get("white_space_dimensions", [])
+
+            # Build HTML table
+            header_cells = '<th class="border border-slate-200 p-2 bg-slate-100 text-xs font-semibold text-slate-600">Dimension</th>'
+            for co in companies:
+                header_cells += f'<th class="border border-slate-200 p-2 bg-slate-100 text-xs font-semibold text-slate-600">{html_escape.escape(co)}</th>'
+
+            body_rows = ""
+            score_colors = {5: "bg-emerald-500", 4: "bg-emerald-400", 3: "bg-amber-400", 2: "bg-orange-400", 1: "bg-rose-400"}
+            for dim in dimensions:
+                dim_cls = ""
+                if dim in ws_dims:
+                    dim_cls = " bg-rose-50"
+                elif dim in diff:
+                    dim_cls = " bg-indigo-50"
+                elif dim in parity:
+                    dim_cls = " bg-slate-50"
+
+                body_rows += f'<tr class="{dim_cls}"><td class="border border-slate-200 p-2 text-sm font-medium text-slate-700">{html_escape.escape(dim)}</td>'
+                for co in companies:
+                    co_scores = scores.get(co, {})
+                    score = co_scores.get(dim, "—")
+                    if isinstance(score, (int, float)):
+                        bg = score_colors.get(int(score), "bg-slate-300")
+                        body_rows += f'<td class="border border-slate-200 p-2 text-center"><span class="inline-flex h-7 w-7 items-center justify-center rounded-full text-white text-xs font-bold {bg}">{score}</span></td>'
+                    else:
+                        body_rows += f'<td class="border border-slate-200 p-2 text-center text-slate-400 text-sm">{html_escape.escape(str(score))}</td>'
+                body_rows += '</tr>'
+
+            legend_items = []
+            if parity:
+                legend_items.append(f'<span class="inline-block px-2 py-0.5 rounded bg-slate-100 text-xs text-slate-600 border border-slate-200">Parity zones: {", ".join(html_escape.escape(p) for p in parity[:3])}</span>')
+            if diff:
+                legend_items.append(f'<span class="inline-block px-2 py-0.5 rounded bg-indigo-50 text-xs text-indigo-700 border border-indigo-200">Differentiation: {", ".join(html_escape.escape(d) for d in diff[:3])}</span>')
+            if ws_dims:
+                legend_items.append(f'<span class="inline-block px-2 py-0.5 rounded bg-rose-50 text-xs text-rose-700 border border-rose-200">White space: {", ".join(html_escape.escape(w) for w in ws_dims[:3])}</span>')
+            legend_html = " ".join(legend_items) if legend_items else ""
+
+            avis_parts.append(
+                '<details class="print-expand border-t border-slate-200" id="value-curve">'
+                '<summary class="p-6 font-semibold text-slate-800 cursor-pointer hover:bg-slate-50 transition-colors">'
+                'AVIS: Feature &amp; Value Curve</summary>'
+                '<div class="px-6 pb-6 pt-2">'
+                '<p class="text-sm text-slate-500 mb-2">Scores from 1 (laggard) to 5 (leader) across key competitive dimensions.</p>'
+                f'<div class="flex flex-wrap gap-2 mb-4">{legend_html}</div>'
+                '<div class="overflow-x-auto">'
+                f'<table class="min-w-full border border-slate-200 text-sm"><thead><tr>{header_cells}</tr></thead><tbody>{body_rows}</tbody></table>'
+                '</div></div></details>'
+            )
+
+        if avis_parts:
+            avis_frameworks_html = "\n".join(avis_parts)
+
+    # Post-Mortem Intelligence section — comprehensive redesign
     postmortem_html = ""
-    if postmortem and postmortem.get("failure_patterns"):
-        pm_parts = []
-        pm_parts.append(
-            '<section id="postmortem" class="mb-12 animate-fade-in">'
-            '<div class="rounded-xl border border-slate-300 bg-slate-50 shadow-sm overflow-hidden">'
-            '<div class="p-6 md:p-8">'
-            '<h2 class="text-2xl font-display font-bold text-slate-800 mb-2">Post-Mortem Intelligence</h2>'
-            f'<p class="text-sm text-slate-500 mb-6">Lessons from {len(graveyard_cos)} failed companies in this sector</p>'
+    if has_graveyard:
+        pm = []
+
+        # --- Dark header with company roster ---
+        co_badges = "".join(
+            f'<span class="px-3 py-1 rounded-full text-xs font-medium bg-white/10 text-slate-300 border border-white/20">'
+            f'{html_escape.escape(c.get("name", "") if isinstance(c, dict) else str(c))}</span>'
+            for c in graveyard_cos
         )
-        # Failure patterns
-        fp = postmortem.get("failure_patterns", [])
-        if fp:
-            pm_parts.append('<div class="mb-6"><h3 class="text-sm font-semibold text-slate-600 uppercase tracking-wider mb-3">Failure Patterns</h3><div class="space-y-2">')
-            for p in fp:
-                pm_parts.append(f'<div class="flex gap-2 text-sm text-slate-700"><span class="text-red-500 font-bold shrink-0">!</span><span>{html_escape.escape(p)}</span></div>')
-            pm_parts.append('</div></div>')
-        # Structural vulnerabilities
-        sv = postmortem.get("structural_vulnerabilities", [])
-        if sv:
-            pm_parts.append('<div class="mb-6"><h3 class="text-sm font-semibold text-slate-600 uppercase tracking-wider mb-3">Structural Vulnerabilities</h3><div class="space-y-2">')
-            for v in sv:
-                pm_parts.append(f'<div class="flex gap-2 text-sm text-slate-600"><span class="text-amber-500 shrink-0">&#x26A0;</span><span>{html_escape.escape(v)}</span></div>')
-            pm_parts.append('</div></div>')
-        # Cautionary narratives
+        pm.append(
+            '<section id="postmortem" class="mb-12 animate-fade-in">'
+            '<div class="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden">'
+            '<div class="bg-gradient-to-br from-slate-800 via-slate-900 to-slate-800 px-6 py-8 md:px-8">'
+            '<div class="flex items-start gap-3 mb-3">'
+            '<svg class="w-7 h-7 text-rose-400 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">'
+            '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" '
+            'd="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"/>'
+            '</svg>'
+            '<div>'
+            '<h2 class="text-2xl font-display font-bold text-white mb-1">Post-Mortem Intelligence</h2>'
+            f'<p class="text-slate-400 text-sm">What {len(graveyard_cos)} failed competitors reveal about the risks ahead</p>'
+            '</div>'
+            '</div>'
+            f'<div class="flex flex-wrap gap-2 mt-4">{co_badges}</div>'
+            '</div>'
+        )
+
+        # --- Stat summary bar ---
+        fp_count = len(postmortem.get("failure_patterns", []))
+        sv_count = len(postmortem.get("structural_vulnerabilities", []))
+        cn_count = len(postmortem.get("cautionary_narratives", []))
+        ro_count = len(postmortem.get("risk_overlays", []))
+        sp_count = len(postmortem.get("survival_principles", []))
+        pm.append(
+            '<div class="grid grid-cols-2 md:grid-cols-5 gap-px bg-slate-200 border-b border-slate-200">'
+            f'<div class="bg-slate-50 px-4 py-3 text-center"><p class="text-xl font-bold text-slate-900">{cn_count}</p><p class="text-xs text-slate-500 font-medium">Case Studies</p></div>'
+            f'<div class="bg-slate-50 px-4 py-3 text-center"><p class="text-xl font-bold text-slate-900">{fp_count}</p><p class="text-xs text-slate-500 font-medium">Failure Patterns</p></div>'
+            f'<div class="bg-slate-50 px-4 py-3 text-center"><p class="text-xl font-bold text-slate-900">{sv_count}</p><p class="text-xs text-slate-500 font-medium">Vulnerabilities</p></div>'
+            f'<div class="bg-slate-50 px-4 py-3 text-center"><p class="text-xl font-bold text-slate-900">{ro_count}</p><p class="text-xs text-slate-500 font-medium">Risk Overlays</p></div>'
+            f'<div class="bg-slate-50 px-4 py-3 text-center"><p class="text-xl font-bold text-slate-900">{sp_count}</p><p class="text-xs text-slate-500 font-medium">Survival Rules</p></div>'
+            '</div>'
+        )
+
+        pm.append('<div class="p-6 md:p-8">')
+
+        # --- Cautionary Narratives (hero content — the stories that stick) ---
         cn = postmortem.get("cautionary_narratives", [])
         if cn:
-            pm_parts.append('<div class="mb-6"><h3 class="text-sm font-semibold text-slate-600 uppercase tracking-wider mb-3">Cautionary Narratives</h3><div class="space-y-4">')
+            pm.append(
+                '<div class="mb-10">'
+                '<h3 class="text-lg font-display font-semibold text-slate-800 mb-1">Cautionary Narratives</h3>'
+                '<p class="text-sm text-slate-500 mb-6">The stories behind each failure &mdash; from peak to collapse</p>'
+                '<div class="space-y-6">'
+            )
             for n in cn:
                 co = html_escape.escape(n.get("company", ""))
                 fm = html_escape.escape(n.get("failure_mode", ""))
                 pp = html_escape.escape(n.get("peak_position", ""))
                 narr = html_escape.escape(n.get("narrative", ""))
                 lesson = html_escape.escape(n.get("key_lesson", ""))
-                fm_badge = f'<span class="text-xs px-2 py-0.5 rounded bg-slate-100 text-slate-600">{fm}</span>' if fm else ""
-                pp_line = f'<p class="text-sm text-slate-600 mb-1"><strong>At their peak:</strong> {pp}</p>' if pp else ""
-                narr_line = f'<p class="text-sm text-slate-600 mb-2">{narr}</p>' if narr else ""
-                lesson_line = f'<p class="text-sm text-slate-800 bg-slate-50 rounded p-2 border border-slate-200"><strong>Key lesson:</strong> {lesson}</p>' if lesson else ""
-                pm_parts.append(
-                    f'<div class="rounded-lg border border-slate-200 bg-white p-4">'
-                    f'<div class="flex items-start justify-between mb-2"><h4 class="font-semibold text-slate-900 text-sm">{co}</h4>'
-                    f'{fm_badge}'
-                    f'</div>'
-                    f'{pp_line}'
-                    f'{narr_line}'
-                    f'{lesson_line}'
+
+                pm.append(
+                    f'<div class="rounded-xl border border-slate-200 overflow-hidden hover:shadow-md transition-shadow">'
+                    f'<div class="bg-gradient-to-r from-slate-800 to-slate-700 px-5 py-4 flex items-center justify-between">'
+                    f'<h4 class="font-semibold text-white text-base">{co}</h4>'
+                    f'<span class="text-xs px-3 py-1 rounded-full bg-rose-500/20 text-rose-300 font-medium border border-rose-500/30">{fm}</span>'
                     f'</div>'
                 )
-            pm_parts.append('</div></div>')
-        # Survival principles
+                if pp:
+                    pm.append(
+                        f'<div class="px-5 py-3 bg-slate-50 border-b border-slate-200">'
+                        f'<p class="text-sm text-slate-600"><span class="font-medium text-slate-500">At their peak:</span> {pp}</p>'
+                        f'</div>'
+                    )
+                if narr:
+                    pm.append(
+                        f'<div class="px-5 py-4">'
+                        f'<p class="text-sm text-slate-700 leading-relaxed">{narr}</p>'
+                        f'</div>'
+                    )
+                if lesson:
+                    pm.append(
+                        f'<div class="mx-5 mb-5 rounded-lg bg-amber-50 border border-amber-200 p-4">'
+                        f'<div class="flex gap-3">'
+                        f'<svg class="w-5 h-5 text-amber-500 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">'
+                        f'<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" '
+                        f'd="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>'
+                        f'</svg>'
+                        f'<p class="text-sm text-amber-900 leading-relaxed"><strong>Key lesson:</strong> {lesson}</p>'
+                        f'</div>'
+                        f'</div>'
+                    )
+                pm.append('</div>')
+            pm.append('</div></div>')
+
+        # --- Failure Patterns (collapsible, rose-tinted cards) ---
+        fp = postmortem.get("failure_patterns", [])
+        if fp:
+            pm.append(
+                '<details class="mb-8 group" open>'
+                '<summary class="flex items-center gap-2 cursor-pointer mb-4 select-none">'
+                '<svg class="w-5 h-5 text-rose-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">'
+                '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>'
+                '</svg>'
+                f'<h3 class="text-lg font-display font-semibold text-slate-800">Failure Patterns</h3>'
+                f'<span class="text-xs text-slate-400 ml-1">({len(fp)} identified)</span>'
+                '</summary>'
+                '<div class="space-y-3">'
+            )
+            for p in fp:
+                pm.append(
+                    f'<div class="rounded-lg border border-rose-100 bg-rose-50/50 p-4 border-l-4 border-l-rose-400">'
+                    f'<p class="text-sm text-slate-700 leading-relaxed">{bold_lead(p)}</p>'
+                    f'</div>'
+                )
+            pm.append('</div></details>')
+
+        # --- Structural Vulnerabilities (collapsible, amber-tinted cards) ---
+        sv = postmortem.get("structural_vulnerabilities", [])
+        if sv:
+            pm.append(
+                '<details class="mb-8 group" open>'
+                '<summary class="flex items-center gap-2 cursor-pointer mb-4 select-none">'
+                '<svg class="w-5 h-5 text-amber-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">'
+                '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" '
+                'd="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"/>'
+                '</svg>'
+                f'<h3 class="text-lg font-display font-semibold text-slate-800">Structural Vulnerabilities</h3>'
+                f'<span class="text-xs text-slate-400 ml-1">({len(sv)} identified)</span>'
+                '</summary>'
+                '<div class="space-y-3">'
+            )
+            for v in sv:
+                pm.append(
+                    f'<div class="rounded-lg border border-amber-100 bg-amber-50/50 p-4 border-l-4 border-l-amber-400">'
+                    f'<p class="text-sm text-slate-700 leading-relaxed">{bold_lead(v)}</p>'
+                    f'</div>'
+                )
+            pm.append('</div></details>')
+
+        # --- Survival Principles (numbered, emerald-accented takeaway cards) ---
         sp = postmortem.get("survival_principles", [])
         if sp:
-            pm_parts.append('<div><h3 class="text-sm font-semibold text-slate-600 uppercase tracking-wider mb-3">Survival Principles</h3><ol class="list-decimal list-inside space-y-2">')
-            for p in sp:
-                pm_parts.append(f'<li class="text-sm text-slate-700">{html_escape.escape(p)}</li>')
-            pm_parts.append('</ol></div>')
-        pm_parts.append('</div></div></section>')
-        postmortem_html = "\n".join(pm_parts)
+            pm.append(
+                '<div class="mb-8">'
+                '<div class="flex items-center gap-2 mb-4">'
+                '<svg class="w-5 h-5 text-emerald-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">'
+                '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" '
+                'd="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>'
+                '</svg>'
+                '<h3 class="text-lg font-display font-semibold text-slate-800">Survival Principles</h3>'
+                '</div>'
+                '<div class="space-y-3">'
+            )
+            for i, p in enumerate(sp, 1):
+                pm.append(
+                    f'<div class="flex gap-4 rounded-lg bg-gradient-to-r from-emerald-50 to-white border border-emerald-100 p-4 items-start">'
+                    f'<span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-emerald-600 text-white font-bold text-sm">{i}</span>'
+                    f'<p class="text-sm text-slate-700 leading-relaxed flex-1">{bold_lead(p)}</p>'
+                    f'</div>'
+                )
+            pm.append('</div></div>')
+
+        pm.append('</div>')  # close p-6 md:p-8
+
+        # --- Graveyard Deep-Dive: parameter analysis cards with modals ---
+        if graveyard_analyses:
+            gy_param_ids = list(graveyard_analyses.keys())
+            gy_cards = '<div class="grid gap-4 md:grid-cols-2">'
+            for gpid in gy_param_ids:
+                ga = graveyard_analyses[gpid]
+                g_headline = html_escape.escape(ga.get("headline", "No headline."))
+                g_rankings = ga.get("rankings") or []
+                g_rank_lines = "".join(
+                    f'<div class="text-sm text-slate-600 py-1 px-2 rounded {"bg-slate-50" if r.get("rank", 0) % 2 == 0 else ""}">'
+                    f'{r.get("rank")}. {html_escape.escape(r.get("company", ""))}'
+                    + (f' &mdash; <span class="text-slate-500">{html_escape.escape(r.get("label", ""))}</span>' if r.get("label") else "")
+                    + "</div>"
+                    for r in g_rankings[:6]
+                )
+                g_conf = ga.get("confidence", "unknown")
+                g_dot = conf_dot.get(g_conf, "bg-slate-400")
+                g_esc_id = html_escape.escape(gpid).replace("'", "\\'")
+                g_rank_display = g_rank_lines if g_rank_lines else '<div class="text-sm text-slate-400">No rankings</div>'
+                g_btn = f"<button onclick=\"openParamModal('{g_esc_id}')\" class=\"w-full rounded-lg bg-slate-700 px-4 py-2.5 text-sm font-medium text-white hover:bg-slate-800 transition-colors\">Read Full Analysis</button>"
+                gy_cards += (
+                    f'<div class="group rounded-xl border border-slate-200 bg-white p-5 shadow-sm transition-all duration-200 hover:shadow-lg hover:border-slate-300 hover:-translate-y-0.5">'
+                    f'<div class="flex items-start gap-3 mb-2">'
+                    f'<span class="mt-1.5 h-2.5 w-2.5 shrink-0 rounded-full {g_dot}" title="{g_conf} confidence"></span>'
+                    f'<h3 class="font-semibold text-slate-900 flex-1">{html_escape.escape(ga.get("parameter_name", gpid))}</h3>'
+                    f'</div>'
+                    f'<p class="text-sm text-slate-700 mb-4 leading-relaxed pl-5">{g_headline}</p>'
+                    f'<div class="space-y-0.5 mb-4 pl-5">{g_rank_display}</div>'
+                    f'{g_btn}'
+                    f'</div>'
+                )
+            gy_cards += '</div>'
+
+            pm.append(
+                '<details class="border-t border-slate-200 print-expand">'
+                '<summary class="p-6 font-semibold text-slate-800 cursor-pointer hover:bg-slate-50 transition-colors flex items-center gap-2">'
+                '<svg class="w-5 h-5 text-slate-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">'
+                '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" '
+                'd="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>'
+                '</svg>'
+                f'<span>Graveyard Deep-Dive &mdash; {len(gy_param_ids)} Failure Parameters Analyzed</span>'
+                '</summary>'
+                f'<div class="px-6 pb-6 pt-2">{gy_cards}</div>'
+                '</details>'
+            )
+
+        pm.append('</div></section>')
+        postmortem_html = "\n".join(pm)
 
     total_time = metadata.get("total_elapsed_seconds", 0)
     time_str = f"{total_time:.0f}s" if total_time < 60 else f"{total_time / 60:.1f}m"
@@ -394,14 +964,31 @@ def generate_v2_html(data, output_path):
         conf_counts[c] = conf_counts.get(c, 0) + 1
     dominant_conf = max(conf_counts, key=conf_counts.get) if conf_counts else "medium"
 
-    # Hero header with venture context integrated
+    # Hero header variables
+    stats_grid_cols = "md:grid-cols-5" if has_graveyard else "md:grid-cols-4"
+    graveyard_stat_html = ""
+    if has_graveyard:
+        graveyard_stat_html = (
+            f'<div class="rounded-lg bg-white/5 border border-white/10 p-4 backdrop-blur-sm">'
+            f'<p class="text-slate-400 text-xs font-semibold uppercase tracking-wider mb-1">Graveyard</p>'
+            f'<p class="text-2xl font-bold text-rose-400">{len(graveyard_cos)}</p>'
+            f'</div>'
+        )
+
     venture_hero_html = ""
     if venture_context:
         venture_hero_html = (
-            f'<div class="mt-6 p-4 rounded-lg bg-amber-500/20 border border-amber-400/50">'
-            f'<p class="text-xs font-semibold text-amber-200 uppercase tracking-wide mb-1">Venture Context</p>'
+            f'<details class="mt-6 rounded-lg bg-amber-500/20 border border-amber-400/50 group/vc print-expand">'
+            f'<summary class="px-4 py-3 cursor-pointer flex items-center gap-2 select-none">'
+            f'<svg class="w-4 h-4 text-amber-300 shrink-0 transition-transform group-open/vc:rotate-90" fill="none" stroke="currentColor" viewBox="0 0 24 24">'
+            f'<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>'
+            f'<span class="text-xs font-semibold text-amber-200 uppercase tracking-wide">Venture Context</span>'
+            f'<span class="text-amber-300/60 text-xs ml-1">— Research context and key questions driving this analysis</span>'
+            f'</summary>'
+            f'<div class="px-4 pb-4 pt-1 border-t border-amber-400/30">'
             f'<p class="text-amber-50 text-sm leading-relaxed">{html_escape.escape(venture_context)}</p>'
             f'</div>'
+            f'</details>'
         )
 
     html = f"""<!DOCTYPE html>
@@ -459,13 +1046,13 @@ def generate_v2_html(data, output_path):
     <!-- Hero Header -->
     <header class="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white px-6 py-10 md:px-12 md:py-14">
         <div class="max-w-6xl mx-auto">
-            <h1 class="font-display text-4xl md:text-5xl font-bold tracking-tight mb-2">Relational Competitive Intelligence Report</h1>
+            <h1 class="font-display text-4xl md:text-5xl font-bold tracking-tight mb-2">{"AVIS " if is_avis else ""}Competitive Intelligence Report</h1>
             <p class="text-slate-300 text-base mb-6">{datetime.now().strftime("%B %d, %Y at %H:%M")}</p>
             <div class="flex flex-wrap gap-2 mb-6">
-                {"".join(f'<span class="px-4 py-1.5 rounded-full text-sm font-medium bg-white/10 border border-white/30 backdrop-blur-sm">{html_escape.escape(c)}</span>' for c in companies)}
+                {"".join(f'<span class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-sm font-medium bg-white/10 border border-white/30 backdrop-blur-sm"><span class="flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-xs font-bold" style="background:{_avatar_color(i)};color:white">{html_escape.escape(c[:1].upper())}</span>{html_escape.escape(c)}</span>' for i, c in enumerate(companies))}
             </div>
             <!-- Key stats row -->
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-2">
+            <div class="grid grid-cols-2 {stats_grid_cols} gap-4 mb-2">
                 <div class="rounded-lg bg-white/5 border border-white/10 p-4 backdrop-blur-sm">
                     <p class="text-slate-400 text-xs font-semibold uppercase tracking-wider mb-1">Companies</p>
                     <p class="text-2xl font-bold text-white">{num_companies}</p>
@@ -482,6 +1069,7 @@ def generate_v2_html(data, output_path):
                     <p class="text-slate-400 text-xs font-semibold uppercase tracking-wider mb-1">Duration</p>
                     <p class="text-2xl font-bold text-white">{time_str}</p>
                 </div>
+                {graveyard_stat_html}
             </div>
             {venture_hero_html}
         </div>
@@ -494,6 +1082,7 @@ def generate_v2_html(data, output_path):
             <a href="#trends" class="nav-link px-4 py-2 rounded-lg text-sm font-medium text-slate-600 hover:text-indigo-600 hover:bg-indigo-50 transition-colors">Trends</a>
             <a href="#white-space" class="nav-link px-4 py-2 rounded-lg text-sm font-medium text-slate-600 hover:text-indigo-600 hover:bg-indigo-50 transition-colors">White Space</a>
             <a href="#next-steps" class="nav-link px-4 py-2 rounded-lg text-sm font-medium text-slate-600 hover:text-indigo-600 hover:bg-indigo-50 transition-colors">Next Steps</a>
+            {'<a href="#moat-grid" class="nav-link px-4 py-2 rounded-lg text-sm font-medium text-slate-600 hover:text-indigo-600 hover:bg-indigo-50 transition-colors">Moat Grid</a><a href="#threat-matrix" class="nav-link px-4 py-2 rounded-lg text-sm font-medium text-slate-600 hover:text-indigo-600 hover:bg-indigo-50 transition-colors">Threat Matrix</a><a href="#value-curve" class="nav-link px-4 py-2 rounded-lg text-sm font-medium text-slate-600 hover:text-indigo-600 hover:bg-indigo-50 transition-colors">Value Curve</a>' if is_avis and avis_frameworks_html else ""}
             {'<a href="#postmortem" class="nav-link px-4 py-2 rounded-lg text-sm font-medium text-slate-600 hover:text-indigo-600 hover:bg-indigo-50 transition-colors">Post-Mortem</a>' if postmortem_html else ""}
             <a href="#parameter-analysis" class="nav-link px-4 py-2 rounded-lg text-sm font-medium text-slate-600 hover:text-indigo-600 hover:bg-indigo-50 transition-colors">Parameter Analysis</a>
         </div>
@@ -504,16 +1093,42 @@ def generate_v2_html(data, output_path):
     <section id="executive-brief" class="mb-12 animate-fade-in">
         <div class="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden">
             <div class="p-6 md:p-8">
-                <h2 class="text-2xl font-display font-bold text-slate-900 mb-6">Executive Brief</h2>
-                <div class="pl-4 border-l-4 border-indigo-500 mb-8">
-                    <p class="text-lg text-slate-700 leading-relaxed whitespace-pre-line">{html_escape.escape(brief)}</p>
+                <h2 class="text-2xl font-display font-bold text-slate-900 mb-4">Executive Brief</h2>
+
+                <!-- TL;DR / BLUF -->
+                <div class="rounded-lg bg-indigo-50 border border-indigo-200 p-5 mb-6">
+                    <div class="flex items-start gap-3">
+                        <span class="shrink-0 mt-0.5 flex h-7 w-7 items-center justify-center rounded-full bg-indigo-600 text-white">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                        </span>
+                        <div>
+                            <p class="text-xs font-semibold text-indigo-600 uppercase tracking-wider mb-1">Bottom Line</p>
+                            <p class="text-base font-medium text-slate-900 leading-relaxed">{bold_company_names(html_escape.escape(brief_tldr), companies)}</p>
+                        </div>
+                    </div>
                 </div>
-                {f'<div class="mb-8"><h3 class="text-sm font-semibold text-slate-500 uppercase tracking-wider mb-4">Key Themes</h3>{themes_html}</div>' if themes_html else ""}
+
+                <!-- Full brief: collapsible -->
+                {f"""<details class="mb-6 group/brief print-expand">
+                    <summary class="flex items-center gap-2 cursor-pointer select-none text-sm font-medium text-indigo-600 hover:text-indigo-700 transition-colors">
+                        <svg class="w-4 h-4 shrink-0 transition-transform group-open/brief:rotate-90" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                        Read full analysis
+                    </summary>
+                    <div class="mt-4 pl-4 border-l-4 border-slate-200">
+                        <p class="text-sm text-slate-600 leading-relaxed whitespace-pre-line">{bold_company_names(html_escape.escape(brief), companies)}</p>
+                    </div>
+                </details>""" if brief_rest else f"""<div class="mb-6 pl-4 border-l-4 border-slate-200">
+                    <p class="text-sm text-slate-600 leading-relaxed whitespace-pre-line">{bold_company_names(html_escape.escape(brief), companies)}</p>
+                </div>"""}
+
+                {f'<div class="mb-4"><h3 class="text-sm font-semibold text-slate-500 uppercase tracking-wider mb-4">Key Themes</h3>{themes_html}</div>' if themes_html else ""}
             </div>
             {f'<details class="print-expand border-t border-slate-200" id="trends"><summary class="p-6 font-semibold text-slate-800 cursor-pointer hover:bg-slate-50 transition-colors">Trends</summary><div class="details-content px-6 pb-6 pt-2">{trends_html}</div></details>' if trends_html else ""}
             {f'<details class="print-expand border-t border-slate-200" id="white-space"><summary class="p-6 font-semibold text-slate-800 cursor-pointer hover:bg-slate-50 transition-colors">White Space &mdash; Strategic Opportunities</summary><div class="details-content px-6 pb-6 pt-2">{ws_opps_html}</div></details>' if ws_opps_html else ""}
             {f'<details class="print-expand border-t border-slate-200" id="white-space-matrix"><summary class="p-6 font-semibold text-slate-800 cursor-pointer hover:bg-slate-50 transition-colors">White Space &mdash; Gap Matrix</summary><div class="details-content px-6 pb-6 pt-2">{ws_matrix_html}</div></details>' if ws_matrix_html else ""}
             {f'<details class="print-expand border-t border-slate-200" id="next-steps"><summary class="p-6 font-semibold text-slate-800 cursor-pointer hover:bg-slate-50 transition-colors">Next Steps</summary><div class="details-content px-6 pb-6 pt-2">{next_steps_html}</div></details>' if next_steps_html else ""}
+            {avis_frameworks_html}
         </div>
     </section>
 
@@ -529,6 +1144,13 @@ def generate_v2_html(data, output_path):
     </footer>
 </div>
 </div>
+
+<!-- Scroll-to-top button -->
+<button id="scrollTopBtn" onclick="window.scrollTo({{top:0,behavior:'smooth'}})"
+    class="no-print fixed bottom-6 right-6 z-50 hidden h-11 w-11 items-center justify-center rounded-full bg-slate-800 text-white shadow-lg hover:bg-indigo-600 transition-all duration-200 hover:scale-110"
+    title="Back to top" aria-label="Scroll to top">
+    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"/></svg>
+</button>
 
 <div id="paramModalOverlay" class="modal-overlay" onclick="closeParamModalOnOverlay(event)">
     <div class="modal-content" role="dialog" aria-modal="true" aria-labelledby="paramModalTitle" onclick="event.stopPropagation()">
@@ -683,7 +1305,7 @@ document.querySelectorAll(".nav-link").forEach(function(link) {{
 /* Active nav highlighting via IntersectionObserver */
 (function() {{
     var navLinks = document.querySelectorAll(".nav-link");
-    var sectionIds = ["executive-brief", "trends", "white-space", "next-steps", "parameter-analysis"];
+    var sectionIds = ["executive-brief", "trends", "white-space", "next-steps", "postmortem", "parameter-analysis"];
     function clearActive() {{ navLinks.forEach(function(l) {{ l.classList.remove("text-indigo-600", "bg-indigo-50"); }}); }}
     function setActive(id) {{
         clearActive();
@@ -710,6 +1332,16 @@ document.querySelectorAll(".nav-link").forEach(function(link) {{
             if (el) observer.observe(el);
         }});
     }}
+}})();
+
+/* Scroll-to-top button visibility */
+(function() {{
+    var btn = document.getElementById("scrollTopBtn");
+    if (!btn) return;
+    window.addEventListener("scroll", function() {{
+        if (window.scrollY > 400) {{ btn.classList.remove("hidden"); btn.classList.add("flex"); }}
+        else {{ btn.classList.add("hidden"); btn.classList.remove("flex"); }}
+    }});
 }})();
 
 /* Print: expand all collapsible sections before printing */

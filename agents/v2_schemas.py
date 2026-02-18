@@ -369,9 +369,13 @@ class ExecutiveBrief:
     next_steps: Dict[str, List[NextStepItem]] = field(default_factory=dict)
     venture_context: str = ""
     metadata: Dict[str, Any] = field(default_factory=dict)
+    # AVIS-specific analytical frameworks (empty for Competely path)
+    moat_analysis_grid: List[Dict[str, Any]] = field(default_factory=list)
+    threat_matrix: List[Dict[str, Any]] = field(default_factory=list)
+    value_curve_assessment: Dict[str, Any] = field(default_factory=dict)
 
     def to_dict(self) -> Dict[str, Any]:
-        return {
+        d = {
             "brief": self.brief,
             "key_themes": self.key_themes,
             "trends": self.trends,
@@ -384,6 +388,13 @@ class ExecutiveBrief:
             "venture_context": self.venture_context,
             "metadata": self.metadata,
         }
+        if self.moat_analysis_grid:
+            d["moat_analysis_grid"] = self.moat_analysis_grid
+        if self.threat_matrix:
+            d["threat_matrix"] = self.threat_matrix
+        if self.value_curve_assessment:
+            d["value_curve_assessment"] = self.value_curve_assessment
+        return d
 
     @classmethod
     def from_dict(cls, data: Dict[str, Any]) -> "ExecutiveBrief":
@@ -402,6 +413,9 @@ class ExecutiveBrief:
             },
             venture_context=data.get("venture_context", ""),
             metadata=data.get("metadata", {}),
+            moat_analysis_grid=data.get("moat_analysis_grid", []),
+            threat_matrix=data.get("threat_matrix", []),
+            value_curve_assessment=data.get("value_curve_assessment", {}),
         )
 
 

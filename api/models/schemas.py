@@ -46,6 +46,10 @@ class GenerateVariablesRequest(BaseModel):
         default=["public_mature"],
         description="List of selected company profiles (e.g. 'public_mature', 'private_venture')",
     )
+    parameter_path: str = Field(
+        default="competely",
+        description="Which parameter framework to use: 'competely' (product comparison) or 'avis' (investment thesis)",
+    )
 
 
 class Tier2RecommendationSchema(BaseModel):
@@ -451,6 +455,7 @@ class ResearchPlanSchema(BaseModel):
     accepted_suggestions: List[str] = []
 
     industry_context: str = ""
+    parameter_path: str = "competely"  # "competely" | "avis"
     selected_variable_ids: List[str] = []
     dynamic_variables: List[DynamicVariableDefinition] = []
     parameter_contexts: Dict[str, str] = {}
@@ -481,6 +486,7 @@ class PlanCreateRequest(BaseModel):
     accepted_suggestions: List[str] = []
     effective_company_names: Optional[List[str]] = None
     industry_context: str = ""
+    parameter_path: str = "competely"
     selected_variable_ids: List[str] = []
     dynamic_variables: List[DynamicVariableDefinition] = []
     parameter_contexts: Dict[str, str] = {}

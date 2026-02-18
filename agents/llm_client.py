@@ -224,24 +224,37 @@ class LLMClient:
                         error_info = response_json.get("error", {})
                         error_msg = error_info.get("message", str(error_info)) if isinstance(error_info, dict) else str(error_info)
                         error_code = error_info.get("code", "") if isinstance(error_info, dict) else ""
-                        # Some errors are transient (rate limits, overloaded)
+                        logger.error(
+                            f"[{provider_name}] model={effective_model} returned 200 with error. "
+                            f"code={error_code!r} msg={error_msg!r} "
+                            f"full_error={str(response_json.get('error'))[:500]}"
+                        )
                         if error_code in ("rate_limit_exceeded", "overloaded", "service_unavailable"):
                             raise TransientLLMError(f"API error: {error_msg}", status_code=429)
                         raise PermanentLLMError(f"API error: {error_msg}", status_code=response.status_code)
                     return response_json
                 elif response.status_code in (429, 500, 502, 503, 504):
-                    error_text = response.text[:200]
+                    error_text = response.text[:500]
+                    logger.error(
+                        f"[{provider_name}] model={effective_model} HTTP {response.status_code}: {error_text}"
+                    )
                     raise TransientLLMError(
                         f"Transient error {response.status_code}: {error_text}",
                         status_code=response.status_code,
                     )
                 elif response.status_code in (401, 403):
+                    logger.error(
+                        f"[{provider_name}] model={effective_model} AUTH ERROR {response.status_code}: {response.text[:500]}"
+                    )
                     raise PermanentLLMError(
-                        f"Authentication error {response.status_code}. Check your API key.",
+                        f"Authentication error {response.status_code}. Check your {provider_name} API key.",
                         status_code=response.status_code,
                     )
                 else:
-                    error_text = response.text[:200]
+                    error_text = response.text[:500]
+                    logger.error(
+                        f"[{provider_name}] model={effective_model} HTTP {response.status_code}: {error_text}"
+                    )
                     raise PermanentLLMError(
                         f"API error {response.status_code}: {error_text}",
                         status_code=response.status_code,
