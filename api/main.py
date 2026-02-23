@@ -19,7 +19,7 @@ sys.path.insert(0, str(project_root))
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from api.routes import runs_router, variables_router, plans_router
+from api.routes import runs_router, variables_router, plans_router, chat_router
 
 # Create FastAPI app
 app = FastAPI(
@@ -30,7 +30,7 @@ app = FastAPI(
 
 # CORS: allow frontend origin(s). In production set CORS_ORIGINS (comma-separated).
 # Normalize: no trailing slash (browser sends origin without slash).
-_cors_origins = os.getenv("CORS_ORIGINS", "http://localhost:3000,http://127.0.0.1:3000").strip()
+_cors_origins = os.getenv("CORS_ORIGINS", "http://localhost:3000,http://127.0.0.1:3000,null").strip()
 allow_origins = [o.strip().rstrip("/") for o in _cors_origins.split(",") if o.strip()]
 
 app.add_middleware(
@@ -45,6 +45,7 @@ app.add_middleware(
 app.include_router(runs_router, prefix="/api/runs", tags=["runs"])
 app.include_router(variables_router, prefix="/api/variables", tags=["variables"])
 app.include_router(plans_router, prefix="/api/plans", tags=["plans"])
+app.include_router(chat_router, prefix="/api/chat", tags=["chat"])
 
 
 @app.get("/")

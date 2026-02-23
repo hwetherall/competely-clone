@@ -132,11 +132,17 @@ MAX_SYNTHESIS_ITERATIONS: int = int(os.getenv("MAX_SYNTHESIS_ITERATIONS", "3"))
 MAX_REGATHERS_PER_PARAMETER: int = int(os.getenv("MAX_REGATHERS_PER_PARAMETER", "2"))
 
 # =============================================================================
+# Chat with Results (interactive report chat, via OpenRouter)
+# =============================================================================
+
+CHAT_MODEL: str = os.getenv("CHAT_MODEL", "x-ai/grok-4.1-fast")
+
+# =============================================================================
 # Research Plan Wizard Models (all via OpenRouter)
 # =============================================================================
 
 # Fast tasks: clarification Qs, custom params, confidence preview
-PLAN_FAST_MODEL: str = os.getenv("PLAN_FAST_MODEL", "openrouter/aurora-alpha")
+PLAN_FAST_MODEL: str = os.getenv("PLAN_FAST_MODEL", "deepseek/deepseek-v3.2")
 # Intelligence questions: fast chained questions to steer downstream generation
 PLAN_INTELLIGENCE_MODEL: str = os.getenv(
     "PLAN_INTELLIGENCE_MODEL", "meta-llama/llama-4-maverick"

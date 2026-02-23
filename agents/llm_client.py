@@ -12,9 +12,10 @@ Provides async and sync interfaces for:
 """
 
 import asyncio
+import json as _json
 import logging
 from dataclasses import dataclass
-from typing import Optional, List, Dict, Any, Tuple
+from typing import AsyncIterator, Optional, List, Dict, Any, Tuple
 
 import httpx
 from tenacity import (
@@ -391,6 +392,56 @@ class LLMClient:
             logger.error(f"Response data (truncated): {str(response_data)[:500]}")
             raise LLMError(f"Failed to parse API response: {e}")
     
+    async def complete_stream(
+        self,
+        messages: List[Dict[str, str]],
+        temperature: float = 0.7,
+        max_tokens: int = 4096,
+        model_override: Optional[str] = None,
+    ) -> AsyncIterator[str]:
+        """
+        Stream completion tokens as an async generator.
+
+        Yields content-delta strings as they arrive from the provider's
+        SSE stream.  Suitable for piping into a FastAPI StreamingResponse.
+        """
+        effective_model = model_override or self.model
+        api_key, base_url, provider_name = self._get_provider_for_model(effective_model)
+        url = f"{base_url}/chat/completions"
+
+        payload = {
+            "model": effective_model,
+            "messages": messages,
+            "temperature": temperature,
+            "max_tokens": max_tokens,
+            "stream": True,
+        }
+
+        headers = self._get_headers(api_key, provider_name)
+
+        async with httpx.AsyncClient(timeout=httpx.Timeout(settings.LLM_TIMEOUT, connect=30)) as client:
+            async with client.stream("POST", url, headers=headers, json=payload) as resp:
+                if resp.status_code != 200:
+                    body = await resp.aread()
+                    raise LLMError(
+                        f"Stream request failed ({resp.status_code}): {body[:500]}",
+                        status_code=resp.status_code,
+                    )
+                async for raw_line in resp.aiter_lines():
+                    if not raw_line.startswith("data: "):
+                        continue
+                    data_str = raw_line[len("data: "):]
+                    if data_str.strip() == "[DONE]":
+                        return
+                    try:
+                        chunk = _json.loads(data_str)
+                    except _json.JSONDecodeError:
+                        continue
+                    delta = (chunk.get("choices") or [{}])[0].get("delta", {})
+                    text = delta.get("content")
+                    if text:
+                        yield text
+
     def complete_sync(
         self,
         messages: List[Dict[str, str]],

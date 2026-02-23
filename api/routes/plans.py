@@ -222,7 +222,7 @@ async def generate_goal_endpoint(request: GenerateGoalRequest):
 
 @router.post("/generate-custom-parameter")
 async def generate_custom_parameter_endpoint(request: GenerateCustomParameterRequest):
-    """Generate a single variable definition from free-text description (Aurora Alpha)."""
+    """Generate a single variable definition from free-text description (deepseek/deepseek-v3.2)."""
     context = {
         "companies": request.companies,
         "industry_context": request.industry_context,
@@ -248,7 +248,7 @@ async def generate_custom_parameter_endpoint(request: GenerateCustomParameterReq
 
 @router.post("/step-clarifications")
 async def step_clarifications_endpoint(request: StepClarificationsRequest):
-    """Generate clarification questions for a given step (Aurora Alpha)."""
+    """Generate clarification questions for a given step (deepseek/deepseek-v3.2)."""
     try:
         questions = await agent_generate_clarifications(request.step, request.context)
         return {"clarifications": [_clarification_to_schema(q) for q in questions]}
@@ -264,7 +264,7 @@ class ConfidencePreviewRequest(BaseModel):
 
 @router.post("/confidence-preview", response_model=ConfidencePreviewSchema)
 async def confidence_preview_endpoint(request: ConfidencePreviewRequest):
-    """Step 6: Generate research feasibility assessment (Aurora Alpha)."""
+    """Step 6: Generate research feasibility assessment (deepseek/deepseek-v3.2)."""
     plan = {
         "companies": request.companies,
         "industry_context": request.industry_context,

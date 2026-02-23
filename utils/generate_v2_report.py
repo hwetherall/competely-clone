@@ -35,6 +35,273 @@ def load_v2_result(file_path=None):
         return json.load(f), latest
 
 
+def _build_chat_widget(run_id: str) -> str:
+    """Return self-contained HTML/CSS/JS for the floating chat widget."""
+    import html as _h
+    safe_run_id = _h.escape(run_id)
+    # NOTE: this string is *not* inside an f-string template with doubled
+    # braces, so normal JS brace syntax works here.
+    return f'''
+<!-- ======== Chat-with-results widget ======== -->
+<style>
+#chatFab {{
+    position: fixed; bottom: 1.5rem; right: 1.5rem; z-index: 200;
+    width: 3.25rem; height: 3.25rem; border-radius: 9999px;
+    background: linear-gradient(135deg, #4f46e5, #6366f1);
+    color: white; border: none; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 4px 14px rgba(79,70,229,.45);
+    transition: transform .2s, box-shadow .2s;
+}}
+#chatFab:hover {{ transform: scale(1.08); box-shadow: 0 6px 20px rgba(79,70,229,.55); }}
+#chatPanel {{
+    position: fixed; bottom: 5.5rem; right: 1.5rem; z-index: 200;
+    width: 420px; max-width: calc(100vw - 2rem); height: 560px; max-height: calc(100vh - 7rem);
+    background: white; border-radius: 1rem; overflow: hidden;
+    box-shadow: 0 25px 60px -12px rgba(0,0,0,.3);
+    display: flex; flex-direction: column;
+    transition: opacity .25s, transform .25s;
+}}
+#chatPanel.hidden {{ opacity: 0; pointer-events: none; transform: translateY(12px) scale(.97); }}
+#chatMessages {{
+    flex: 1; overflow-y: auto; padding: 1rem; display: flex; flex-direction: column; gap: .75rem;
+}}
+#chatMessages .msg-user {{
+    align-self: flex-end; max-width: 80%; background: #4f46e5; color: white;
+    padding: .5rem .85rem; border-radius: .85rem .85rem .2rem .85rem;
+    font-size: .875rem; line-height: 1.45; word-break: break-word;
+}}
+#chatMessages .msg-assistant {{
+    align-self: flex-start; max-width: 88%; background: #f1f5f9; color: #1e293b;
+    padding: .65rem .85rem; border-radius: .85rem .85rem .85rem .2rem;
+    font-size: .875rem; line-height: 1.55; word-break: break-word;
+}}
+#chatMessages .msg-assistant p {{ margin-bottom: .45rem; }}
+#chatMessages .msg-assistant p:last-child {{ margin-bottom: 0; }}
+#chatMessages .msg-assistant strong {{ font-weight: 600; color: #0f172a; }}
+#chatMessages .msg-assistant ul, #chatMessages .msg-assistant ol {{ padding-left: 1.25rem; margin-bottom: .45rem; }}
+#chatMessages .msg-assistant li {{ margin-bottom: .2rem; }}
+#chatMessages .msg-assistant code {{
+    background: #e2e8f0; padding: .1rem .35rem; border-radius: .25rem; font-size: .82rem;
+}}
+#chatMessages .msg-assistant table {{ border-collapse: collapse; width: 100%; margin: .5rem 0; font-size: .82rem; }}
+#chatMessages .msg-assistant th, #chatMessages .msg-assistant td {{
+    border: 1px solid #e2e8f0; padding: .3rem .5rem; text-align: left;
+}}
+#chatMessages .msg-assistant th {{ background: #f8fafc; font-weight: 600; }}
+#chatMessages .msg-system {{
+    align-self: center; color: #94a3b8; font-size: .78rem; font-style: italic; text-align: center;
+}}
+#chatInputBar {{
+    border-top: 1px solid #e2e8f0; padding: .65rem .85rem; display: flex; gap: .5rem; background: #fafbfc;
+}}
+#chatInput {{
+    flex: 1; border: 1px solid #e2e8f0; border-radius: .65rem; padding: .5rem .75rem;
+    font-size: .875rem; outline: none; font-family: inherit; resize: none;
+    min-height: 2.25rem; max-height: 6rem;
+}}
+#chatInput:focus {{ border-color: #818cf8; box-shadow: 0 0 0 2px rgba(129,140,248,.25); }}
+#chatSendBtn {{
+    background: #4f46e5; color: white; border: none; border-radius: .65rem;
+    padding: 0 .85rem; cursor: pointer; font-size: .875rem; font-weight: 500;
+    white-space: nowrap; transition: background .15s;
+}}
+#chatSendBtn:hover {{ background: #4338ca; }}
+#chatSendBtn:disabled {{ opacity: .5; cursor: not-allowed; }}
+@media print {{ #chatFab, #chatPanel {{ display: none !important; }} }}
+@media (max-width: 480px) {{ #chatPanel {{ width: calc(100vw - 1rem); right: .5rem; bottom: 5rem; height: calc(100vh - 6rem); }} #chatFab {{ bottom: 1rem; right: 1rem; }} }}
+</style>
+
+<button id="chatFab" class="no-print" title="Chat with your results" aria-label="Open chat">
+    <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
+    </svg>
+</button>
+
+<div id="chatPanel" class="hidden no-print" data-run-id="{safe_run_id}">
+    <div style="background:linear-gradient(135deg,#1e293b,#0f172a);color:white;padding:.85rem 1rem;display:flex;align-items:center;justify-content:space-between;">
+        <div style="display:flex;align-items:center;gap:.5rem;">
+            <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
+            <span style="font-weight:600;font-size:.9rem;">Chat with your results</span>
+        </div>
+        <button onclick="toggleChat()" style="background:none;border:none;color:#94a3b8;cursor:pointer;padding:4px;" title="Close chat">
+            <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+    </div>
+    <div id="chatMessages">
+        <div class="msg-system">Ask anything about this competitive intelligence report.</div>
+    </div>
+    <div id="chatInputBar">
+        <textarea id="chatInput" placeholder="Ask a question..." rows="1"></textarea>
+        <button id="chatSendBtn" onclick="sendChatMessage()">Send</button>
+    </div>
+</div>
+
+<script>
+(function() {{
+    var CHAT_API_BASE = "http://localhost:8000/api/chat";
+    var panel = document.getElementById("chatPanel");
+    var fab = document.getElementById("chatFab");
+    var input = document.getElementById("chatInput");
+    var sendBtn = document.getElementById("chatSendBtn");
+    var messagesEl = document.getElementById("chatMessages");
+    var runId = panel.getAttribute("data-run-id");
+    var history = [];
+    var streaming = false;
+
+    /* Move scroll-to-top button up when FAB is visible */
+    var scrollBtn = document.getElementById("scrollTopBtn");
+    if (scrollBtn) scrollBtn.style.bottom = "5rem";
+
+    window.toggleChat = function() {{
+        panel.classList.toggle("hidden");
+        if (!panel.classList.contains("hidden")) {{
+            input.focus();
+        }}
+    }};
+    fab.addEventListener("click", window.toggleChat);
+
+    /* Auto-resize textarea */
+    input.addEventListener("input", function() {{
+        this.style.height = "auto";
+        this.style.height = Math.min(this.scrollHeight, 96) + "px";
+    }});
+    input.addEventListener("keydown", function(e) {{
+        if (e.key === "Enter" && !e.shiftKey) {{
+            e.preventDefault();
+            sendChatMessage();
+        }}
+    }});
+
+    function scrollToBottom() {{
+        messagesEl.scrollTop = messagesEl.scrollHeight;
+    }}
+
+    function appendMessage(role, html) {{
+        var div = document.createElement("div");
+        div.className = "msg-" + role;
+        div.innerHTML = html;
+        messagesEl.appendChild(div);
+        scrollToBottom();
+        return div;
+    }}
+
+    /* Lightweight markdown → HTML (handles bold, italic, lists, code, tables) */
+    function mdToHtml(md) {{
+        if (!md) return "";
+        var s = md;
+        // Code blocks
+        s = s.replace(/```([\\s\\S]*?)```/g, function(_, c) {{
+            return "<pre style='background:#f1f5f9;padding:.5rem;border-radius:.375rem;overflow-x:auto;font-size:.82rem;'><code>" + escapeHtml(c.trim()) + "</code></pre>";
+        }});
+        // Inline code
+        s = s.replace(/`([^`]+)`/g, "<code>$1</code>");
+        // Bold
+        s = s.replace(/\\*\\*(.+?)\\*\\*/g, "<strong>$1</strong>");
+        // Italic
+        s = s.replace(/(?<![*])\\*(?![*])(.+?)(?<![*])\\*(?![*])/g, "<em>$1</em>");
+        // Tables
+        s = s.replace(/((?:^\\|.+\\|\\s*$\\n?)+)/gm, function(table) {{
+            var rows = table.trim().split("\\n").filter(function(r) {{ return r.trim() && !/^\\|[\\s-:|]+\\|$/.test(r); }});
+            if (rows.length === 0) return table;
+            var html = "<table>";
+            rows.forEach(function(row, idx) {{
+                var cells = row.split("|").filter(function(c,i,a) {{ return i > 0 && i < a.length - 1; }});
+                var tag = idx === 0 ? "th" : "td";
+                html += "<tr>" + cells.map(function(c) {{ return "<" + tag + ">" + c.trim() + "</" + tag + ">"; }}).join("") + "</tr>";
+            }});
+            html += "</table>";
+            return html;
+        }});
+        // Unordered lists
+        s = s.replace(/^([ \\t]*)[-*]\\s+(.+)$/gm, "$1<li>$2</li>");
+        s = s.replace(/((?:<li>.*<\\/li>\\s*)+)/g, "<ul>$1</ul>");
+        // Ordered lists
+        s = s.replace(/^([ \\t]*)\\d+\\.\\s+(.+)$/gm, "$1<li>$2</li>");
+        // Headings
+        s = s.replace(/^#### (.+)$/gm, "<h4 style='font-weight:600;font-size:.9rem;margin:.6rem 0 .3rem;'>$1</h4>");
+        s = s.replace(/^### (.+)$/gm, "<h3 style='font-weight:600;font-size:.95rem;margin:.7rem 0 .35rem;'>$1</h3>");
+        s = s.replace(/^## (.+)$/gm, "<h2 style='font-weight:600;font-size:1rem;margin:.8rem 0 .4rem;border-bottom:1px solid #e2e8f0;padding-bottom:.2rem;'>$1</h2>");
+        // Paragraphs (double newline)
+        s = s.replace(/\\n\\n+/g, "</p><p>");
+        s = "<p>" + s + "</p>";
+        s = s.replace(/<p><\\/p>/g, "");
+        // Clean up nested block issues
+        s = s.replace(/<p>(<(?:h[2-4]|ul|ol|table|pre))/g, "$1");
+        s = s.replace(/(<\\/(?:h[2-4]|ul|ol|table|pre)>)<\\/p>/g, "$1");
+        return s;
+    }}
+
+    window.sendChatMessage = function() {{
+        if (streaming) return;
+        var text = input.value.trim();
+        if (!text) return;
+        input.value = "";
+        input.style.height = "auto";
+
+        appendMessage("user", escapeHtml(text));
+        history.push({{ role: "user", content: text }});
+
+        var assistantDiv = appendMessage("assistant", "<span style='color:#94a3b8;'>Thinking...</span>");
+        streaming = true;
+        sendBtn.disabled = true;
+
+        var accum = "";
+        fetch(CHAT_API_BASE + "/" + encodeURIComponent(runId), {{
+            method: "POST",
+            headers: {{ "Content-Type": "application/json" }},
+            body: JSON.stringify({{ message: text, history: history.slice(0, -1) }})
+        }}).then(function(resp) {{
+            if (!resp.ok) throw new Error("Chat API error " + resp.status);
+            var reader = resp.body.getReader();
+            var decoder = new TextDecoder();
+            var buf = "";
+
+            function read() {{
+                return reader.read().then(function(result) {{
+                    if (result.done) {{
+                        if (accum) history.push({{ role: "assistant", content: accum }});
+                        streaming = false;
+                        sendBtn.disabled = false;
+                        return;
+                    }}
+                    buf += decoder.decode(result.value, {{ stream: true }});
+                    var lines = buf.split("\\n");
+                    buf = lines.pop();
+                    lines.forEach(function(line) {{
+                        if (!line.startsWith("data: ")) return;
+                        var payload = line.slice(6);
+                        if (payload === "[DONE]") return;
+                        try {{
+                            var obj = JSON.parse(payload);
+                            if (obj.error) {{
+                                assistantDiv.innerHTML = "<span style='color:#ef4444;'>Error: " + escapeHtml(obj.error) + "</span>";
+                                streaming = false;
+                                sendBtn.disabled = false;
+                                return;
+                            }}
+                            if (obj.token) {{
+                                accum += obj.token;
+                                assistantDiv.innerHTML = mdToHtml(accum);
+                                scrollToBottom();
+                            }}
+                        }} catch(e) {{}}
+                    }});
+                    return read();
+                }});
+            }}
+            return read();
+        }}).catch(function(err) {{
+            assistantDiv.innerHTML = "<span style='color:#ef4444;'>Connection error: " + escapeHtml(err.message) + ". Make sure the backend is running on localhost:8000.</span>";
+            streaming = false;
+            sendBtn.disabled = false;
+        }});
+    }};
+}})();
+</script>
+'''
+
+
 def generate_v2_html(data, output_path):
     """Generate parameter-centric HTML report with executive brief and parameter cards."""
     try:
@@ -991,6 +1258,9 @@ def generate_v2_html(data, output_path):
             f'</details>'
         )
 
+    run_id = data.get("run_id", "")
+    chat_widget_html = _build_chat_widget(run_id)
+
     html = f"""<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -1349,6 +1619,7 @@ window.addEventListener("beforeprint", function() {{
     document.querySelectorAll("details.print-expand").forEach(function(d) {{ d.setAttribute("open", ""); }});
 }});
 </script>
+{chat_widget_html}
 </body>
 </html>
 """

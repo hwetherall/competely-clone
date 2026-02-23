@@ -4,7 +4,7 @@ Research Plan Agent: powers the 5-minute Research Plan wizard.
 Uses:
 - Perplexity sonar-pro-search: company validation, company suggestions (live web)
 - Llama 4 Maverick: intelligence questions (chained, pre-generation steering)
-- Aurora Alpha: clarification questions, custom parameters, confidence preview
+- deepseek/deepseek-v3.2: clarification questions, custom parameters, confidence preview
 - Claude Opus 4.6: research goal, mission statement, key questions
 """
 
@@ -190,7 +190,7 @@ Output ONLY valid JSON inside <result>...</result> with: id (snake_case from nam
 async def validate_companies(company_names: List[str]) -> tuple[List[CompanyProfile], List[ClarificationQuestion]]:
     """
     Validate and profile each company using Perplexity (live web search).
-    Then generate clarification questions using Aurora Alpha.
+    Then generate clarification questions using deepseek/deepseek-v3.2.
     """
     if not company_names:
         return [], []
@@ -250,7 +250,7 @@ async def validate_companies(company_names: List[str]) -> tuple[List[CompanyProf
     tasks = [fetch_one(n.strip()) for n in company_names if n.strip()]
     profiles = await asyncio.gather(*tasks)
 
-    # Generate clarification questions (Aurora Alpha)
+    # Generate clarification questions (deepseek/deepseek-v3.2)
     clarifications = await generate_clarifications("companies", {
         "companies": [
             {
@@ -372,7 +372,7 @@ Output a single JSON object inside <result>...</result> with key "suggestions" (
 
 
 # =============================================================================
-# Clarification questions (Aurora Alpha)
+# Clarification questions (deepseek/deepseek-v3.2)
 # =============================================================================
 
 CLARIFY_SYSTEM = """You generate 1-3 short clarification questions for a research plan wizard step. Each question has 2-4 suggested answer options. Always include an "Other" option so the user can type a custom answer. Also, ALWAYS include one option that represents the "status quo" or "default" choice (e.g. "No specific preference", "Keep broad", "Standard analysis"). Output ONLY valid JSON inside <result>...</result>. If no clarification is needed, output {"questions": []}."""
@@ -712,7 +712,7 @@ Output JSON inside <result>...</result> with keys: mission_statement, key_questi
 
 
 # =============================================================================
-# Step 6: Confidence Preview (Aurora Alpha)
+# Step 6: Confidence Preview (deepseek/deepseek-v3.2)
 # =============================================================================
 
 CONFIDENCE_SYSTEM = """You assess research feasibility. Given a plan (companies, parameters), output per-company data availability (high/medium/low), overall level, warnings, and suggestions. Output ONLY valid JSON inside <result>...</result>."""
@@ -777,7 +777,7 @@ async def generate_confidence_preview(plan: Dict[str, Any]) -> ConfidencePreview
 
 
 # =============================================================================
-# Custom parameter (Aurora Alpha)
+# Custom parameter (deepseek/deepseek-v3.2)
 # =============================================================================
 
 CUSTOM_PARAM_SYSTEM = """You generate a single research variable definition for competitive analysis. Match the format: id (snake_case, prefix dyn_), name, category, research_prompt (multi-line), example_queries (4 strings with {{company}}), answer_spec (3 bullets), key_terms (6-8), preferred_source_types, max_concise_chars (200), rationale. Output ONLY valid JSON inside <result>...</result>."""
