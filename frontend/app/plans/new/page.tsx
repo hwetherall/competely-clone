@@ -376,7 +376,7 @@ export default function NewPlanPage() {
     try {
       const res = await generateGoal.mutateAsync({
         companies: companies.concat(
-          suggestions.filter((s) => acceptedSuggestionIds.includes(s.id)).map((s) => ({ id: s.id, official_name: s.name, industry: "", description: "" }))
+          suggestions.filter((s) => acceptedSuggestionIds.includes(s.id)).map((s) => ({ id: s.id, input_name: s.name, official_name: s.name, industry: "", description: "" }))
         ),
         industry_context: variableData?.industry_context ?? "",
         parameter_summary: `${selectedVariableIds.length} parameters`,
