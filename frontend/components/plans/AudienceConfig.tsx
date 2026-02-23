@@ -15,18 +15,18 @@ const AUDIENCE_OPTIONS = [
 ];
 
 const DEPTH_OPTIONS = [
-  { id: "quick", label: "Quick scan", est: "~1–2 hours" },
-  { id: "standard", label: "Standard", est: "~3–4 hours" },
-  { id: "deep", label: "Deep dive", est: "~5–6 hours" },
+  { id: "quick" as const, label: "Quick scan", est: "~1–2 hours" },
+  { id: "standard" as const, label: "Standard", est: "~3–4 hours" },
+  { id: "deep" as const, label: "Deep dive", est: "~5–6 hours" },
 ];
 
 interface AudienceConfigProps {
   audience: string;
-  depth: string;
+  depth: "quick" | "standard" | "deep";
   focusCompanies: string[];
   knownContext: string;
   onAudienceChange: (v: string) => void;
-  onDepthChange: (v: string) => void;
+  onDepthChange: (v: "quick" | "standard" | "deep") => void;
   onFocusToggle: (company: string) => void;
   onKnownContextChange: (v: string) => void;
   companyNames: string[];
