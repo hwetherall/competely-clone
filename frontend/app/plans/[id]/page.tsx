@@ -88,7 +88,7 @@ export default function PlanDetailPage() {
           </CardHeader>
           <CardContent>
             <div className="flex flex-wrap gap-2">
-              {companyNames.map((name: string) => (
+              {companyNames.filter(Boolean).map((name) => (
                 <Badge key={name} variant="secondary">
                   {name}
                 </Badge>
