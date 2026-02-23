@@ -103,7 +103,7 @@ export default function NewPlanPage() {
   });
   const [goalClarifications, setGoalClarifications] = useState<ClarificationQuestion[]>([]);
   const [audience, setAudience] = useState("general");
-  const [depth, setDepth] = useState("standard");
+  const [depth, setDepth] = useState<"quick" | "standard" | "deep">("standard");
   const [focusCompanies, setFocusCompanies] = useState<string[]>([]);
   const [knownContext, setKnownContext] = useState("");
   const [confidencePreview, setConfidencePreview] = useState<ConfidencePreview | null>(null);
