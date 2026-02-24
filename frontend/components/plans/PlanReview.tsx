@@ -38,7 +38,7 @@ export function PlanReview({
   const acceptedIds = plan.accepted_suggestions ?? [];
   
   const allCompanyNames = [
-    ...companies.map((c) => (typeof c === "string" ? c : c.official_name ?? c.name)),
+    ...companies.map((c) => (typeof c === "string" ? c : c.official_name ?? c.input_name)),
     ...suggested.filter(s => acceptedIds.includes(s.id)).map(s => s.name)
   ];
 
