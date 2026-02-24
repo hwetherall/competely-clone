@@ -229,7 +229,7 @@ export default function NewPlanPage() {
       updateIntel(stepKey, { questions: res.questions, followUpGroups: [], answers: [], phase: "questions" });
     } catch (e) {
       console.error(e);
-      updateIntel(stepKey, { phase: "content" });
+      skipHandlers[stepKey]?.();
     }
   };
 

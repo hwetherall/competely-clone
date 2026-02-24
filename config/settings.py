@@ -123,9 +123,9 @@ DEFAULT_MAX_CONCISE_CHARS: int = int(os.getenv("DEFAULT_MAX_CONCISE_CHARS", "240
 # V2 Pipeline Configuration (Relational Competitive Intelligence Engine)
 # =============================================================================
 
-# Claude Opus 4.6 for synthesis and executive reasoning (OpenRouter)
-SYNTHESIS_MODEL: str = os.getenv("SYNTHESIS_MODEL", "anthropic/claude-opus-4.6")
-EXECUTIVE_MODEL: str = os.getenv("EXECUTIVE_MODEL", "anthropic/claude-opus-4.6")
+# Claude Sonnet 4.6 for synthesis and executive reasoning (OpenRouter)
+SYNTHESIS_MODEL: str = os.getenv("SYNTHESIS_MODEL", "anthropic/claude-sonnet-4.6")
+EXECUTIVE_MODEL: str = os.getenv("EXECUTIVE_MODEL", "anthropic/claude-sonnet-4.6")
 
 # Synthesis phase: max iterations of draft -> evaluate -> re-gather -> re-normalize
 MAX_SYNTHESIS_ITERATIONS: int = int(os.getenv("MAX_SYNTHESIS_ITERATIONS", "3"))
@@ -154,7 +154,7 @@ PLAN_RESEARCH_FALLBACK_MODEL: str = os.getenv(
     "PLAN_RESEARCH_FALLBACK_MODEL", "openai/gpt-5.2:online"
 )
 # Heavy reasoning: research goal, mission, key questions
-PLAN_REASONING_MODEL: str = os.getenv("PLAN_REASONING_MODEL", "anthropic/claude-opus-4.6")
+PLAN_REASONING_MODEL: str = os.getenv("PLAN_REASONING_MODEL", "anthropic/claude-sonnet-4.6")
 
 # =============================================================================
 # Validation
