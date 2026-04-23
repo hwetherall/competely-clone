@@ -187,16 +187,12 @@ VALIDATE_SYSTEM = """You are a research analyst. Given a company name, search th
 Output ONLY valid JSON inside <result>...</result> with: id (snake_case from name), input_name, official_name, industry, description (1-2 sentences), headquarters (city/country or null), website (url or null), ambiguity_notes (if the name could mean multiple companies or business units, briefly note them; otherwise null), subsidiary_notes (if the name refers to a parent/holding company with distinct brands or subsidiaries—e.g. "Lufthansa" can mean Lufthansa Group (parent) or Lufthansa the airline; list key subsidiaries/brands like Austrian Airlines, SWISS; otherwise null), subsidiaries (array of strings: official names of key subsidiaries/brands when subsidiary_notes applies, e.g. ["Austrian Airlines", "SWISS", "Eurowings"]; else empty array []), brand_name (when it is a conglomerate/group, the main flagship brand only e.g. "Lufthansa German Airlines"; else null)."""
 
 
-async def validate_companies(company_names: List[str]) -> tuple[List[CompanyProfile], List[ClarificationQuestion]]:
-    """
-    Validate and profile each company using Perplexity (live web search).
-    Then generate clarification questions using deepseek/deepseek-v3.2.
-    """
+async def _profile_companies(company_names: List[str]) -> List[CompanyProfile]:
+    """Profile companies via web search without generating clarification questions."""
     if not company_names:
-        return [], []
+        return []
 
     client = LLMClient()
-    profiles: List[CompanyProfile] = []
     prompt_per_company = (
         "Search the web and identify this company. Return a JSON object inside <result>...</result> with keys: "
         "id (snake_case, e.g. stripe_inc), input_name (exactly as given), official_name, industry, description (1-2 sentences), "
@@ -249,6 +245,15 @@ async def validate_companies(company_names: List[str]) -> tuple[List[CompanyProf
 
     tasks = [fetch_one(n.strip()) for n in company_names if n.strip()]
     profiles = await asyncio.gather(*tasks)
+    return list(profiles)
+
+
+async def validate_companies(company_names: List[str]) -> tuple[List[CompanyProfile], List[ClarificationQuestion]]:
+    """
+    Validate and profile each company using Perplexity (live web search).
+    Then generate clarification questions using deepseek/deepseek-v3.2.
+    """
+    profiles = await _profile_companies(company_names)
 
     # Generate clarification questions (deepseek/deepseek-v3.2)
     clarifications = await generate_clarifications("companies", {
@@ -343,31 +348,40 @@ Output a single JSON object inside <result>...</result> with key "suggestions" (
     except (json.JSONDecodeError, ValueError, KeyError) as e:
         logger.warning("Failed to parse suggestions: %s", e)
 
-    # Enrich with subsidiary/brand data so Step 2 can offer brand/group/subsidiaries like Step 1
+    clarifications: List[ClarificationQuestion] = []
     if suggestions:
+        suggestion_context = {
+            "current_companies": names,
+            "suggestions": [{"name": s.name, "category": s.category} for s in suggestions],
+        }
         try:
-            suggestion_names = [s.name for s in suggestions]
-            profiles, _ = await validate_companies(suggestion_names)
-            enriched = []
-            for i, s in enumerate(suggestions):
-                p = profiles[i] if i < len(profiles) else None
-                enriched.append(CompanySuggestion(
+            profiles, clarifications = await asyncio.gather(
+                _profile_companies([s.name for s in suggestions]),
+                generate_clarifications("suggestions", suggestion_context),
+            )
+            suggestions = [
+                CompanySuggestion(
                     id=s.id,
                     name=s.name,
                     category=s.category,
                     rationale=s.rationale,
                     gap_filled=s.gap_filled,
-                    subsidiaries=list(p.subsidiaries) if p else [],
-                    brand_name=p.brand_name if p else None,
-                ))
-            suggestions = enriched
+                    subsidiaries=list(profiles[i].subsidiaries) if i < len(profiles) else [],
+                    brand_name=profiles[i].brand_name if i < len(profiles) else None,
+                )
+                for i, s in enumerate(suggestions)
+            ]
         except Exception as e:
             logger.warning("Could not enrich suggestions with subsidiary data: %s", e)
-
-    clarifications = await generate_clarifications("suggestions", {
-        "current_companies": names,
-        "suggestions": [{"name": s.name, "category": s.category} for s in suggestions],
-    })
+            try:
+                clarifications = await generate_clarifications("suggestions", suggestion_context)
+            except Exception as clar_e:
+                logger.warning("Could not generate suggestion clarifications: %s", clar_e)
+    else:
+        clarifications = await generate_clarifications("suggestions", {
+            "current_companies": names,
+            "suggestions": [],
+        })
     return suggestions, clarifications
 
 

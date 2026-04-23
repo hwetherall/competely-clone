@@ -155,7 +155,7 @@ export default function NewPlanPage() {
     }
   };
 
-  const handleStep1Answer = (_questionId: string, _optionId: string | null) => {
+  const handleStep1Answer = () => {
     // Other clarification answers can be stored here if needed
   };
 
@@ -353,6 +353,7 @@ export default function NewPlanPage() {
     const list = finalCompanyNames.length >= 2 ? finalCompanyNames : companies.map((c) => c.official_name);
     if (list.length < 2) return;
     try {
+      setParamClarifications([]);
       const res = await generateVariables.mutateAsync({
         companies: list,
         company_profiles: ["public_mature"],
@@ -361,12 +362,17 @@ export default function NewPlanPage() {
       setVariableData(res);
       setSelectedVariableIds(getDefaultSelection(res));
       setDynamicVariableDefs(res.generated_variables);
-      const clarRes = await stepClarifications.mutateAsync({
+      setStep(3);
+      void stepClarifications.mutateAsync({
         step: "parameters",
         context: { companies: list, industry_context: res.industry_context },
-      });
-      setParamClarifications(clarRes.clarifications ?? []);
-      setStep(3);
+      })
+        .then((clarRes) => {
+          setParamClarifications(clarRes.clarifications ?? []);
+        })
+        .catch((clarificationError) => {
+          console.error(clarificationError);
+        });
     } catch (e) {
       console.error(e);
     }

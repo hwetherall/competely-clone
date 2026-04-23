@@ -11,6 +11,7 @@ The key difference: AVIS parameters focus on investment-thesis dimensions
 (moats, funding, GTM, team, exit readiness) rather than product comparison.
 """
 
+import asyncio
 import json
 import re
 import logging
@@ -60,14 +61,11 @@ Your goal: determine whether the market has whitespace for a new venture, where 
 
 CRITICAL INSTRUCTION: You must strictly adhere to the provided Set of Competitors (SoC). Do NOT mention, use as examples, or allude to any companies that are NOT in the provided list."""
 
+METADATA_MAX_TOKENS = 4500
+DYNAMIC_MAX_TOKENS = 9500
 
-def _build_avis_user_prompt(companies: List[str], company_profiles: List[str] = ["public_mature"]) -> str:
-    sometimes = get_avis_sometimes()
-    sometimes_list = "\n".join(f"- {v.id} ({v.name}): {v.category}" for v in sometimes)
 
-    always = get_avis_always()
-    always_list = "\n".join(f"- {v.id} ({v.name}): {v.category}" for v in always)
-
+def _build_avis_prompt_context(companies: List[str], company_profiles: List[str] = ["public_mature"]) -> str:
     companies_str = ", ".join(companies)
 
     profile_contexts = []
@@ -92,7 +90,17 @@ IMPORTANT: These companies fit the following profiles:
 {profile_instruction}
 {mixed_instruction}
 
-CRITICAL: Restrict your entire response ONLY to the companies listed above. Do NOT mention any other companies.
+CRITICAL: Restrict your entire response ONLY to the companies listed above. Do NOT mention any other companies."""
+
+
+def _build_avis_metadata_prompt(companies: List[str], company_profiles: List[str] = ["public_mature"]) -> str:
+    sometimes = get_avis_sometimes()
+    sometimes_list = "\n".join(f"- {v.id} ({v.name}): {v.category}" for v in sometimes)
+
+    always = get_avis_always()
+    always_list = "\n".join(f"- {v.id} ({v.name}): {v.category}" for v in always)
+
+    return f"""{_build_avis_prompt_context(companies, company_profiles)}
 
 ---
 
@@ -116,9 +124,28 @@ For each of the following contextual AVIS parameters, decide INCLUDE or EXCLUDE 
 
 {sometimes_list}
 
----
+Output your response as a single JSON object inside <result>...</result> tags:
 
-PART 3 — Tier 3 (dynamic AVIS-specific parameters)
+<result>
+{{
+  "always_parameter_contexts": {{
+    "avis_product_capability": "Context sentence...",
+    "avis_business_model": "Context sentence..."
+  }},
+  "industry_context": "Your one sentence here",
+  "tier2_recommendations": [
+    {{ "variable_id": "avis_exit_readiness", "include": true, "reason": "Relevant because..." }},
+    {{ "variable_id": "avis_deal_comps", "include": false, "reason": "Not relevant because..." }}
+  ]
+}}
+</result>
+
+Generate always_parameter_contexts for EVERY always-included variable. Generate tier2_recommendations for EVERY sometimes variable. Do not include any additional keys. Now output the JSON:"""
+
+
+def _build_avis_dynamic_prompt(companies: List[str], company_profiles: List[str] = ["public_mature"]) -> str:
+    return f"""{_build_avis_prompt_context(companies, company_profiles)}
+
 Generate exactly 10 NEW parameters that would be highly revealing when analyzing this competitive landscape through the AVIS investment lens. These should complement (not duplicate) the Tier 1 and Tier 2 parameters above.
 
 Focus on dimensions an investor or strategic buyer would need to assess:
@@ -145,15 +172,6 @@ Output your response as a single JSON object inside <result>...</result> tags:
 
 <result>
 {{
-  "always_parameter_contexts": {{
-    "avis_product_capability": "Context sentence...",
-    "avis_business_model": "Context sentence..."
-  }},
-  "industry_context": "Your one sentence here",
-  "tier2_recommendations": [
-    {{ "variable_id": "avis_exit_readiness", "include": true, "reason": "Relevant because..." }},
-    {{ "variable_id": "avis_deal_comps", "include": false, "reason": "Not relevant because..." }}
-  ],
   "generated_variables": [
     {{
       "id": "dyn_avis_consolidation_trend",
@@ -171,7 +189,7 @@ Output your response as a single JSON object inside <result>...</result> tags:
 }}
 </result>
 
-Generate always_parameter_contexts for EVERY always-included variable. Generate tier2_recommendations for EVERY sometimes variable. Generate exactly 10 generated_variables. Now output the JSON:"""
+Generate exactly 10 generated_variables. Do not include any additional keys. Now output the JSON:"""
 
 
 def _extract_result_json(content: str) -> dict:
@@ -236,6 +254,37 @@ def _dict_to_variable_definition(d: Dict[str, Any]) -> VariableDefinition:
     )
 
 
+def _parse_metadata_result(data: Dict[str, Any]) -> tuple[str, Dict[str, str], List[AvisTier2Recommendation]]:
+    industry_context = data.get("industry_context", "Unknown industry")
+    always_parameter_contexts: Dict[str, str] = {}
+    for k, v in data.get("always_parameter_contexts", {}).items():
+        if isinstance(k, str) and isinstance(v, str):
+            always_parameter_contexts[k] = v.strip()
+
+    tier2_recommendations: List[AvisTier2Recommendation] = []
+    for rec in data.get("tier2_recommendations", []):
+        tier2_recommendations.append(AvisTier2Recommendation(
+            variable_id=rec["variable_id"],
+            include=bool(rec.get("include", True)),
+            reason=str(rec.get("reason", "")),
+        ))
+    return industry_context, always_parameter_contexts, tier2_recommendations
+
+
+def _parse_generated_variables(data: Dict[str, Any]) -> tuple[List[VariableDefinition], Dict[str, str]]:
+    generated_variables: List[VariableDefinition] = []
+    generated_variable_rationales: Dict[str, str] = {}
+    for g in data.get("generated_variables", []):
+        try:
+            v = _dict_to_variable_definition(g)
+            generated_variables.append(v)
+            generated_variable_rationales[v.id] = str(g.get("rationale", "")).strip()
+        except (KeyError, TypeError) as e:
+            logger.warning("Skipping malformed AVIS generated variable: %s", e)
+            continue
+    return generated_variables, generated_variable_rationales
+
+
 # =============================================================================
 # Main API
 # =============================================================================
@@ -253,45 +302,33 @@ async def generate_avis_variables(
 
     client = LLMClient()
     model = settings.VARIABLE_GENERATOR_MODEL
-    prompt = _build_avis_user_prompt(companies, company_profiles)
+    metadata_prompt = _build_avis_metadata_prompt(companies, company_profiles)
+    dynamic_prompt = _build_avis_dynamic_prompt(companies, company_profiles)
 
-    print(f"[AVIS variable generation] Calling {model}...")
-    logger.info("Calling AVIS variable generator model: %s", model)
-    content = await client.complete_simple(
-        prompt=prompt,
-        system_prompt=SYSTEM_PROMPT,
-        temperature=0.3,
-        max_tokens=16000,
-        model_override=model,
+    print(f"[AVIS variable generation] Calling split prompts via {model}...")
+    logger.info("Calling split AVIS variable generator prompts via model: %s", model)
+    metadata_content, dynamic_content = await asyncio.gather(
+        client.complete_simple(
+            prompt=metadata_prompt,
+            system_prompt=SYSTEM_PROMPT,
+            temperature=0.3,
+            max_tokens=METADATA_MAX_TOKENS,
+            model_override=model,
+        ),
+        client.complete_simple(
+            prompt=dynamic_prompt,
+            system_prompt=SYSTEM_PROMPT,
+            temperature=0.3,
+            max_tokens=DYNAMIC_MAX_TOKENS,
+            model_override=model,
+        ),
     )
-    print("[AVIS variable generation] LLM response received, parsing...")
+    print("[AVIS variable generation] Split LLM responses received, parsing...")
 
-    data = _extract_result_json(content)
-
-    industry_context = data.get("industry_context", "Unknown industry")
-    always_parameter_contexts: Dict[str, str] = {}
-    for k, v in data.get("always_parameter_contexts", {}).items():
-        if isinstance(k, str) and isinstance(v, str):
-            always_parameter_contexts[k] = v.strip()
-
-    tier2_recommendations: List[AvisTier2Recommendation] = []
-    for rec in data.get("tier2_recommendations", []):
-        tier2_recommendations.append(AvisTier2Recommendation(
-            variable_id=rec["variable_id"],
-            include=bool(rec.get("include", True)),
-            reason=str(rec.get("reason", "")),
-        ))
-
-    generated_variables: List[VariableDefinition] = []
-    generated_variable_rationales: Dict[str, str] = {}
-    for g in data.get("generated_variables", []):
-        try:
-            v = _dict_to_variable_definition(g)
-            generated_variables.append(v)
-            generated_variable_rationales[v.id] = str(g.get("rationale", "")).strip()
-        except (KeyError, TypeError) as e:
-            logger.warning("Skipping malformed AVIS generated variable: %s", e)
-            continue
+    metadata = _extract_result_json(metadata_content)
+    dynamic = _extract_result_json(dynamic_content)
+    industry_context, always_parameter_contexts, tier2_recommendations = _parse_metadata_result(metadata)
+    generated_variables, generated_variable_rationales = _parse_generated_variables(dynamic)
 
     return AvisVariableGenerationResult(
         tier2_recommendations=tier2_recommendations,

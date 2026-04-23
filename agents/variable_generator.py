@@ -6,6 +6,7 @@ contextual parameter recommendations using a strategic LLM (e.g. deepseek-v3.2).
 - Tier 3: industry-specific dynamic variables with full research definitions
 """
 
+import asyncio
 import json
 import re
 import logging
@@ -53,16 +54,12 @@ Be precise and strategic. Avoid parameters that would be meaningless or absurd f
 
 CRITICAL INSTRUCTION: You must strictly adhere to the provided Set of Competitors (SoC). Do NOT mention, use as examples, or allude to any companies that are NOT in the provided list. Your analysis and rationales must be based ONLY on the companies explicitly listed in the SoC."""
 
+METADATA_MAX_TOKENS = 5000
+DYNAMIC_MAX_TOKENS = 10000
 
-def _build_user_prompt(companies: List[str], company_profiles: List[str] = ["public_mature"]) -> str:
-    sometimes = get_sometimes_variables()
-    sometimes_list = "\n".join(
-        f"- {v.id} ({v.name})" for v in sometimes
-    )
-    always = get_always_variables()
-    always_list = "\n".join(
-        f"- {v.id} ({v.name})" for v in always
-    )
+
+def _build_prompt_context(companies: List[str], company_profiles: List[str] = ["public_mature"]) -> str:
+    """Shared company/profile context for split variable-generation prompts."""
     companies_list = ", ".join(companies)
 
     profile_contexts = []
@@ -76,10 +73,12 @@ def _build_user_prompt(companies: List[str], company_profiles: List[str] = ["pub
         profile_contexts.append("- Private / Established: Focus on patents, trade shows, supply chain, certifications, longevity, B2B reputation.")
 
     profile_instruction = "\n".join(profile_contexts)
-    
     mixed_instruction = ""
     if len(company_profiles) > 1:
-        mixed_instruction = "The set includes a MIX of company profiles. Ensure parameters cover relevant signals for ALL types (e.g. financial transparency for public firms AND operational signals for private ones)."
+        mixed_instruction = (
+            "The set includes a MIX of company profiles. Ensure parameters cover relevant signals for ALL types "
+            "(e.g. financial transparency for public firms AND operational signals for private ones)."
+        )
 
     return f"""Set of Competitors (SoC): {companies_list}
 Company Profiles: {", ".join(company_profiles)}
@@ -89,7 +88,16 @@ IMPORTANT: The companies in this set fit the following profiles:
 
 {mixed_instruction}
 
-CRITICAL: Restrict your entire response (including rationales, parameter contexts, and examples) ONLY to the companies listed above. Do NOT mention any other companies.
+CRITICAL: Restrict your entire response (including rationales, parameter contexts, and examples) ONLY to the companies listed above. Do NOT mention any other companies."""
+
+
+def _build_metadata_prompt(companies: List[str], company_profiles: List[str] = ["public_mature"]) -> str:
+    sometimes = get_sometimes_variables()
+    sometimes_list = "\n".join(f"- {v.id} ({v.name})" for v in sometimes)
+    always = get_always_variables()
+    always_list = "\n".join(f"- {v.id} ({v.name})" for v in always)
+
+    return f"""{_build_prompt_context(companies, company_profiles)}
 
 ---
 
@@ -119,9 +127,28 @@ For each variable, output:
 - include: true or false
 - reason: one line explaining why it is or isn't relevant for this SoC
 
----
+Output your response as a single JSON object inside <result>...</result> tags. Use this exact structure (no trailing commas):
 
-PART 3 — Tier 3 (dynamically generated) variables
+<result>
+{{
+  "always_parameter_contexts": {{
+    "unique_value_proposition": "How each player positions its core promise shapes where white space remains.",
+    "positioning": "Market segment and positioning reveal premium vs value gaps in the set."
+  }},
+  "industry_context": "Your one sentence here",
+  "tier2_recommendations": [
+    {{ "variable_id": "competitive_positioning_summary", "include": true, "reason": "Relevant for any competitive set" }},
+    {{ "variable_id": "technology_stack", "include": false, "reason": "Not meaningful for airlines" }}
+  ]
+}}
+</result>
+
+Generate always_parameter_contexts for EVERY always-included variable listed in PART 0. Generate tier2_recommendations for EVERY sometimes variable listed above. Do not include any additional keys. Now output the JSON:"""
+
+
+def _build_dynamic_prompt(companies: List[str], company_profiles: List[str] = ["public_mature"]) -> str:
+    return f"""{_build_prompt_context(companies, company_profiles)}
+
 Generate exactly 10 NEW parameters that would be highly relevant when comparing these specific competitors to find market white space. Think like a strategy consultant: what would an investor want to know to spot an opportunity for a new entrant?
 
 Examples by industry:
@@ -142,19 +169,10 @@ For EACH generated parameter you MUST provide a full research definition so a re
 9. max_concise_chars: 200 unless a different limit is better.
 10. rationale: One sentence explaining why this parameter is relevant for this specific SoC (e.g. "Gojek and Grab are super-apps; Uber/Lyft are not; this dimension reveals diversification strategy."). This will be shown to the user so they understand why the parameter was suggested.
 
-Output your response as a single JSON object inside <result>...</result> tags. Use this exact structure (no trailing commas):
+Output a single JSON object inside <result>...</result> with key "generated_variables". Use this exact structure (no trailing commas):
 
 <result>
 {{
-  "always_parameter_contexts": {{
-    "unique_value_proposition": "How each player positions its core promise shapes where white space remains.",
-    "positioning": "Market segment and positioning reveal premium vs value gaps in the set."
-  }},
-  "industry_context": "Your one sentence here",
-  "tier2_recommendations": [
-    {{ "variable_id": "competitive_positioning_summary", "include": true, "reason": "Relevant for any competitive set" }},
-    {{ "variable_id": "technology_stack", "include": false, "reason": "Not meaningful for airlines" }}
-  ],
   "generated_variables": [
     {{
       "id": "dyn_fleet_size",
@@ -172,7 +190,7 @@ Output your response as a single JSON object inside <result>...</result> tags. U
 }}
 </result>
 
-Generate always_parameter_contexts for EVERY always-included variable listed in PART 0. Generate tier2_recommendations for EVERY sometimes variable listed above. Generate exactly 10 generated_variables. Now output the JSON:"""
+Generate exactly 10 generated_variables. Do not include any additional keys. Now output the JSON:"""
 
 
 def _extract_result_json(content: str) -> dict:
@@ -244,6 +262,39 @@ def _dict_to_variable_definition(d: Dict[str, Any]) -> VariableDefinition:
     )
 
 
+def _parse_metadata_result(data: Dict[str, Any]) -> tuple[str, Dict[str, str], List[Tier2Recommendation]]:
+    """Parse metadata response into industry context, always contexts, and tier-2 recommendations."""
+    industry_context = data.get("industry_context", "Unknown industry")
+    always_parameter_contexts: Dict[str, str] = {}
+    for k, v in data.get("always_parameter_contexts", {}).items():
+        if isinstance(k, str) and isinstance(v, str):
+            always_parameter_contexts[k] = v.strip()
+
+    tier2_recommendations: List[Tier2Recommendation] = []
+    for rec in data.get("tier2_recommendations", []):
+        tier2_recommendations.append(Tier2Recommendation(
+            variable_id=rec["variable_id"],
+            include=bool(rec.get("include", True)),
+            reason=str(rec.get("reason", "")),
+        ))
+    return industry_context, always_parameter_contexts, tier2_recommendations
+
+
+def _parse_generated_variables(data: Dict[str, Any]) -> tuple[List[VariableDefinition], Dict[str, str]]:
+    """Parse generated-variable response into typed definitions and rationales."""
+    generated_variables: List[VariableDefinition] = []
+    generated_variable_rationales: Dict[str, str] = {}
+    for g in data.get("generated_variables", []):
+        try:
+            v = _dict_to_variable_definition(g)
+            generated_variables.append(v)
+            generated_variable_rationales[v.id] = str(g.get("rationale", "")).strip()
+        except (KeyError, TypeError) as e:
+            logger.warning("Skipping malformed generated variable: %s", e)
+            continue
+    return generated_variables, generated_variable_rationales
+
+
 # =============================================================================
 # Main API
 # =============================================================================
@@ -268,45 +319,33 @@ async def generate_variables(companies: List[str], company_profiles: List[str] =
 
     client = LLMClient()
     model = settings.VARIABLE_GENERATOR_MODEL
-    prompt = _build_user_prompt(companies, company_profiles)
+    metadata_prompt = _build_metadata_prompt(companies, company_profiles)
+    dynamic_prompt = _build_dynamic_prompt(companies, company_profiles)
 
-    print(f"[Variable generation] Calling {model}...")
-    logger.info("Calling variable generator model: %s", model)
-    content = await client.complete_simple(
-        prompt=prompt,
-        system_prompt=SYSTEM_PROMPT,
-        temperature=0.3,
-        max_tokens=16000,
-        model_override=model,
+    print(f"[Variable generation] Calling split prompts via {model}...")
+    logger.info("Calling split variable generator prompts via model: %s", model)
+    metadata_content, dynamic_content = await asyncio.gather(
+        client.complete_simple(
+            prompt=metadata_prompt,
+            system_prompt=SYSTEM_PROMPT,
+            temperature=0.3,
+            max_tokens=METADATA_MAX_TOKENS,
+            model_override=model,
+        ),
+        client.complete_simple(
+            prompt=dynamic_prompt,
+            system_prompt=SYSTEM_PROMPT,
+            temperature=0.3,
+            max_tokens=DYNAMIC_MAX_TOKENS,
+            model_override=model,
+        ),
     )
-    print("[Variable generation] LLM response received, parsing...")
+    print("[Variable generation] Split LLM responses received, parsing...")
 
-    data = _extract_result_json(content)
-
-    industry_context = data.get("industry_context", "Unknown industry")
-    always_parameter_contexts: Dict[str, str] = {}
-    for k, v in data.get("always_parameter_contexts", {}).items():
-        if isinstance(k, str) and isinstance(v, str):
-            always_parameter_contexts[k] = v.strip()
-
-    tier2_recommendations: List[Tier2Recommendation] = []
-    for rec in data.get("tier2_recommendations", []):
-        tier2_recommendations.append(Tier2Recommendation(
-            variable_id=rec["variable_id"],
-            include=bool(rec.get("include", True)),
-            reason=str(rec.get("reason", "")),
-        ))
-
-    generated_variables: List[VariableDefinition] = []
-    generated_variable_rationales: Dict[str, str] = {}
-    for g in data.get("generated_variables", []):
-        try:
-            v = _dict_to_variable_definition(g)
-            generated_variables.append(v)
-            generated_variable_rationales[v.id] = str(g.get("rationale", "")).strip()
-        except (KeyError, TypeError) as e:
-            logger.warning("Skipping malformed generated variable: %s", e)
-            continue
+    metadata = _extract_result_json(metadata_content)
+    dynamic = _extract_result_json(dynamic_content)
+    industry_context, always_parameter_contexts, tier2_recommendations = _parse_metadata_result(metadata)
+    generated_variables, generated_variable_rationales = _parse_generated_variables(dynamic)
 
     return VariableGenerationResult(
         tier2_recommendations=tier2_recommendations,
