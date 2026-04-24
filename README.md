@@ -38,8 +38,10 @@ CompetelyClone automates competitive research by deploying parallel research age
 
 5. Edit `.env` with your actual API keys:
    - `SERPER_API_KEY`: Get from https://serper.dev/
-   - `ATLAS_CLOUD_API`: Get from https://atlascloud.ai/
    - `OPENROUTER_API_KEY`: Get from https://openrouter.ai/
+   - `ATLAS_CLOUD_API`: Optional rollback key for deprecated Atlas Cloud research models
+   - `EXA_API_KEY`: Optional semantic discovery key for the discovery rollout
+   - `FIRECRAWL_API_KEY`: Optional extraction key for the discovery rollout
 
 ## Usage
 

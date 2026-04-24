@@ -369,8 +369,8 @@ async def main():
             print(f"  ERROR: {error}")
         print("\n  Please configure your .env file with:")
         print("  - SERPER_API_KEY")
-        print("  - ATLAS_CLOUD_API")
         print("  - OPENROUTER_API_KEY")
+        print("  - ATLAS_CLOUD_API (only when using an Atlas Cloud research model)")
         sys.exit(1)
     print("  Configuration OK")
     

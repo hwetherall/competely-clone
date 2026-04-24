@@ -345,8 +345,15 @@ async def create_run(request: RunCreateRequest, background_tasks: BackgroundTask
     Use request.version = "v2" for the relational competitive intelligence pipeline.
     """
     from config.variables import get_all_variable_ids
+    from config.avis_variables import get_all_avis_variable_ids
+    from config.innovera_variables import get_all_innovera_variable_ids
 
-    valid_static = set(get_all_variable_ids())
+    parameter_path = getattr(request, "parameter_path", None) or "competely"
+    valid_static = (
+        set(get_all_variable_ids())
+        | set(get_all_avis_variable_ids())
+        | set(get_all_innovera_variable_ids())
+    )
     dynamic_ids = {d.id for d in (request.dynamic_variables or [])}
     invalid_vars = [
         v for v in request.variables
@@ -398,6 +405,7 @@ async def create_run(request: RunCreateRequest, background_tasks: BackgroundTask
             hypothesis=request.hypothesis or "",
             graveyard_companies=request.graveyard_companies,
             industry_context=request.industry_context or "",
+            parameter_path=parameter_path,
         )
     else:
         dynamic_var_dicts = [d.model_dump() for d in request.dynamic_variables] if request.dynamic_variables else None
@@ -410,6 +418,7 @@ async def create_run(request: RunCreateRequest, background_tasks: BackgroundTask
             dynamic_variables=dynamic_var_dicts,
             concurrency=request.concurrency,
             fast_mode=request.fast_mode,
+            parameter_path=parameter_path,
         )
 
     return RunCreateResponse(

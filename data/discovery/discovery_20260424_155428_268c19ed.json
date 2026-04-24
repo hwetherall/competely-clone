@@ -1,0 +1,342 @@
+{
+  "id": "discovery_20260424_155428_268c19ed",
+  "target_profile": {
+    "company_name": "Innovera",
+    "description": "At INNOVERA.AI, we have built an AI-native Decision Intelligence Platform where specialized AI agents create a live digital twin of any business initiative. Built on 40 years of Stanford research and protected by 3 patents, our platform combines stochastic modeling under uncertainty with domain experts and Forward Deployed Advisors in the loop — running simultaneous scenario paths, assigning probability weightings, and surfacing the optimal decision in a matter of days. Think of it as having a Top Tier Consultancy team in your pocket, working at the speed of AI — helping enterprises go from uncertainty to action across market entry, new venture validation, investment diligence, and technology selection.",
+    "website": "https://innovera.ai/",
+    "industry": "AI-native decision intelligence",
+    "audience": "Corporate innovators, strategy teams, and executives",
+    "notes": null
+  },
+  "framing_seeds": {
+    "direct": "Other AI-native decision intelligence, strategy, market research, competitive analysis, or initiative digital-twin platforms.",
+    "problem_sharer": "Consulting firms and expert networks solving strategic decisions under uncertainty, including blended AI plus human models such as McKinsey QuantumBlack, BCG X, Bain Vector, Accenture, GLG, and Third Bridge.",
+    "category_sharer": "Multi-agent AI research, enterprise knowledge, analyst, and market-intelligence platforms with adjacent solution shapes, such as Glean, Hebbia, Rogo, AlphaSense, and AI analyst tools.",
+    "adjacency": "Big 4 firms, foundation-model labs, CRMs/ERPs, Palantir-like decision layers, sovereign funds, and trading houses with data, capital, or distribution that could enter decision intelligence."
+  },
+  "candidates": [
+    {
+      "name": "Boston Consulting Group (BCG)",
+      "canonical_domain": "bcg.com",
+      "framings": [
+        "problem_sharer",
+        "adjacency"
+      ],
+      "rationales": {
+        "problem_sharer": "BCG's tech and AI venture arm delivering AI-native strategy and decision support to enterprises, directly competing on strategic decision intelligence.",
+        "adjacency": "BCG is actively building AI-native strategy and agent platforms (AI Platforms Group, enterprise agents briefing) and advising 1,000+ clients on AI transformation — giving it the brand, distribution, and IP to pivot into packaged decision intelligence competing directly with Innovera."
+      },
+      "evidence_urls": [
+        "https://rtslabs.com/leading-ai-consulting-firms-2024",
+        "https://www.bcg.com/publications/2026/the-corporate-strategy-function-in-an-ai-first-world",
+        "https://www.bcg.com/assets/2025/building-effective-enterprise-agents.pdf",
+        "https://www.bcg.com/publications/2026/scaling-ai-requires-new-processes-not-just-new-tools"
+      ],
+      "confidence": 0.81,
+      "discovered_at": "2026-04-24T21:55:54.415418Z"
+    },
+    {
+      "name": "McKinsey QuantumBlack",
+      "canonical_domain": "quantumblack.com",
+      "framings": [
+        "problem_sharer"
+      ],
+      "rationales": {
+        "problem_sharer": "AI-augmented strategy consulting arm of McKinsey solving strategic decisions under uncertainty with blended AI and human expertise."
+      },
+      "evidence_urls": [
+        "https://rtslabs.com/leading-ai-consulting-firms-2024",
+        "https://agent.nexus/compare/outsourcing/nexus-vs-mckinsey-quantumblack/",
+        "https://agent.nexus/blog/mckinsey-ai-alternatives"
+      ],
+      "confidence": 0.49,
+      "discovered_at": "2026-04-24T21:55:54.415418Z"
+    },
+    {
+      "name": "Aokah",
+      "canonical_domain": "aokah.com",
+      "framings": [
+        "direct"
+      ],
+      "rationales": {
+        "direct": "AI-powered platform compressing weeks of strategy analysis into days with scenario-driven frameworks and board-ready business cases for enterprise decisions — directly parallel to Innovera's speed-to-decision value proposition."
+      },
+      "evidence_urls": [
+        "https://swadesi.com/news/aokah-launches-explorer-and-builder-the-first-ai-powered-platform-to-t-mob7tb9n",
+        "https://www.prnewswire.com/in/news-releases/aokah-launches-explorer-and-builder-the-first-ai-powered-platform-to-take-enterprises-from-gcc-strategy-to-execution-302751379.html"
+      ],
+      "confidence": 0.43,
+      "discovered_at": "2026-04-24T21:55:54.415418Z"
+    },
+    {
+      "name": "Agent Nexus",
+      "canonical_domain": "agent.nexus",
+      "framings": [
+        "problem_sharer"
+      ],
+      "rationales": {
+        "problem_sharer": "AI-native alternative to top-tier consulting firms, positioning directly against McKinsey and Deloitte for strategic decision support with agentic AI."
+      },
+      "evidence_urls": [
+        "https://agent.nexus/blog/mckinsey-ai-alternatives",
+        "https://agent.nexus/compare/outsourcing/nexus-vs-mckinsey-quantumblack/",
+        "https://agent.nexus/blog/deloitte-ai-alternatives/"
+      ],
+      "confidence": 0.42,
+      "discovered_at": "2026-04-24T21:55:54.415418Z"
+    },
+    {
+      "name": "Quantellia (World Modeler)",
+      "canonical_domain": "quantellia.com",
+      "framings": [
+        "direct"
+      ],
+      "rationales": {
+        "direct": "Self-service Decision Intelligence platform that creates a digital twin of decisions, simulates outcomes under uncertainty, and connects AI to business outcomes — nearly identical solution shape to Innovera."
+      },
+      "evidence_urls": [
+        "https://quantellia.com/worldmodeler/"
+      ],
+      "confidence": 0.37,
+      "discovered_at": "2026-04-24T21:55:54.415418Z"
+    },
+    {
+      "name": "AlphaSense",
+      "canonical_domain": "alpha-sense.com",
+      "framings": [
+        "category_sharer"
+      ],
+      "rationales": {
+        "category_sharer": "Enterprise market intelligence platform using AI to surface insights from financial documents and research — same solution shape (AI-driven analysis for strategic decisions) aimed at strategy and investment teams."
+      },
+      "evidence_urls": [
+        "https://alpha-sense.com/",
+        "https://prod.alpha-sense.com/compare/hebbia-alternatives/"
+      ],
+      "confidence": 0.37,
+      "discovered_at": "2026-04-24T21:55:54.415418Z"
+    },
+    {
+      "name": "Aera Technology",
+      "canonical_domain": "aeratechnology.com",
+      "framings": [
+        "direct"
+      ],
+      "rationales": {
+        "direct": "Agentic Decision Intelligence Platform (Aera Decision Cloud) that automates and optimizes business decisions in real time using AI agents — direct competitor in the AI-native decision intelligence space."
+      },
+      "evidence_urls": [
+        "https://www.aeratechnology.com/simulation-and-planning"
+      ],
+      "confidence": 0.36,
+      "discovered_at": "2026-04-24T21:55:54.415418Z"
+    },
+    {
+      "name": "Syntari AI",
+      "canonical_domain": "syntari-ai.com",
+      "framings": [
+        "problem_sharer"
+      ],
+      "rationales": {
+        "problem_sharer": "AI operating platform for consultants and enterprise strategy teams turning insight into action, competing on AI-augmented strategic decision-making."
+      },
+      "evidence_urls": [
+        "https://syntari-ai.com/solutions",
+        "https://syntari-ai.com/platforms/amplifi"
+      ],
+      "confidence": 0.36,
+      "discovered_at": "2026-04-24T21:55:54.415418Z"
+    },
+    {
+      "name": "Hebbia",
+      "canonical_domain": "hebbia.com",
+      "framings": [
+        "category_sharer"
+      ],
+      "rationales": {
+        "category_sharer": "Multi-agent AI research platform for enterprise knowledge work, enabling analysts and executives to synthesize complex documents into structured decisions — adjacent solution shape to Innovera's decision intelligence."
+      },
+      "evidence_urls": [
+        "https://hebbia.com/",
+        "https://www.hebbia.com/resources/alphasense-competitors"
+      ],
+      "confidence": 0.36,
+      "discovered_at": "2026-04-24T21:55:54.415418Z"
+    },
+    {
+      "name": "Deloitte AI",
+      "canonical_domain": "deloitte.com",
+      "framings": [
+        "problem_sharer"
+      ],
+      "rationales": {
+        "problem_sharer": "Major consulting firm with AI-augmented strategy and decision intelligence offerings, blending human expertise with AI tools for enterprise clients."
+      },
+      "evidence_urls": [
+        "https://rtslabs.com/leading-ai-consulting-firms-2024",
+        "https://agent.nexus/blog/deloitte-ai-alternatives/"
+      ],
+      "confidence": 0.35,
+      "discovered_at": "2026-04-24T21:55:54.415418Z"
+    },
+    {
+      "name": "ArcSyne",
+      "canonical_domain": "arcsyne.com",
+      "framings": [
+        "direct"
+      ],
+      "rationales": {
+        "direct": "AI-enabled scenario advisor for executives delivering no-regrets strategic moves in hours instead of weeks, with human-in-the-loop expert guidance — same problem shape as Innovera's decision intelligence platform."
+      },
+      "evidence_urls": [
+        "https://www.arcsyne.com/"
+      ],
+      "confidence": 0.35,
+      "discovered_at": "2026-04-24T21:55:54.415418Z"
+    },
+    {
+      "name": "Palantir Technologies",
+      "canonical_domain": "palantir.com",
+      "framings": [
+        "adjacency"
+      ],
+      "rationales": {
+        "adjacency": "Palantir Foundry already operates as a decision-layer platform with ontology-based modeling, scenario analysis, and enterprise data integration — a direct adjacency to Innovera's decision intelligence positioning."
+      },
+      "evidence_urls": [
+        "https://www.digetiers-dap.com/post/palantir-foundry-alternatives",
+        "http://www.palantir.com/docs/foundry/platform-overview/overview",
+        "https://www.palantir.com/newsroom/press-releases/"
+      ],
+      "confidence": 0.33,
+      "discovered_at": "2026-04-24T21:55:54.415418Z"
+    },
+    {
+      "name": "IBM Consulting",
+      "canonical_domain": "ibm.com",
+      "framings": [
+        "problem_sharer"
+      ],
+      "rationales": {
+        "problem_sharer": "Large-scale AI consulting firm offering blended AI and human advisory services for enterprise strategic decisions."
+      },
+      "evidence_urls": [
+        "https://rtslabs.com/leading-ai-consulting-firms-2024",
+        "https://www.neudesic.com/blog/top-ai-consulting-services-2024/"
+      ],
+      "confidence": 0.31,
+      "discovered_at": "2026-04-24T21:55:54.415418Z"
+    },
+    {
+      "name": "NitroLens AI",
+      "canonical_domain": "nitrolens.ai",
+      "framings": [
+        "problem_sharer"
+      ],
+      "rationales": {
+        "problem_sharer": "Agent-led AI strategy platform built by ex-McKinsey consultants offering consulting-grade strategic reasoning and decision support — same problem, AI-native solution."
+      },
+      "evidence_urls": [
+        "https://www.nitrolens.ai/"
+      ],
+      "confidence": 0.3,
+      "discovered_at": "2026-04-24T21:55:54.415418Z"
+    },
+    {
+      "name": "Anaplan",
+      "canonical_domain": "anaplan.com",
+      "framings": [
+        "direct"
+      ],
+      "rationales": {
+        "direct": "AI-driven scenario planning and analysis platform connecting enterprise data for predictive decision-making — overlaps with Innovera's scenario modeling and strategy intelligence for executives."
+      },
+      "evidence_urls": [
+        "http://anaplan.com/platform/"
+      ],
+      "confidence": 0.3,
+      "discovered_at": "2026-04-24T21:55:54.415418Z"
+    },
+    {
+      "name": "NexStrat AI",
+      "canonical_domain": "nexstrat.ai",
+      "framings": [
+        "problem_sharer"
+      ],
+      "rationales": {
+        "problem_sharer": "End-to-end agentic AI consulting platform built by MBB alumni to deliver strategy-grade decision support at speed, targeting the same enterprise strategy audience."
+      },
+      "evidence_urls": [
+        "https://www.nexstrat.ai/ai-for-consultants"
+      ],
+      "confidence": 0.29,
+      "discovered_at": "2026-04-24T21:55:54.415418Z"
+    },
+    {
+      "name": "Pluvo",
+      "canonical_domain": "pluvo.io",
+      "framings": [
+        "direct"
+      ],
+      "rationales": {
+        "direct": "AI-native decision intelligence platform with agentic AI orchestration for scenario planning and high-confidence strategic decisions — fits the same problem and solution shape as Innovera."
+      },
+      "evidence_urls": [
+        "https://www.ventureradar.com/organisation/Pluvo/1498af39-5a19-4242-a299-713994259deb"
+      ],
+      "confidence": 0.29,
+      "discovered_at": "2026-04-24T21:55:54.415418Z"
+    },
+    {
+      "name": "Abacum",
+      "canonical_domain": "abacum.ai",
+      "framings": [
+        "direct"
+      ],
+      "rationales": {
+        "direct": "AI-native scenario planning software targeting strategy and finance teams with multi-scenario modeling and actionable insights — partial overlap with Innovera's initiative validation and decision intelligence use cases."
+      },
+      "evidence_urls": [
+        "https://www.abacum.ai/use-cases/scenario-planning"
+      ],
+      "confidence": 0.27,
+      "discovered_at": "2026-04-24T21:55:54.415418Z"
+    },
+    {
+      "name": "Rocket",
+      "canonical_domain": "rocket.new",
+      "framings": [
+        "category_sharer",
+        "adjacency"
+      ],
+      "rationales": {
+        "category_sharer": "Required Innovera discovery option: AI-native product/application generation platform with an adjacent multi-agent workflow shape.",
+        "adjacency": "Required Innovera discovery option: could sit near initiative validation, prototyping, and execution workflows connected to decision intelligence."
+      },
+      "evidence_urls": [
+        "https://www.rocket.new/"
+      ],
+      "confidence": 0.27,
+      "discovered_at": "2026-04-24T21:55:54.415418Z"
+    },
+    {
+      "name": "GLG",
+      "canonical_domain": "glginsights.com",
+      "framings": [
+        "problem_sharer"
+      ],
+      "rationales": {
+        "problem_sharer": "Expert network providing human-in-the-loop strategic intelligence and decision support to corporate and investment clients under uncertainty."
+      },
+      "evidence_urls": [
+        "https://rtslabs.com/leading-ai-consulting-firms-2024"
+      ],
+      "confidence": 0.25,
+      "discovered_at": "2026-04-24T21:55:54.415418Z"
+    }
+  ],
+  "status": "complete",
+  "created_at": "2026-04-24T21:54:28.516575Z",
+  "updated_at": "2026-04-24T21:55:54.416307Z",
+  "error": null
+}

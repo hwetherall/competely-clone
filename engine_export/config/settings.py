@@ -48,11 +48,11 @@ OPENROUTER_BASE_URL: str = "https://openrouter.ai/api/v1"
 
 # Fast model for summarization (doesn't need agentic capabilities)
 # Using OpenRouter for this model
-SUMMARIZE_MODEL: str = os.getenv("SUMMARIZE_MODEL", "deepseek/deepseek-v3.2")
+SUMMARIZE_MODEL: str = os.getenv("SUMMARIZE_MODEL", "deepseek/deepseek-v4-flash")
 
 # Variable generator: fast model for strategic parameter generation (OpenRouter)
 VARIABLE_GENERATOR_MODEL: str = os.getenv(
-    "VARIABLE_GENERATOR_MODEL", "deepseek/deepseek-v3.2"
+    "VARIABLE_GENERATOR_MODEL", "deepseek/deepseek-v4-flash"
 )
 
 # Legacy alias for backward compatibility (defaults to RESEARCH_MODEL)
@@ -142,7 +142,7 @@ CHAT_MODEL: str = os.getenv("CHAT_MODEL", "x-ai/grok-4.1-fast")
 # =============================================================================
 
 # Fast tasks: clarification Qs, custom params, confidence preview
-PLAN_FAST_MODEL: str = os.getenv("PLAN_FAST_MODEL", "deepseek/deepseek-v3.2")
+PLAN_FAST_MODEL: str = os.getenv("PLAN_FAST_MODEL", "deepseek/deepseek-v4-flash")
 # Intelligence questions: fast chained questions to steer downstream generation
 PLAN_INTELLIGENCE_MODEL: str = os.getenv(
     "PLAN_INTELLIGENCE_MODEL", "meta-llama/llama-4-maverick"

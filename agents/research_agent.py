@@ -62,6 +62,19 @@ logger = logging.getLogger(__name__)
 # Model configuration
 RESEARCH_MODEL = settings.RESEARCH_MODEL
 SUMMARIZE_MODEL = settings.SUMMARIZE_MODEL
+SUMMARIZE_FALLBACK_MODEL = settings.SUMMARIZE_FALLBACK_MODEL
+
+
+def create_search_client() -> SearchClient:
+    """Create the configured search client for research workflows."""
+    provider = settings.SEARCH_PROVIDER.lower()
+    if provider == "exa":
+        from agents.exa_client import ExaClient
+
+        return ExaClient()
+    if provider == "hybrid":
+        logger.warning("SEARCH_PROVIDER=hybrid is not implemented for research yet; using Serper.")
+    return SearchClient()
 
 
 # =============================================================================
@@ -195,7 +208,7 @@ class ResearchAgent:
             enable_verification: Override for numeric verification (default from settings)
             variable_lookup: Optional dict of variable_id -> VariableDefinition for dynamic variables
         """
-        self.search_client = search_client or SearchClient()
+        self.search_client = search_client or create_search_client()
         self.llm_client = llm_client or LLMClient()
         self.page_reader = page_reader or get_page_reader()
         self.max_iterations = max_iterations or settings.MAX_RESEARCH_ITERATIONS
@@ -463,6 +476,7 @@ class ResearchAgent:
                 temperature=0.7,
                 max_tokens=1000,
                 model_override=SUMMARIZE_MODEL,
+                fallback_model=SUMMARIZE_FALLBACK_MODEL,
             )
             
             if not response:
@@ -523,6 +537,7 @@ class ResearchAgent:
                     temperature=0.3,
                     max_tokens=16000 if model == RESEARCH_MODEL else 10000,
                     model_override=model,
+                    fallback_model=SUMMARIZE_FALLBACK_MODEL if model == SUMMARIZE_MODEL else None,
                 )
                 
                 if response and response.strip():
@@ -622,6 +637,7 @@ class ResearchAgent:
                     temperature=0.5,
                     max_tokens=16000 if model == RESEARCH_MODEL else 4000,
                     model_override=model,
+                    fallback_model=SUMMARIZE_FALLBACK_MODEL if model == SUMMARIZE_MODEL else None,
                 )
                 
                 if response and response.strip():
@@ -725,6 +741,7 @@ class ResearchAgent:
                     temperature=0.3,
                     max_tokens=4000,
                     model_override=SUMMARIZE_MODEL,
+                    fallback_model=SUMMARIZE_FALLBACK_MODEL,
                 )
                 
                 if fixed and fixed.strip():
@@ -762,6 +779,7 @@ Write clear, factual prose with specific numbers when available."""
                 temperature=0.3,
                 max_tokens=500,
                 model_override=SUMMARIZE_MODEL,
+                fallback_model=SUMMARIZE_FALLBACK_MODEL,
             )
             
             if not response:
@@ -799,6 +817,7 @@ Write clear, factual prose with specific numbers when available."""
                 temperature=0.3,
                 max_tokens=300,
                 model_override=SUMMARIZE_MODEL,
+                fallback_model=SUMMARIZE_FALLBACK_MODEL,
             )
             
             if response:

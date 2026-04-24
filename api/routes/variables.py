@@ -11,6 +11,7 @@ sys.path.insert(0, str(project_root))
 
 from config.variables import VARIABLES, get_variables_by_category, get_always_variables
 from config.avis_variables import get_avis_always, get_avis_sometimes
+from config.innovera_variables import get_innovera_always
 from api.models import (
     VariableResponse,
     VariableCategoryResponse,
@@ -57,13 +58,16 @@ async def list_variables():
 async def generate_variables(request: GenerateVariablesRequest):
     """
     Generate smart parameters based on the Set of Competitors (SoC).
-    Supports two paths: 'competely' (product comparison) and 'avis' (investment thesis).
+    Supports three paths: 'competely' (product comparison), 'avis' (investment
+    thesis), and 'innovera' (Innovera-tuned business model deep dive).
     """
     path = getattr(request, "parameter_path", "competely") or "competely"
     print(f"[Variable generation] Path: {path}, companies: {request.companies}, profiles: {request.company_profiles}")
 
     if path == "avis":
         return await _generate_avis(request)
+    if path == "innovera":
+        return _generate_innovera(request)
     return await _generate_competely(request)
 
 
@@ -150,4 +154,29 @@ async def _generate_avis(request: GenerateVariablesRequest) -> VariableGeneratio
         always_parameter_contexts=result.always_parameter_contexts,
         tier2_recommendations=tier2,
         generated_variables=generated,
+    )
+
+
+def _generate_innovera(request: GenerateVariablesRequest) -> VariableGenerationResponse:
+    """Innovera path: fixed Zamir-requested deep-dive lens."""
+    always = get_innovera_always()
+    always_variables = [
+        VariableResponse(id=v.id, name=v.name, category=v.category, description=None)
+        for v in always
+    ]
+    contexts = {
+        "inv_offer_shape": "Shows whether a competitor has a narrower or faster package Innovera can learn from.",
+        "inv_gtm_motion": "Reveals how competitors sell decision intelligence, AI research, and blended consulting offers.",
+        "inv_client_engagement": "Compares onboarding, cadence, and human touchpoints against Innovera's expert-in-the-loop model.",
+        "inv_ai_human_blend": "Tests whether consulting firms and AI-native platforms are ahead or behind on AI plus human delivery.",
+        "inv_size_signals": "Anchors threat level with revenue, customers, funding, headcount, and adoption evidence.",
+        "inv_speed_to_market": "Identifies the wedge and execution pattern behind smaller, faster-to-market offers.",
+        "inv_takeaway_for_innovera": "Synthesizes what Innovera should copy, avoid, monitor, or test next.",
+    }
+    return VariableGenerationResponse(
+        industry_context="Innovera lens: AI-native decision intelligence, market research, competitive analysis, and blended AI plus human consulting.",
+        always_variables=always_variables,
+        always_parameter_contexts=contexts,
+        tier2_recommendations=[],
+        generated_variables=[],
     )

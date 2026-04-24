@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useCallback } from "react";
-import { useRouter } from "next/navigation";
+import { Suspense, useState, useCallback, useMemo } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Header } from "@/components/layout/Header";
 import { CompanyInput } from "@/components/runs/CompanyInput";
 import { SmartVariableSelector } from "@/components/runs/VariableSelector";
@@ -11,7 +11,7 @@ import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { Switch } from "@/components/ui/switch";
 import { useCreateRun, useGenerateVariables } from "@/lib/api";
-import type { VariableGenerationResponse, DynamicVariableDefinition } from "@/lib/types";
+import type { VariableGenerationResponse, DynamicVariableDefinition, ParameterPath } from "@/lib/types";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import {
@@ -26,6 +26,9 @@ import {
   Rocket,
   Factory,
   TrendingUp,
+  BarChart3,
+  Landmark,
+  Workflow,
 } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 
@@ -38,12 +41,48 @@ function getDefaultSelection(data: VariableGenerationResponse): string[] {
   return [...alwaysIds, ...tier2Included, ...generatedIds];
 }
 
+type QueryParams = {
+  get: (name: string) => string | null;
+  getAll: (name: string) => string[];
+};
+
+function getInitialCompanies(params: QueryParams): string[] {
+  const queryCompanies = [
+    ...params.getAll("company"),
+    ...(params.get("companies") ?? "")
+      .split(/\n|,/)
+      .map((company) => company.trim())
+      .filter(Boolean),
+  ];
+  return [...new Set(queryCompanies)];
+}
+
+function getInitialParameterPath(params: QueryParams): ParameterPath {
+  const queryPath = params.get("parameter_path");
+  if (queryPath === "competely" || queryPath === "avis" || queryPath === "innovera") {
+    return queryPath;
+  }
+  return "competely";
+}
+
 export default function NewRunPage() {
+  return (
+    <Suspense fallback={null}>
+      <NewRunPageContent />
+    </Suspense>
+  );
+}
+
+function NewRunPageContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const createRun = useCreateRun();
   const generateVariables = useGenerateVariables();
 
-  const [companies, setCompanies] = useState<string[]>([]);
+  const initialCompanies = useMemo(() => getInitialCompanies(searchParams), [searchParams]);
+  const initialParameterPath = useMemo(() => getInitialParameterPath(searchParams), [searchParams]);
+
+  const [companies, setCompanies] = useState<string[]>(initialCompanies);
   const [generatedData, setGeneratedData] = useState<VariableGenerationResponse | null>(null);
   const [selectedVariableIds, setSelectedVariableIds] = useState<string[]>([]);
   const [dynamicVariableDefs, setDynamicVariableDefs] = useState<DynamicVariableDefinition[]>([]);
@@ -51,6 +90,7 @@ export default function NewRunPage() {
   const [useV2, setUseV2] = useState(false);
   const [ventureContext, setVentureContext] = useState("");
   const [companyProfiles, setCompanyProfiles] = useState<string[]>(["public_mature"]);
+  const [parameterPath, setParameterPath] = useState<ParameterPath>(initialParameterPath);
 
   const totalCells = companies.length * selectedVariableIds.length;
   const estimatedMinutes = Math.ceil(totalCells * (fastMode ? 0.3 : 0.5));
@@ -65,6 +105,7 @@ export default function NewRunPage() {
       const result = await generateVariables.mutateAsync({
         companies,
         company_profiles: companyProfiles,
+        parameter_path: parameterPath,
       });
       setGeneratedData(result);
       setSelectedVariableIds(getDefaultSelection(result));
@@ -122,6 +163,7 @@ export default function NewRunPage() {
         concurrency: 3,
         version: useV2 ? "v2" : "v1",
         venture_context: ventureContext.trim() || undefined,
+        parameter_path: parameterPath,
       });
       router.push(`/runs/${result.run_id}`);
     } catch (error) {
@@ -271,6 +313,62 @@ export default function NewRunPage() {
               </CardDescription>
             </CardHeader>
             <CardContent>
+              <div className="mb-6 grid gap-3 md:grid-cols-3">
+                <button
+                  type="button"
+                  onClick={() => setParameterPath("competely")}
+                  className={cn(
+                    "rounded-md border-2 p-4 text-left transition-colors hover:bg-accent",
+                    parameterPath === "competely"
+                      ? "border-primary bg-primary/5"
+                      : "border-muted"
+                  )}
+                >
+                  <div className="mb-2 flex items-center gap-2">
+                    <BarChart3 className="h-5 w-5 text-primary" />
+                    <span className="text-sm font-semibold">Competely</span>
+                  </div>
+                  <p className="text-xs leading-relaxed text-muted-foreground">
+                    Product-comparison lens for features, pricing, customers, and market position.
+                  </p>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setParameterPath("avis")}
+                  className={cn(
+                    "rounded-md border-2 p-4 text-left transition-colors hover:bg-accent",
+                    parameterPath === "avis"
+                      ? "border-primary bg-primary/5"
+                      : "border-muted"
+                  )}
+                >
+                  <div className="mb-2 flex items-center gap-2">
+                    <Landmark className="h-5 w-5 text-primary" />
+                    <span className="text-sm font-semibold">AVIS</span>
+                  </div>
+                  <p className="text-xs leading-relaxed text-muted-foreground">
+                    Investment-thesis lens for moats, funding, GTM, team, IP, and exit readiness.
+                  </p>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setParameterPath("innovera")}
+                  className={cn(
+                    "rounded-md border-2 p-4 text-left transition-colors hover:bg-accent",
+                    parameterPath === "innovera"
+                      ? "border-primary bg-primary/5"
+                      : "border-muted"
+                  )}
+                >
+                  <div className="mb-2 flex items-center gap-2">
+                    <Workflow className="h-5 w-5 text-primary" />
+                    <span className="text-sm font-semibold">Innovera lens</span>
+                  </div>
+                  <p className="text-xs leading-relaxed text-muted-foreground">
+                    Business-model deep dive for AI-native and blended AI plus human competitors.
+                  </p>
+                </button>
+              </div>
               <Button
                 size="lg"
                 disabled={!canGenerate || generateVariables.isPending}

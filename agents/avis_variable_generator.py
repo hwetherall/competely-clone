@@ -302,6 +302,7 @@ async def generate_avis_variables(
 
     client = LLMClient()
     model = settings.VARIABLE_GENERATOR_MODEL
+    fallback_model = settings.VARIABLE_GENERATOR_FALLBACK_MODEL
     metadata_prompt = _build_avis_metadata_prompt(companies, company_profiles)
     dynamic_prompt = _build_avis_dynamic_prompt(companies, company_profiles)
 
@@ -314,6 +315,7 @@ async def generate_avis_variables(
             temperature=0.3,
             max_tokens=METADATA_MAX_TOKENS,
             model_override=model,
+            fallback_model=fallback_model,
         ),
         client.complete_simple(
             prompt=dynamic_prompt,
@@ -321,6 +323,7 @@ async def generate_avis_variables(
             temperature=0.3,
             max_tokens=DYNAMIC_MAX_TOKENS,
             model_override=model,
+            fallback_model=fallback_model,
         ),
     )
     print("[AVIS variable generation] Split LLM responses received, parsing...")

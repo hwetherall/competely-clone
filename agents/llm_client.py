@@ -2,8 +2,8 @@
 LLM client for interacting with language models via multiple providers.
 
 Supports:
-- Atlas Cloud (primary provider for Tongyi DeepResearch)
-- OpenRouter (fallback provider for other models)
+- OpenRouter (default provider for research and synthesis models)
+- Atlas Cloud (deprecated provider, opt-in via configuration)
 
 Provides async and sync interfaces for:
 - Chat completions
@@ -82,8 +82,8 @@ class LLMClient:
     Client for LLM completions via multiple providers.
     
     Routes requests to the appropriate provider based on the model:
-    - Atlas Cloud: For Tongyi DeepResearch models
-    - OpenRouter: For other models (Llama, etc.)
+    - Atlas Cloud: For explicitly configured Atlas Cloud models
+    - OpenRouter: For all other models
     
     Example:
         client = LLMClient()
@@ -116,7 +116,12 @@ class LLMClient:
             "atlascloud": {
                 "api_key": settings.ATLASCLOUD_API_KEY,
                 "base_url": settings.ATLASCLOUD_BASE_URL,
-                "models": ["Alibaba-NLP/Tongyi-DeepResearch-30B-A3B"],  # Models hosted on Atlas Cloud
+                "models": settings.ATLASCLOUD_MODELS,
+            },
+            "xai": {
+                "api_key": settings.XAI_API_KEY,
+                "base_url": settings.XAI_BASE_URL,
+                "models": [],  # Direct xAI routing is selected by model prefix when configured.
             },
             "openrouter": {
                 "api_key": settings.OPENROUTER_API_KEY,
@@ -132,10 +137,26 @@ class LLMClient:
             self.providers["openrouter"]["base_url"] = base_url
         
         # Check API keys
-        if not self.providers["atlascloud"]["api_key"]:
-            logger.warning("No Atlas Cloud API key configured. Tongyi model calls may fail.")
+        if self.providers["atlascloud"]["models"] and not self.providers["atlascloud"]["api_key"]:
+            logger.warning("Atlas Cloud models are configured, but no Atlas Cloud API key is set.")
+        if not self.providers["xai"]["api_key"] and self.model.startswith(("x-ai/", "grok-")):
+            logger.warning("No xAI API key configured. xAI model calls will use OpenRouter if available.")
         if not self.providers["openrouter"]["api_key"]:
-            logger.warning("No OpenRouter API key configured. Fallback model calls may fail.")
+            logger.warning("No OpenRouter API key configured. OpenRouter model calls may fail.")
+
+    @staticmethod
+    def _to_xai_model(model: str) -> str:
+        """Map OpenRouter-style xAI slugs to direct xAI API model ids."""
+        aliases = {
+            "x-ai/grok-4.1-fast": "grok-4-1-fast-non-reasoning",
+            "x-ai/grok-4.1-fast:reasoning": "grok-4-1-fast-reasoning",
+            "x-ai/grok-4.1-fast:non-reasoning": "grok-4-1-fast-non-reasoning",
+        }
+        if model in aliases:
+            return aliases[model]
+        if model.startswith("x-ai/"):
+            return model.removeprefix("x-ai/").replace(".", "-")
+        return model
     
     def _get_provider_for_model(self, model: str) -> Tuple[str, str, str]:
         """
@@ -151,6 +172,11 @@ class LLMClient:
         if model in self.providers["atlascloud"]["models"]:
             provider = self.providers["atlascloud"]
             return provider["api_key"], provider["base_url"], "atlascloud"
+
+        # Prefer direct xAI for xAI models when XAI_API_KEY is configured.
+        if self.providers["xai"]["api_key"] and model.startswith(("x-ai/", "grok-")):
+            provider = self.providers["xai"]
+            return provider["api_key"], provider["base_url"], "xai"
         
         # Default to OpenRouter for all other models
         provider = self.providers["openrouter"]
@@ -202,9 +228,10 @@ class LLMClient:
         url = f"{base_url}/chat/completions"
         
         logger.debug(f"Using provider '{provider_name}' for model '{effective_model}'")
+        provider_model = self._to_xai_model(effective_model) if provider_name == "xai" else effective_model
         
         payload = {
-            "model": effective_model,
+            "model": provider_model,
             "messages": messages,
             "temperature": temperature,
             "max_tokens": max_tokens,
@@ -352,15 +379,6 @@ class LLMClient:
             content = message.get("content") or ""
             finish_reason = choice.get("finish_reason", "unknown")
             
-            # Handle Tongyi DeepResearch format: it may put thinking in "reasoning" field
-            # and final answer in "content". If content is empty, extract from reasoning.
-            if not content and "reasoning" in message:
-                reasoning = message.get("reasoning") or ""
-                # The reasoning contains the model's thinking - extract useful content
-                # For DeepResearch, the final answer appears after reasoning completes
-                logger.debug(f"Using reasoning field ({len(reasoning)} chars)")
-                content = reasoning
-            
             # Handle case where content is still empty
             if not content:
                 # Check if there's a delta (streaming response) or other content fields
@@ -408,9 +426,10 @@ class LLMClient:
         effective_model = model_override or self.model
         api_key, base_url, provider_name = self._get_provider_for_model(effective_model)
         url = f"{base_url}/chat/completions"
+        provider_model = self._to_xai_model(effective_model) if provider_name == "xai" else effective_model
 
         payload = {
-            "model": effective_model,
+            "model": provider_model,
             "messages": messages,
             "temperature": temperature,
             "max_tokens": max_tokens,

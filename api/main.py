@@ -19,7 +19,7 @@ sys.path.insert(0, str(project_root))
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from api.routes import runs_router, variables_router, plans_router, chat_router
+from api.routes import runs_router, variables_router, plans_router, chat_router, discovery_router
 
 # Create FastAPI app
 app = FastAPI(
@@ -46,6 +46,7 @@ app.include_router(runs_router, prefix="/api/runs", tags=["runs"])
 app.include_router(variables_router, prefix="/api/variables", tags=["variables"])
 app.include_router(plans_router, prefix="/api/plans", tags=["plans"])
 app.include_router(chat_router, prefix="/api/chat", tags=["chat"])
+app.include_router(discovery_router, prefix="/api/discovery", tags=["discovery"])
 
 
 @app.get("/")

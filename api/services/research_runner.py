@@ -15,7 +15,9 @@ from typing import List, Optional, Dict, Any
 project_root = Path(__file__).parent.parent.parent
 sys.path.insert(0, str(project_root))
 
-from agents.research_agent import ResearchAgent, ResearchResult
+from agents.research_agent import ResearchAgent, ResearchResult, ResearchSource
+from agents.llm_client import LLMClient
+from config.innovera_profile import INNOVERA_PROFILE
 from config.variables import VARIABLES, get_variable, VariableDefinition
 
 # Results directory
@@ -25,10 +27,20 @@ RESULTS_DIR = project_root / "data" / "results"
 def _build_variable_lookup(
     variable_ids: List[str],
     dynamic_variables: Optional[List[Dict[str, Any]]] = None,
+    parameter_path: str = "competely",
 ) -> Dict[str, VariableDefinition]:
     """Build variable_id -> VariableDefinition from static config and optional dynamic definitions."""
     lookup: Dict[str, VariableDefinition] = {}
     dynamic_by_id = {d["id"]: d for d in (dynamic_variables or [])}
+    static_lookups = []
+    if parameter_path == "avis":
+        from config.avis_variables import get_avis_variable
+        static_lookups.append(get_avis_variable)
+    if parameter_path == "innovera":
+        from config.innovera_variables import get_innovera_variable
+        static_lookups.append(get_innovera_variable)
+    static_lookups.append(get_variable)
+
     for var_id in variable_ids:
         if var_id in dynamic_by_id:
             d = dynamic_by_id[var_id]
@@ -45,8 +57,22 @@ def _build_variable_lookup(
                 tier="dynamic",
             )
         else:
-            lookup[var_id] = get_variable(var_id)
+            for get_static_variable in static_lookups:
+                try:
+                    lookup[var_id] = get_static_variable(var_id)
+                    break
+                except ValueError:
+                    continue
+            if var_id not in lookup:
+                raise ValueError(f"Unknown variable: {var_id}")
     return lookup
+
+
+INNOVERA_TAKEAWAY_ID = "inv_takeaway_for_innovera"
+
+
+def _is_innovera_takeaway_requested(variables: List[str], parameter_path: str) -> bool:
+    return parameter_path == "innovera" and INNOVERA_TAKEAWAY_ID in variables
 
 
 class ResearchRunner:
@@ -72,6 +98,7 @@ class ResearchRunner:
         dynamic_variables: Optional[List[Dict[str, Any]]] = None,
         concurrency: int = 3,
         fast_mode: bool = False,
+        parameter_path: str = "competely",
     ):
         """
         Synchronous wrapper for run_research to use with BackgroundTasks.
@@ -83,6 +110,7 @@ class ResearchRunner:
             dynamic_variables=dynamic_variables,
             concurrency=concurrency,
             fast_mode=fast_mode,
+            parameter_path=parameter_path,
         ))
     
     def _update_progress(
@@ -199,6 +227,158 @@ class ResearchRunner:
                 )
                 
                 return (company, variable_id, error_result)
+
+    async def _run_innovera_takeaway_postpass(
+        self,
+        companies: List[str],
+        grid: Dict[str, Dict[str, Any]],
+        variable_lookup: Dict[str, VariableDefinition],
+        errors: List[str],
+    ) -> None:
+        """Create the Innovera takeaway after the evidence-bearing cells finish."""
+        variable = variable_lookup[INNOVERA_TAKEAWAY_ID]
+        client = LLMClient()
+
+        for company in companies:
+            self._update_progress(
+                status="running",
+                current={
+                    "company": company,
+                    "variable": variable.name,
+                    "step": "Synthesizing Innovera takeaway...",
+                },
+            )
+            try:
+                prior_cells = {
+                    var_id: cell
+                    for var_id, cell in grid.get(company, {}).items()
+                    if var_id != INNOVERA_TAKEAWAY_ID and not cell.get("error")
+                }
+                prompt = self._build_innovera_takeaway_prompt(company, prior_cells)
+                comprehensive = await client.complete_simple(
+                    prompt=prompt,
+                    system_prompt=(
+                        "You are a strategy partner advising Innovera. "
+                        "Use only the supplied research summaries. Be concrete, action-oriented, and careful about uncertainty."
+                    ),
+                    temperature=0.25,
+                    max_tokens=1800,
+                )
+                concise = await client.complete_simple(
+                    prompt=(
+                        f"Compress this Innovera takeaway for {company} into <= {variable.max_concise_chars} characters. "
+                        "Keep the action and threat signal.\n\n"
+                        f"{comprehensive}"
+                    ),
+                    temperature=0.2,
+                    max_tokens=120,
+                )
+                concise = concise.strip()
+                if len(concise) > variable.max_concise_chars:
+                    concise = concise[: variable.max_concise_chars - 3].rstrip() + "..."
+
+                sources = self._collect_sources(prior_cells)
+                result = ResearchResult(
+                    company=company,
+                    variable_id=INNOVERA_TAKEAWAY_ID,
+                    variable_name=variable.name,
+                    concise=concise,
+                    comprehensive=comprehensive.strip(),
+                    sources=sources,
+                    confidence="medium" if prior_cells else "low",
+                    iterations=0,
+                    total_searches=sum(int(c.get("total_searches", 0)) for c in prior_cells.values()),
+                    timestamp=datetime.now(timezone.utc).isoformat(),
+                    metadata={"post_pass": True, "source_variables": list(prior_cells.keys())},
+                )
+                grid[company][INNOVERA_TAKEAWAY_ID] = result.to_dict()
+                self.completed_count += 1
+                self._update_progress(
+                    status="running",
+                    completed_result={
+                        "company": company,
+                        "variable": variable.name,
+                        "confidence": result.confidence,
+                    },
+                )
+            except Exception as e:
+                self.completed_count += 1
+                errors.append(f"{company}/{INNOVERA_TAKEAWAY_ID}: {e}")
+                error_result = ResearchResult(
+                    company=company,
+                    variable_id=INNOVERA_TAKEAWAY_ID,
+                    variable_name=variable.name,
+                    concise=f"Error: {str(e)[:100]}",
+                    comprehensive=f"Innovera takeaway post-pass failed: {str(e)}",
+                    sources=[],
+                    confidence="none",
+                    iterations=0,
+                    total_searches=0,
+                    timestamp=datetime.now(timezone.utc).isoformat(),
+                    error=str(e),
+                    metadata={"post_pass": True},
+                )
+                grid[company][INNOVERA_TAKEAWAY_ID] = error_result.to_dict()
+                self._update_progress(
+                    status="running",
+                    completed_result={
+                        "company": company,
+                        "variable": variable.name,
+                        "confidence": "none",
+                        "error": str(e),
+                    },
+                )
+
+    @staticmethod
+    def _build_innovera_takeaway_prompt(company: str, prior_cells: Dict[str, Dict[str, Any]]) -> str:
+        sections = []
+        for var_id, cell in prior_cells.items():
+            sections.append(
+                "\n".join([
+                    f"## {cell.get('variable_name', var_id)}",
+                    f"Concise: {cell.get('concise', '')}",
+                    f"Comprehensive: {cell.get('comprehensive', '')[:4000]}",
+                ])
+            )
+        research_block = "\n\n".join(sections) if sections else "No prior cells produced usable evidence."
+        return f"""Innovera profile:
+{INNOVERA_PROFILE}
+
+Competitor: {company}
+
+Prior Innovera-lens research:
+{research_block}
+
+Write the post-pass "Takeaway for Innovera" for this competitor. Include:
+1. What Innovera should copy or test.
+2. What Innovera should avoid.
+3. What Innovera should worry about competitively.
+4. The single next experiment Innovera should run.
+
+Ground the answer in the supplied prior research. If evidence is missing, name the validation gap."""
+
+    @staticmethod
+    def _collect_sources(prior_cells: Dict[str, Dict[str, Any]]) -> List[ResearchSource]:
+        seen_urls = set()
+        sources: List[ResearchSource] = []
+        for cell in prior_cells.values():
+            for raw in cell.get("sources", []):
+                url = raw.get("url", "")
+                if not url or url in seen_urls:
+                    continue
+                seen_urls.add(url)
+                sources.append(ResearchSource(
+                    title=raw.get("title", ""),
+                    url=url,
+                    snippet=raw.get("snippet", ""),
+                    query=raw.get("query", ""),
+                    domain=raw.get("domain", ""),
+                    source_score=float(raw.get("source_score", 0.5) or 0.5),
+                    is_official=bool(raw.get("is_official", False)),
+                ))
+                if len(sources) >= 12:
+                    return sources
+        return sources
     
     async def run_research(
         self,
@@ -208,6 +388,7 @@ class ResearchRunner:
         dynamic_variables: Optional[List[Dict[str, Any]]] = None,
         concurrency: int = 3,
         fast_mode: bool = False,
+        parameter_path: str = "competely",
     ):
         """
         Run research across companies and variables with progress tracking.
@@ -219,6 +400,7 @@ class ResearchRunner:
             dynamic_variables: Optional list of full definitions for dynamic (Tier 3) variables
             concurrency: Max concurrent tasks
             fast_mode: Use fast mode (single iteration)
+            parameter_path: Static parameter framework for variable lookup
         """
         self.run_id = run_id
         self.progress_file = RESULTS_DIR / f"progress_{run_id}.json"
@@ -227,7 +409,12 @@ class ResearchRunner:
         self.total_count = len(companies) * len(variables)
         self.recent_activity = []
 
-        variable_lookup = _build_variable_lookup(variables, dynamic_variables)
+        variable_lookup = _build_variable_lookup(variables, dynamic_variables, parameter_path)
+        takeaway_requested = _is_innovera_takeaway_requested(variables, parameter_path)
+        research_variables = [
+            var_id for var_id in variables
+            if not (takeaway_requested and var_id == INNOVERA_TAKEAWAY_ID)
+        ]
 
         # Initialize progress
         self._update_progress(status="running")
@@ -250,7 +437,7 @@ class ResearchRunner:
             # Create all tasks
             tasks = []
             for company in companies:
-                for var_id in variables:
+                for var_id in research_variables:
                     task = self._research_with_progress(
                         semaphore=semaphore,
                         agent=agent,
@@ -277,6 +464,14 @@ class ResearchRunner:
                 
                 if research_result.error:
                     errors.append(f"{company}/{variable_id}: {research_result.error}")
+
+            if takeaway_requested:
+                await self._run_innovera_takeaway_postpass(
+                    companies=companies,
+                    grid=grid,
+                    variable_lookup=variable_lookup,
+                    errors=errors,
+                )
             
             # Build output; include variable_definitions for dynamic variables so UI can display names
             elapsed_time = time.time() - self.start_time
@@ -301,6 +496,7 @@ class ResearchRunner:
                     "elapsed_seconds": elapsed_time,
                     "concurrency": concurrency,
                     "fast_mode": fast_mode,
+                    "parameter_path": parameter_path,
                 },
             }
             

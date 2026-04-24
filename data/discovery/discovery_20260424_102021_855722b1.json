@@ -1,0 +1,382 @@
+{
+  "id": "discovery_20260424_102021_855722b1",
+  "target_profile": {
+    "company_name": "Innovera",
+    "description": "Innovera is an AI-native decision intelligence platform. Its core premise is that AI and fast-moving markets expand options faster than leadership can judge them. Innovera builds digital twins of initiatives through specialized agents covering opportunity validation, market research, competitive analysis, product and technology, GTM, financials, talent, legal, and IP. The platform combines AI analysis with expert-in-the-loop validation, sells into corporate innovators, strategy teams, and executives, and substitutes for large consulting-team engagements delivered faster.",
+    "website": "https://innovera.ai/",
+    "industry": "AI-native decision intelligence",
+    "audience": "Corporate innovators, strategy teams, and executives",
+    "notes": null
+  },
+  "framing_seeds": {
+    "direct": "Other AI-native decision intelligence, strategy, market research, competitive analysis, or initiative digital-twin platforms.",
+    "problem_sharer": "Consulting firms and expert networks solving strategic decisions under uncertainty, including blended AI plus human models such as McKinsey QuantumBlack, BCG X, Bain Vector, Accenture, GLG, and Third Bridge.",
+    "category_sharer": "Multi-agent AI research, enterprise knowledge, analyst, and market-intelligence platforms with adjacent solution shapes, such as Glean, Hebbia, Rogo, AlphaSense, and AI analyst tools.",
+    "adjacency": "Big 4 firms, foundation-model labs, CRMs/ERPs, Palantir-like decision layers, sovereign funds, and trading houses with data, capital, or distribution that could enter decision intelligence."
+  },
+  "candidates": [
+    {
+      "name": "Aily Labs",
+      "canonical_domain": "ailylabs.com",
+      "framings": [
+        "direct",
+        "category_sharer"
+      ],
+      "rationales": {
+        "direct": "AI decision intelligence platform targeting enterprise strategy and business leaders, directly overlapping with Innovera's audience and decision-intelligence positioning.",
+        "category_sharer": "AI-powered decision intelligence platform for global enterprises using LLMs and knowledge graphs for competitive analysis, M&A, and complex business applications — adjacent solution shape targeting similar enterprise strategy audiences."
+      },
+      "evidence_urls": [
+        "https://www.ailylabs.com/news-insights/leadership",
+        "https://mila.quebec/en/news/aily-labs-and-mila-announce-partnership-to-advance-ai-agents-and-decision-intelligence",
+        "https://www.prnewswire.com/news-releases/aily-labs-and-mila-announce-partnership-to-advance-ai-agents-and-decision-intelligence-302333145.html"
+      ],
+      "confidence": 0.84,
+      "discovered_at": "2026-04-24T16:21:45.242440Z"
+    },
+    {
+      "name": "Aera Technology",
+      "canonical_domain": "aeratechnology.com",
+      "framings": [
+        "direct"
+      ],
+      "rationales": {
+        "direct": "AI-native agentic decision intelligence platform that unifies data, analytics, AI, and automation to optimize and automate enterprise decisions at scale — same problem and solution shape as Innovera."
+      },
+      "evidence_urls": [
+        "https://aeratechnology.com/about-us/",
+        "https://pulse2.com/aera-technology-profile-fred-laluyaux-interview/",
+        "https://councils.forbes.com/profile/Frederic-Laluyaux-President-CEO-Aera-Technology/6ce2448a-ea0a-4a07-a953-76443c92f6f9"
+      ],
+      "confidence": 0.54,
+      "discovered_at": "2026-04-24T16:21:45.242440Z"
+    },
+    {
+      "name": "Palantir Technologies",
+      "canonical_domain": "palantir.com",
+      "framings": [
+        "adjacency"
+      ],
+      "rationales": {
+        "adjacency": "Operates AIP and Foundry as enterprise decision-intelligence layers with ontology-driven AI agents; already partnering with SAP to deliver AI-powered decision outcomes to corporate strategy teams—directly overlapping Innovera's core proposition."
+      },
+      "evidence_urls": [
+        "https://investors.palantir.com/files/Palantir%20Q4%202024%20Business%20Update.pdf",
+        "https://www.sap.com/partners/find/palantir.html",
+        "https://news.sap.com/2025/05/sap-business-ai-reimagine-how-enterprises-run/"
+      ],
+      "confidence": 0.35,
+      "discovered_at": "2026-04-24T16:21:45.242440Z"
+    },
+    {
+      "name": "Gravity (Orion)",
+      "canonical_domain": "bygravity.com",
+      "framings": [
+        "category_sharer"
+      ],
+      "rationales": {
+        "category_sharer": "Multi-agent AI platform explicitly positioned around enterprise decision intelligence, delivering proactive intelligence across business users — same solution shape as Innovera but focused on data/analytics rather than initiative evaluation."
+      },
+      "evidence_urls": [
+        "https://www.secureitworld.com/news-post/gravity-launches-orion-to-redefine-enterprise-decision-intelligence-with-multi-agent-ai/",
+        "https://www.prnewswire.com/news-releases/gravity-launches-orion-to-redefine-enterprise-decision-intelligence-with-multi-agent-ai-302543112.html"
+      ],
+      "confidence": 0.34,
+      "discovered_at": "2026-04-24T16:21:45.242440Z"
+    },
+    {
+      "name": "SAP SE",
+      "canonical_domain": "sap.com",
+      "framings": [
+        "adjacency"
+      ],
+      "rationales": {
+        "adjacency": "Controls mission-critical ERP data and financial/operational workflows for thousands of enterprises; actively infusing agentic AI (Joule) across its cloud portfolio and partnering with Palantir and Perplexity, giving it the data, distribution, and capital to extend into AI-native decision intelligence for strategy teams."
+      },
+      "evidence_urls": [
+        "https://news.sap.com/2026/04/sap-business-ai-release-highlights-q1-2026/",
+        "https://www.prnewswire.com/news-releases/sap-infuses-business-ai-throughout-its-enterprise-cloud-portfolio-and-partners-with-cutting-edge-ai-leaders-to-bring-out-customers-best-302163214.html",
+        "https://news.sap.com/2025/05/sap-business-ai-reimagine-how-enterprises-run/"
+      ],
+      "confidence": 0.33,
+      "discovered_at": "2026-04-24T16:21:45.242440Z"
+    },
+    {
+      "name": "The Hackett Group",
+      "canonical_domain": "thehackettgroup.com",
+      "framings": [
+        "problem_sharer"
+      ],
+      "rationales": {
+        "problem_sharer": "Launched Applied Intelligence and AskHackett™ as an expert-led, AI-powered decision support model — directly competing on the same problem of strategic decisions under uncertainty with a blended AI-plus-human approach."
+      },
+      "evidence_urls": [
+        "https://lifestyle.kotaradio.com/story/182079/the-hackett-group-launches-applied-intelligence-and-askhackett-to-redefine-expert-led-ai-powered-decision-support/"
+      ],
+      "confidence": 0.3,
+      "discovered_at": "2026-04-24T16:21:45.242440Z"
+    },
+    {
+      "name": "NitroLens AI",
+      "canonical_domain": "nitrolens.ai",
+      "framings": [
+        "problem_sharer"
+      ],
+      "rationales": {
+        "problem_sharer": "Agent-led strategy platform explicitly positioning as a consulting-grade AI-native strategy partner for growth-stage teams, substituting for traditional consulting engagements — same problem, different solution."
+      },
+      "evidence_urls": [
+        "https://www.nitrolens.ai/"
+      ],
+      "confidence": 0.3,
+      "discovered_at": "2026-04-24T16:21:45.242440Z"
+    },
+    {
+      "name": "CrewAI",
+      "canonical_domain": "crewai.com",
+      "framings": [
+        "category_sharer"
+      ],
+      "rationales": {
+        "category_sharer": "Leading multi-agent orchestration platform for enterprise workflows with specialized agents — same architectural solution shape (coordinated AI agents) that Innovera uses for initiative analysis, though more horizontal/infrastructure-focused."
+      },
+      "evidence_urls": [
+        "https://www.enterpriseaiworld.com/Articles/News/News/%2418M-in-Funding-Catapults-CrewAIs-Multi-Agentic-Platform-to-the-Enterprise-Level-166495.aspx",
+        "https://www.globenewswire.com/de/news-release/2024/10/22/2966872/0/en/CrewAI-Launches-Multi-Agentic-Platform-to-Deliver-on-the-Promise-of-Generative-AI-for-Enterprise.html"
+      ],
+      "confidence": 0.29,
+      "discovered_at": "2026-04-24T16:21:45.242440Z"
+    },
+    {
+      "name": "DeeCee.ai",
+      "canonical_domain": "deecee.ai",
+      "framings": [
+        "problem_sharer"
+      ],
+      "rationales": {
+        "problem_sharer": "AI-powered decision intelligence platform helping leaders structure strategic decisions (market entry, M&A, product launches) with AI analysis and defensible recommendations — directly overlapping Innovera's core problem space."
+      },
+      "evidence_urls": [
+        "https://deecee.ai/"
+      ],
+      "confidence": 0.28,
+      "discovered_at": "2026-04-24T16:21:45.242440Z"
+    },
+    {
+      "name": "AlphaSense",
+      "canonical_domain": "alpha-sense.com",
+      "framings": [
+        "category_sharer"
+      ],
+      "rationales": {
+        "category_sharer": "AI-based market intelligence platform used by strategy teams and executives for competitive and market research — same solution shape (AI-driven research and analysis) serving overlapping enterprise audiences."
+      },
+      "evidence_urls": [
+        "https://techcrunch.com/2023/09/28/alphasense-an-ai-based-market-intel-firm-snaps-up-150m-at-a-2-5b-valuation"
+      ],
+      "confidence": 0.27,
+      "discovered_at": "2026-04-24T16:21:45.242440Z"
+    },
+    {
+      "name": "VirtualBrain",
+      "canonical_domain": "getvirtualbrain.com",
+      "framings": [
+        "problem_sharer"
+      ],
+      "rationales": {
+        "problem_sharer": "Secure all-in-one AI platform for consulting, strategy, and investment teams, targeting the same corporate strategy audience with AI-driven intelligence at scale."
+      },
+      "evidence_urls": [
+        "https://www.getvirtualbrain.com/"
+      ],
+      "confidence": 0.27,
+      "discovered_at": "2026-04-24T16:21:45.242440Z"
+    },
+    {
+      "name": "Hebbia",
+      "canonical_domain": "hebbia.ai",
+      "framings": [
+        "category_sharer"
+      ],
+      "rationales": {
+        "category_sharer": "AI analyst platform that processes large document sets for enterprise research and due diligence — same multi-agent research and analysis solution shape used by strategy and investment teams."
+      },
+      "evidence_urls": [
+        "https://techcrunch.com/2024/07/09/ai-startup-hebbia-rased-130m-at-a-700m-valuation-on-13-million-of-profitable-revenue"
+      ],
+      "confidence": 0.27,
+      "discovered_at": "2026-04-24T16:21:45.242440Z"
+    },
+    {
+      "name": "Rocket",
+      "canonical_domain": "rocket.new",
+      "framings": [
+        "category_sharer",
+        "adjacency"
+      ],
+      "rationales": {
+        "category_sharer": "Required Innovera discovery option: AI-native product/application generation platform with an adjacent multi-agent workflow shape.",
+        "adjacency": "Required Innovera discovery option: could sit near initiative validation, prototyping, and execution workflows connected to decision intelligence."
+      },
+      "evidence_urls": [
+        "https://www.rocket.new/"
+      ],
+      "confidence": 0.27,
+      "discovered_at": "2026-04-24T16:21:45.242440Z"
+    },
+    {
+      "name": "Syntari Amplifi",
+      "canonical_domain": "syntari-ai.com",
+      "framings": [
+        "problem_sharer"
+      ],
+      "rationales": {
+        "problem_sharer": "AI operating system for consultants and enterprise strategy teams connecting opportunity, delivery, and outcomes — addresses the same strategic execution and decision-making problem with a platform-based approach."
+      },
+      "evidence_urls": [
+        "https://syntari-ai.com/platforms/amplifi"
+      ],
+      "confidence": 0.26,
+      "discovered_at": "2026-04-24T16:21:45.242440Z"
+    },
+    {
+      "name": "Rocket",
+      "canonical_domain": "rocketai.com",
+      "framings": [
+        "category_sharer"
+      ],
+      "rationales": {
+        "category_sharer": "Indian AI startup explicitly positioned as delivering McKinsey-style consulting at a fraction of the cost using AI — directly overlapping value proposition with Innovera as a consulting substitute for strategy teams."
+      },
+      "evidence_urls": [
+        "https://techcrunch.com/2026/04/06/indian-startup-rocket-wants-its-ai-to-do-mckinsey-style-consulting-at-a-fraction-of-the-cost/"
+      ],
+      "confidence": 0.26,
+      "discovered_at": "2026-04-24T16:21:45.242440Z"
+    },
+    {
+      "name": "Earthena AI",
+      "canonical_domain": "earthena.ai",
+      "framings": [
+        "direct"
+      ],
+      "rationales": {
+        "direct": "Decision intelligence platform founded by enterprise software and AI veterans, focused on resilient value creation for organizations — similar problem framing and audience to Innovera."
+      },
+      "evidence_urls": [
+        "https://www.earthena.ai/our-story"
+      ],
+      "confidence": 0.26,
+      "discovered_at": "2026-04-24T16:21:45.242440Z"
+    },
+    {
+      "name": "Stratsyn AI",
+      "canonical_domain": "stratsyn.ai",
+      "framings": [
+        "problem_sharer"
+      ],
+      "rationales": {
+        "problem_sharer": "Enterprise Intelligence as a Service (EIaaS) platform bridging boardroom strategy with operational execution via 28 AI platforms, targeting the same corporate decision-making problem."
+      },
+      "evidence_urls": [
+        "https://stratsyn.ai/"
+      ],
+      "confidence": 0.24,
+      "discovered_at": "2026-04-24T16:21:45.242440Z"
+    },
+    {
+      "name": "Cohere North",
+      "canonical_domain": "cohere.com",
+      "framings": [
+        "category_sharer"
+      ],
+      "rationales": {
+        "category_sharer": "Enterprise AI agent platform (North) focused on secure, knowledge-grounded AI agents for enterprise workflows — same solution shape of multi-agent AI for enterprise knowledge work and decision support."
+      },
+      "evidence_urls": [
+        "https://techcrunch.com/2025/08/06/coheres-new-ai-agent-platform-north-promises-to-keep-enterprise-data-secure/"
+      ],
+      "confidence": 0.21,
+      "discovered_at": "2026-04-24T16:21:45.242440Z"
+    },
+    {
+      "name": "Cognizant Neuro AI",
+      "canonical_domain": "cognizant.com",
+      "framings": [
+        "category_sharer"
+      ],
+      "rationales": {
+        "category_sharer": "Multi-agent orchestration platform for enterprise AI decisioning use cases, already used by dozens of businesses to identify and pilot AI decision-making applications — same solution shape targeting enterprise strategy and operations."
+      },
+      "evidence_urls": [
+        "https://investors.cognizant.com/news-and-events/news/news-details/2024/Cognizant-Announces-Multi-Agent-Orchestration-for-its-Neuro-AI-Platform/default.aspx"
+      ],
+      "confidence": 0.2,
+      "discovered_at": "2026-04-24T16:21:45.242440Z"
+    },
+    {
+      "name": "Big 4 Consulting Firms (Deloitte / PwC / EY / KPMG)",
+      "canonical_domain": "deloitte.com",
+      "framings": [
+        "adjacency"
+      ],
+      "rationales": {
+        "adjacency": "All four Big 4 firms have shipped AI agent platforms targeting corporate strategy and executive decision-making, with existing consulting relationships, proprietary data assets, and capital to build or acquire decision-intelligence capabilities that substitute for Innovera's platform."
+      },
+      "evidence_urls": [
+        "https://www.linkedin.com/posts/wouterborn_all-four-big-4-firms-shipped-ai-agent-platforms-activity-7438558304739647488-mIMW"
+      ],
+      "confidence": 0.2,
+      "discovered_at": "2026-04-24T16:21:45.242440Z"
+    },
+    {
+      "name": "Salesforce",
+      "canonical_domain": "salesforce.com",
+      "framings": [
+        "adjacency"
+      ],
+      "rationales": {
+        "adjacency": "Announced enterprise digital twin capabilities and owns deep CRM distribution into corporate strategy and executive buyers; its Agentforce platform and data cloud give it the technology and customer relationships to pivot into AI-native decision intelligence."
+      },
+      "evidence_urls": [
+        "https://www.salesforce.com/news/stories/enterprise-digital-twin/"
+      ],
+      "confidence": 0.19,
+      "discovered_at": "2026-04-24T16:21:45.242440Z"
+    },
+    {
+      "name": "IBM Consulting",
+      "canonical_domain": "ibm.com",
+      "framings": [
+        "adjacency"
+      ],
+      "rationales": {
+        "adjacency": "Launched Enterprise Advantage agentic AI platform in partnership with Microsoft, targeting the same corporate innovator and executive audience; combines consulting distribution, proprietary AI models, and enterprise data access to replicate Innovera's multi-agent decision intelligence approach."
+      },
+      "evidence_urls": [
+        "https://www.ibm.com/new/announcements/ibm-consulting-enterprise-advantage-unlocks-new-era-of-agentic-ai-powered-by-microsoft-partnership"
+      ],
+      "confidence": 0.19,
+      "discovered_at": "2026-04-24T16:21:45.242440Z"
+    },
+    {
+      "name": "Tata Consulting Engineers (TCE / TCS)",
+      "canonical_domain": "tcs.com",
+      "framings": [
+        "adjacency"
+      ],
+      "rationales": {
+        "adjacency": "Launched a Cognitive Digital Twin and Industrial AI Platform built on NVIDIA technology, demonstrating capability and intent to build AI-native decision layers for enterprises—adjacent to Innovera's initiative digital-twin model."
+      },
+      "evidence_urls": [
+        "https://cxotoday.com/media-coverage/tata-consulting-engineers-launches-cognitive-digital-twin-and-industrial-ai-platform-built-on-nvidia-technology/"
+      ],
+      "confidence": 0.17,
+      "discovered_at": "2026-04-24T16:21:45.242440Z"
+    }
+  ],
+  "status": "complete",
+  "created_at": "2026-04-24T16:20:21.186355Z",
+  "updated_at": "2026-04-24T16:21:45.242939Z",
+  "error": null
+}

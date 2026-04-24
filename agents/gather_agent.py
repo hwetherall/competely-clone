@@ -35,6 +35,19 @@ logger = logging.getLogger(__name__)
 
 RESEARCH_MODEL = settings.RESEARCH_MODEL
 SUMMARIZE_MODEL = settings.SUMMARIZE_MODEL
+SUMMARIZE_FALLBACK_MODEL = settings.SUMMARIZE_FALLBACK_MODEL
+
+
+def create_search_client() -> SearchClient:
+    """Create the configured search client for gather workflows."""
+    provider = settings.SEARCH_PROVIDER.lower()
+    if provider == "exa":
+        from agents.exa_client import ExaClient
+
+        return ExaClient()
+    if provider == "hybrid":
+        logger.warning("SEARCH_PROVIDER=hybrid is not implemented for gather yet; using Serper.")
+    return SearchClient()
 
 
 @dataclass
@@ -72,7 +85,7 @@ class GatherAgent:
         enable_page_fetch: Optional[bool] = None,
         variable_lookup: Optional[Dict[str, VariableDefinition]] = None,
     ):
-        self.search_client = search_client or SearchClient()
+        self.search_client = search_client or create_search_client()
         self.llm_client = llm_client or LLMClient()
         self.page_reader = page_reader or get_page_reader()
         self.max_iterations = max_iterations or settings.MAX_RESEARCH_ITERATIONS
@@ -192,6 +205,7 @@ class GatherAgent:
                 temperature=0.7,
                 max_tokens=1000,
                 model_override=SUMMARIZE_MODEL,
+                fallback_model=SUMMARIZE_FALLBACK_MODEL,
             )
             if not response:
                 return self._fallback_queries(company, variable.name)
@@ -309,6 +323,7 @@ class GatherAgent:
                 temperature=0.3,
                 max_tokens=4000,
                 model_override=SUMMARIZE_MODEL,
+                fallback_model=SUMMARIZE_FALLBACK_MODEL,
             )
             if response and response.strip():
                 return self._parse_evaluation_json(response)
@@ -366,6 +381,7 @@ class GatherAgent:
                 temperature=0.3,
                 max_tokens=4000,
                 model_override=SUMMARIZE_MODEL,
+                fallback_model=SUMMARIZE_FALLBACK_MODEL,
             )
             if response and response.strip():
                 parsed = self._parse_fact_extraction_json(response)

@@ -1,0 +1,186 @@
+{
+  "id": "discovery_20260424_130546_cb8f0795",
+  "target_profile": {
+    "company_name": "Innovera",
+    "description": "Innovera is an AI-native decision intelligence platform. Its core premise is that AI and fast-moving markets expand options faster than leadership can judge them. Innovera builds digital twins of initiatives through specialized agents covering opportunity validation, market research, competitive analysis, product and technology, GTM, financials, talent, legal, and IP. The platform combines AI analysis with expert-in-the-loop validation, sells into corporate innovators, strategy teams, and executives, and substitutes for large consulting-team engagements delivered faster.",
+    "website": "https://innovera.ai/",
+    "industry": "AI-native decision intelligence",
+    "audience": "Corporate innovators, strategy teams, and executives",
+    "notes": null
+  },
+  "framing_seeds": {
+    "direct": "Other AI-native decision intelligence, strategy, market research, competitive analysis, or initiative digital-twin platforms.",
+    "problem_sharer": "Consulting firms and expert networks solving strategic decisions under uncertainty, including blended AI plus human models such as McKinsey QuantumBlack, BCG X, Bain Vector, Accenture, GLG, and Third Bridge.",
+    "category_sharer": "Multi-agent AI research, enterprise knowledge, analyst, and market-intelligence platforms with adjacent solution shapes, such as Glean, Hebbia, Rogo, AlphaSense, and AI analyst tools.",
+    "adjacency": "Big 4 firms, foundation-model labs, CRMs/ERPs, Palantir-like decision layers, sovereign funds, and trading houses with data, capital, or distribution that could enter decision intelligence."
+  },
+  "candidates": [
+    {
+      "name": "AlphaSense",
+      "canonical_domain": "alpha-sense.com",
+      "framings": [
+        "category_sharer"
+      ],
+      "rationales": {
+        "category_sharer": "AI-powered market intelligence and research platform used by strategy teams and executives to synthesize signals from vast document corpora — same enterprise analyst-augmentation shape as Innovera but focused on market/financial research rather than initiative decision intelligence."
+      },
+      "evidence_urls": [
+        "https://techcrunch.com/2024/11/28/ai-agent-startup-dev-agents-has-raised-a-massive-56m-seed-round-at-a-500m-valuation/",
+        "https://techcrunch.com/2026/04/21/ai-research-lab-neocognition-lands-40m-seed-to-build-agents-that-learn-like-humans/",
+        "https://techcrunch.com/2024/06/27/orby-is-building-ai-agents-for-the-enterprise/"
+      ],
+      "confidence": 0.41,
+      "discovered_at": "2026-04-24T19:06:37.369879Z"
+    },
+    {
+      "name": "Hebbia",
+      "canonical_domain": "hebbia.ai",
+      "framings": [
+        "category_sharer"
+      ],
+      "rationales": {
+        "category_sharer": "Multi-agent AI platform that runs complex, multi-step research workflows over large document sets for enterprise knowledge workers — same orchestrated-agent-plus-expert-validation shape, different domain (legal/financial due diligence vs. strategic initiative analysis)."
+      },
+      "evidence_urls": [
+        "https://techcrunch.com/2024/11/28/ai-agent-startup-dev-agents-has-raised-a-massive-56m-seed-round-at-a-500m-valuation/",
+        "https://techcrunch.com/2026/04/21/ai-research-lab-neocognition-lands-40m-seed-to-build-agents-that-learn-like-humans/",
+        "https://techcrunch.com/2024/06/27/orby-is-building-ai-agents-for-the-enterprise/"
+      ],
+      "confidence": 0.41,
+      "discovered_at": "2026-04-24T19:06:37.369879Z"
+    },
+    {
+      "name": "Rogo",
+      "canonical_domain": "rogo.ai",
+      "framings": [
+        "category_sharer"
+      ],
+      "rationales": {
+        "category_sharer": "AI analyst platform for investment banking and strategy teams that automates deep research and synthesis tasks — parallel solution shape (specialized AI agents producing structured analysis for senior decision-makers) aimed at finance rather than corporate innovation."
+      },
+      "evidence_urls": [
+        "https://techcrunch.com/2024/11/28/ai-agent-startup-dev-agents-has-raised-a-massive-56m-seed-round-at-a-500m-valuation/",
+        "https://techcrunch.com/2026/04/21/ai-research-lab-neocognition-lands-40m-seed-to-build-agents-that-learn-like-humans/",
+        "https://techcrunch.com/2024/06/27/orby-is-building-ai-agents-for-the-enterprise/"
+      ],
+      "confidence": 0.4,
+      "discovered_at": "2026-04-24T19:06:37.369879Z"
+    },
+    {
+      "name": "Glean",
+      "canonical_domain": "glean.com",
+      "framings": [
+        "category_sharer"
+      ],
+      "rationales": {
+        "category_sharer": "Enterprise AI search and knowledge platform that aggregates and surfaces institutional knowledge for strategy and operations teams — shares the 'AI layer over enterprise knowledge for faster expert decisions' shape, though focused on retrieval rather than initiative evaluation."
+      },
+      "evidence_urls": [
+        "https://techcrunch.com/2024/11/28/ai-agent-startup-dev-agents-has-raised-a-massive-56m-seed-round-at-a-500m-valuation/",
+        "https://techcrunch.com/2026/04/21/ai-research-lab-neocognition-lands-40m-seed-to-build-agents-that-learn-like-humans/",
+        "https://techcrunch.com/2024/06/27/orby-is-building-ai-agents-for-the-enterprise/"
+      ],
+      "confidence": 0.36,
+      "discovered_at": "2026-04-24T19:06:37.369879Z"
+    },
+    {
+      "name": "Snowfire AI",
+      "canonical_domain": "snowfire.ai",
+      "framings": [
+        "direct"
+      ],
+      "rationales": {
+        "direct": "AI-native decision intelligence platform purpose-built for enterprise executives, combining internal data and external intelligence for faster strategic decisions — directly parallel to Innovera's positioning."
+      },
+      "evidence_urls": [
+        "https://www.reuters.com/press-releases/from-data-overload-to-boardroom-clarity-snowfire-ai-launches-first-adaptive-decision-intelligence-ai-platform-purpose-built-for-enterprise-executives-in-the-age-of-ai-2025-04-30/"
+      ],
+      "confidence": 0.36,
+      "discovered_at": "2026-04-24T19:06:37.369879Z"
+    },
+    {
+      "name": "Palantir Technologies",
+      "canonical_domain": "palantir.com",
+      "framings": [
+        "adjacency"
+      ],
+      "rationales": {
+        "adjacency": "Operates an AI decision-intelligence layer (AIP/Foundry/Ontology) for enterprises with existing distribution into strategy and operations teams; actively partnering with SAP to extend into ERP-native decision workflows, directly overlapping Innovera's space."
+      },
+      "evidence_urls": [
+        "https://investors.palantir.com/files/Palantir%20Q4%202024%20Business%20Update.pdf",
+        "https://www.sap.com/partners/find/palantir.html",
+        "https://news.sap.com/2025/05/sap-business-ai-reimagine-how-enterprises-run/"
+      ],
+      "confidence": 0.35,
+      "discovered_at": "2026-04-24T19:06:37.369879Z"
+    },
+    {
+      "name": "Fennix",
+      "canonical_domain": "fennix.ai",
+      "framings": [
+        "direct"
+      ],
+      "rationales": {
+        "direct": "AI-powered decision intelligence platform that connects business functions and external market signals into a unified layer for real-time actionable insights for leaders — same problem and solution shape as Innovera."
+      },
+      "evidence_urls": [
+        "https://www.fennix.ai/"
+      ],
+      "confidence": 0.34,
+      "discovered_at": "2026-04-24T19:06:37.369879Z"
+    },
+    {
+      "name": "SAP SE",
+      "canonical_domain": "sap.com",
+      "framings": [
+        "adjacency"
+      ],
+      "rationales": {
+        "adjacency": "Controls ERP data and financial workflows for thousands of enterprises; actively embedding agentic AI (Joule) and partnering with Palantir and Perplexity to deliver AI-driven business decisions, giving it distribution and data assets to pivot into decision-intelligence for strategy teams."
+      },
+      "evidence_urls": [
+        "https://news.sap.com/2025/05/sap-business-ai-reimagine-how-enterprises-run/",
+        "https://www.prnewswire.com/news-releases/sap-infuses-business-ai-throughout-its-enterprise-cloud-portfolio-and-partners-with-cutting-edge-ai-leaders-to-bring-out-customers-best-302163214.html",
+        "https://news.sap.com/2026/04/sap-business-ai-release-highlights-q1-2026/"
+      ],
+      "confidence": 0.34,
+      "discovered_at": "2026-04-24T19:06:37.369879Z"
+    },
+    {
+      "name": "Aily Labs",
+      "canonical_domain": "ailylabs.com",
+      "framings": [
+        "direct"
+      ],
+      "rationales": {
+        "direct": "Enterprise AI decision intelligence platform targeting visionary organizations across multiple industries, positioning AI as a core decision-support layer for leadership — closely mirrors Innovera's audience and value proposition."
+      },
+      "evidence_urls": [
+        "http://www.ailylabs.com/"
+      ],
+      "confidence": 0.32,
+      "discovered_at": "2026-04-24T19:06:37.369879Z"
+    },
+    {
+      "name": "Agent Nexus",
+      "canonical_domain": "agent.nexus",
+      "framings": [
+        "problem_sharer"
+      ],
+      "rationales": {
+        "problem_sharer": "Positions itself as an AI-native alternative to McKinsey QuantumBlack and Accenture for strategic decision support, directly competing in the blended AI+consulting replacement space."
+      },
+      "evidence_urls": [
+        "https://agent.nexus/blog/mckinsey-ai-alternatives",
+        "https://agent.nexus/compare/outsourcing/nexus-vs-mckinsey-quantumblack/"
+      ],
+      "confidence": 0.32,
+      "discovered_at": "2026-04-24T19:06:37.369879Z"
+    }
+  ],
+  "status": "complete",
+  "created_at": "2026-04-24T19:05:46.884922Z",
+  "updated_at": "2026-04-24T19:06:37.370971Z",
+  "error": null
+}

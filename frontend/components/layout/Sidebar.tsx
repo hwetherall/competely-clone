@@ -9,6 +9,7 @@ import {
   Settings,
   BarChart3,
   FileText,
+  Search,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Separator } from "@/components/ui/separator";
@@ -34,6 +35,11 @@ const navItems: NavItem[] = [
     label: "Research Plans",
     href: "/plans",
     icon: FileText,
+  },
+  {
+    label: "Discovery",
+    href: "/discovery/new",
+    icon: Search,
   },
   {
     label: "Past Runs",

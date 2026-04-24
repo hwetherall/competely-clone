@@ -10,8 +10,54 @@ This module defines dataclasses for:
 """
 
 from dataclasses import dataclass, field
-from typing import List, Optional, Dict, Any
-from datetime import datetime
+from typing import List, Optional, Dict, Any, Literal
+from datetime import datetime, timezone
+from pydantic import BaseModel, Field
+
+
+class DiscoveryTargetProfile(BaseModel):
+    """Target company/profile for competitor discovery."""
+    company_name: str = Field(default="Innovera")
+    description: str = ""
+    website: Optional[str] = None
+    industry: Optional[str] = None
+    audience: Optional[str] = None
+    notes: Optional[str] = None
+
+    def to_prompt(self) -> str:
+        parts = [f"Company: {self.company_name}"]
+        if self.industry:
+            parts.append(f"Industry: {self.industry}")
+        if self.website:
+            parts.append(f"Website: {self.website}")
+        if self.audience:
+            parts.append(f"Audience: {self.audience}")
+        if self.description:
+            parts.append(f"Description: {self.description}")
+        if self.notes:
+            parts.append(f"Notes: {self.notes}")
+        return "\n".join(parts)
+
+
+class CompetitorCandidate(BaseModel):
+    name: str
+    canonical_domain: Optional[str] = None
+    framings: List[Literal["direct", "problem_sharer", "category_sharer", "adjacency"]] = []
+    rationales: Dict[str, str] = {}
+    evidence_urls: List[str] = []
+    confidence: float = Field(default=0.0, ge=0.0, le=1.0)
+    discovered_at: datetime
+
+
+class DiscoveryRun(BaseModel):
+    id: str
+    target_profile: DiscoveryTargetProfile
+    framing_seeds: Dict[str, str]
+    candidates: List[CompetitorCandidate] = []
+    status: Literal["running", "complete", "failed"] = "running"
+    created_at: datetime
+    updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    error: Optional[str] = None
 
 
 @dataclass

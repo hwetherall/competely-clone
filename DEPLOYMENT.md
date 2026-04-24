@@ -27,7 +27,8 @@ Deploy the backend first so you have its URL for the frontend.
      Railway sets `PORT` automatically.
 
 3. **Environment variables** (Service → Variables): add all keys your backend needs (same as `.env` locally), plus CORS:
-   - From `.env.example`: `SERPER_API_KEY`, `ATLAS_CLOUD_API`, `OPENROUTER_API_KEY`, and optionally `JINA_READER_API_KEY`.
+   - From `.env.example`: `SERPER_API_KEY`, `OPENROUTER_API_KEY`, and optionally `JINA_READER_API_KEY`, `EXA_API_KEY`, and `FIRECRAWL_API_KEY`.
+   - `ATLAS_CLOUD_API` is only needed if you opt back into an Atlas Cloud research model.
    - **CORS** (required for the Vercel frontend to call the API):
      ```bash
      CORS_ORIGINS=https://your-app.vercel.app,https://your-app-*.vercel.app

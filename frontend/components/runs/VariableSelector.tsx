@@ -56,6 +56,11 @@ export function SmartVariableSelector({
               AVIS Framework
             </span>
           )}
+          {data.always_variables.some(v => v.id.startsWith("inv_")) && (
+            <span className="ml-2 inline-flex items-center rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary">
+              Innovera Lens
+            </span>
+          )}
         </p>
       )}
 

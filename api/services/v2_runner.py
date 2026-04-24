@@ -27,11 +27,14 @@ def _build_variable_lookup(
     from dataclasses import replace
     from config.variables import VariableDefinition, get_variable
 
-    # For AVIS path, also check AVIS variable definitions
-    avis_lookup_fn = None
+    # For alternate paths, also check their static variable definitions.
+    path_lookup_fn = None
     if parameter_path == "avis":
         from config.avis_variables import get_avis_variable
-        avis_lookup_fn = get_avis_variable
+        path_lookup_fn = get_avis_variable
+    elif parameter_path == "innovera":
+        from config.innovera_variables import get_innovera_variable
+        path_lookup_fn = get_innovera_variable
 
     lookup = {}
     dynamic_by_id = {d["id"]: d for d in (dynamic_variables or [])}
@@ -51,11 +54,11 @@ def _build_variable_lookup(
                 tier="dynamic",
             )
         else:
-            # Try AVIS variables first if on AVIS path
+            # Try path-specific variables first when selected.
             v = None
-            if avis_lookup_fn:
+            if path_lookup_fn:
                 try:
-                    v = avis_lookup_fn(var_id)
+                    v = path_lookup_fn(var_id)
                 except ValueError:
                     pass
             if v is None:
@@ -196,6 +199,15 @@ class V2Runner:
                 total=total_cells,
                 current=None,
             )
+        except asyncio.CancelledError:
+            self._update_progress(
+                "interrupted",
+                status="failed",
+                completed=0,
+                total=total_cells,
+                current=f"Run interrupted before final save. Check data/results/checkpoint_{run_id}.json for the latest recoverable state.",
+            )
+            raise
         except Exception as e:
             self._update_progress(
                 "failed",

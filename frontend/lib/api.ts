@@ -10,6 +10,12 @@ import type {
   RunProgress,
   RunCreateRequest,
   RunCreateResponse,
+  DiscoveryCreateRequest,
+  DiscoveryCreateResponse,
+  DiscoveryPromoteRequest,
+  DiscoveryPromoteResponse,
+  DiscoveryRun,
+  ParameterPath,
   VariableCategories,
   Variable,
   VariableGenerationResponse,
@@ -156,6 +162,58 @@ export function useCreateRun() {
 
   return useMutation({
     mutationFn: createRun,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["runs"] });
+    },
+  });
+}
+
+// =============================================================================
+// Discovery API
+// =============================================================================
+
+export async function createDiscovery(request: DiscoveryCreateRequest): Promise<DiscoveryCreateResponse> {
+  return fetchAPI<DiscoveryCreateResponse>("/api/discovery", {
+    method: "POST",
+    body: JSON.stringify(request),
+  });
+}
+
+export async function getDiscovery(discoveryId: string): Promise<DiscoveryRun> {
+  return fetchAPI<DiscoveryRun>(`/api/discovery/${discoveryId}`);
+}
+
+export async function promoteDiscovery(
+  discoveryId: string,
+  request: DiscoveryPromoteRequest,
+): Promise<DiscoveryPromoteResponse> {
+  return fetchAPI<DiscoveryPromoteResponse>(`/api/discovery/${discoveryId}/promote`, {
+    method: "POST",
+    body: JSON.stringify(request),
+  });
+}
+
+export function useCreateDiscovery() {
+  return useMutation({
+    mutationFn: createDiscovery,
+  });
+}
+
+export function useDiscovery(discoveryId: string, enabled: boolean = true) {
+  return useQuery({
+    queryKey: ["discovery", discoveryId],
+    queryFn: () => getDiscovery(discoveryId),
+    enabled: enabled && !!discoveryId,
+    refetchInterval: (query) =>
+      query.state.data?.status === "running" ? 3000 : false,
+  });
+}
+
+export function usePromoteDiscovery(discoveryId: string) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (request: DiscoveryPromoteRequest) => promoteDiscovery(discoveryId, request),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["runs"] });
     },
@@ -345,6 +403,7 @@ export interface PlanCreateRequest {
   accepted_suggestions?: string[];
   effective_company_names?: string[] | null;
   industry_context?: string;
+  parameter_path?: ParameterPath;
   selected_variable_ids?: string[];
   dynamic_variables?: DynamicVariableDefinition[];
   parameter_contexts?: Record<string, string>;
@@ -375,6 +434,7 @@ export async function createPlan(request: PlanCreateRequest): Promise<PlanCreate
       accepted_suggestions: request.accepted_suggestions ?? [],
       effective_company_names: request.effective_company_names ?? null,
       industry_context: request.industry_context ?? "",
+      parameter_path: request.parameter_path ?? "competely",
       selected_variable_ids: request.selected_variable_ids ?? [],
       dynamic_variables: request.dynamic_variables ?? [],
       parameter_contexts: request.parameter_contexts ?? {},

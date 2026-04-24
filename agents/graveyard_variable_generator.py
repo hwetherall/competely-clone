@@ -161,6 +161,7 @@ async def generate_graveyard_variables(
 
     client = LLMClient()
     model = settings.VARIABLE_GENERATOR_MODEL
+    fallback_model = settings.VARIABLE_GENERATOR_FALLBACK_MODEL
     prompt = _build_prompt(dead_companies, industry_context or "Unknown", living_companies or [])
 
     logger.info("Generating graveyard variables with model: %s", model)
@@ -170,6 +171,7 @@ async def generate_graveyard_variables(
         temperature=0.3,
         max_tokens=8000,
         model_override=model,
+        fallback_model=fallback_model,
     )
 
     data = _extract_result_json(content)

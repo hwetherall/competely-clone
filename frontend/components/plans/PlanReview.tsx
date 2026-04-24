@@ -161,8 +161,12 @@ export function PlanReview({
                 <Badge variant="secondary" className="px-2 py-0.5">
                   {parameters.length} Parameters
                 </Badge>
-                <Badge variant={plan.parameter_path === "avis" ? "default" : "secondary"} className="px-2 py-0.5">
-                  {plan.parameter_path === "avis" ? "AVIS" : "Competely"} Framework
+                <Badge variant={plan.parameter_path !== "competely" ? "default" : "secondary"} className="px-2 py-0.5">
+                  {plan.parameter_path === "avis"
+                    ? "AVIS"
+                    : plan.parameter_path === "innovera"
+                      ? "Innovera Lens"
+                      : "Competely"} Framework
                 </Badge>
                 <Badge variant="secondary" className="px-2 py-0.5 capitalize">
                   {plan.depth ?? "Standard"} Depth
@@ -317,7 +321,7 @@ export function PlanReview({
             <section className="space-y-3">
               <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">Initial Hypothesis</h3>
               <p className="text-sm text-muted-foreground italic pl-4 border-l-2 border-primary/30">
-                "{plan.hypothesis}"
+                &quot;{plan.hypothesis}&quot;
               </p>
             </section>
           )}

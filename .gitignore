@@ -40,6 +40,9 @@ env/
 # Cache
 data/cache/
 
+# Firecrawl scrape outputs
+.firecrawl/
+
 # Logs
 *.log
 

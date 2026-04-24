@@ -67,9 +67,9 @@ class SynthesisAgent:
         variable_lookup: Optional[Dict[str, Any]] = None,
     ):
         self.llm_client = llm_client or LLMClient()
-        self.gather_agent = gather_agent or GatherAgent()
         self.normalize_agent = normalize_agent or NormalizeAgent()
         self.variable_lookup = variable_lookup or {}
+        self.gather_agent = gather_agent or GatherAgent(variable_lookup=self.variable_lookup)
 
     async def synthesize(
         self,

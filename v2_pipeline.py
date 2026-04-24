@@ -104,6 +104,59 @@ def create_results_dir() -> Path:
     return results_dir
 
 
+def save_v2_checkpoint(
+    run_id: str,
+    phase: str,
+    companies: List[str],
+    variable_ids: List[str],
+    variable_definitions: Dict[str, Dict[str, Any]],
+    intelligence: Optional[Dict[str, Dict[str, Dict[str, Any]]]] = None,
+    analyses: Optional[Dict[str, Dict[str, Any]]] = None,
+    executive: Optional[Dict[str, Any]] = None,
+    research_synthesis: Optional[Dict[str, Any]] = None,
+    metadata: Optional[Dict[str, Any]] = None,
+    graveyard_companies: Optional[List[Dict[str, Any]]] = None,
+    graveyard_intelligence: Optional[Dict[str, Dict[str, Dict[str, Any]]]] = None,
+    graveyard_analyses: Optional[Dict[str, Dict[str, Any]]] = None,
+    postmortem_brief: Optional[Dict[str, Any]] = None,
+) -> Path:
+    """Persist the latest recoverable V2 state without marking the run complete."""
+    results_dir = create_results_dir()
+    filepath = results_dir / f"checkpoint_{run_id}.json"
+    tmp_filepath = filepath.with_suffix(".tmp")
+    checkpoint = {
+        "checkpoint": True,
+        "run_id": run_id,
+        "phase": phase,
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "companies": companies,
+        "parameters": variable_ids,
+        "parameter_definitions": variable_definitions,
+        "intelligence": intelligence or {},
+        "analyses": analyses or {},
+        "executive": executive or {},
+        "research_synthesis": research_synthesis or {},
+        "metadata": {
+            **(metadata or {}),
+            "status": "partial",
+            "checkpoint_phase": phase,
+        },
+    }
+    if graveyard_companies:
+        checkpoint["graveyard_companies"] = graveyard_companies
+    if graveyard_intelligence:
+        checkpoint["graveyard_intelligence"] = graveyard_intelligence
+    if graveyard_analyses:
+        checkpoint["graveyard_analyses"] = graveyard_analyses
+    if postmortem_brief:
+        checkpoint["postmortem_brief"] = postmortem_brief
+
+    with open(tmp_filepath, "w", encoding="utf-8") as f:
+        json.dump(checkpoint, f, indent=2, ensure_ascii=False)
+    tmp_filepath.replace(filepath)
+    return filepath
+
+
 async def gather_one(
     semaphore: asyncio.Semaphore,
     agent: GatherAgent,
@@ -163,6 +216,7 @@ async def run_v2_analysis(
     industry_context: str = "",
     parameter_path: str = "competely",
 ) -> V2RunResult:
+    run_id = run_id_override or f"v2_run_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
     variable_ids: List[str] = []
     variable_lookup: Dict[str, VariableDefinition] = {}
     variable_definitions: Dict[str, Dict[str, Any]] = {}
@@ -252,6 +306,20 @@ async def run_v2_analysis(
             continue
         company, variable_id, dossier = r
         intelligence[company][variable_id] = dossier.to_dict()
+    save_v2_checkpoint(
+        run_id=run_id,
+        phase="gather_complete",
+        companies=companies,
+        variable_ids=variable_ids,
+        variable_definitions=variable_definitions,
+        intelligence=intelligence,
+        metadata={
+            "phase1_elapsed_seconds": phase1_elapsed,
+            "concurrency": concurrency,
+            "fast_mode": fast_mode,
+            "parameter_path": parameter_path,
+        },
+    )
 
     # Phase 2: Normalize (per parameter, parallel)
     if progress_callback:
@@ -339,6 +407,22 @@ async def run_v2_analysis(
                 executive_summary="",
                 confidence="none",
             ).to_dict()
+        save_v2_checkpoint(
+            run_id=run_id,
+            phase=f"synthesis_{i + 1}_of_{len(variable_ids)}",
+            companies=companies,
+            variable_ids=variable_ids,
+            variable_definitions=variable_definitions,
+            intelligence=intelligence,
+            analyses=analyses,
+            metadata={
+                "phase1_elapsed_seconds": phase1_elapsed,
+                "phase2_elapsed_seconds": phase2_elapsed,
+                "concurrency": concurrency,
+                "fast_mode": fast_mode,
+                "parameter_path": parameter_path,
+            },
+        )
     phase3_elapsed = time.time() - phase3_start
     print(f"\n  Phase 3 completed in {format_time(phase3_elapsed)}")
 
@@ -363,6 +447,25 @@ async def run_v2_analysis(
     )
     phase35_elapsed = time.time() - phase35_start
     print(f"  Phase 3.5 completed in {format_time(phase35_elapsed)}")
+    save_v2_checkpoint(
+        run_id=run_id,
+        phase="research_synthesis_complete",
+        companies=companies,
+        variable_ids=variable_ids,
+        variable_definitions=variable_definitions,
+        intelligence=intelligence,
+        analyses=analyses,
+        research_synthesis=research_synthesis.to_dict(),
+        metadata={
+            "phase1_elapsed_seconds": phase1_elapsed,
+            "phase2_elapsed_seconds": phase2_elapsed,
+            "phase3_elapsed_seconds": phase3_elapsed,
+            "phase35_elapsed_seconds": phase35_elapsed,
+            "concurrency": concurrency,
+            "fast_mode": fast_mode,
+            "parameter_path": parameter_path,
+        },
+    )
 
     # Phase 4: Executive
     if progress_callback:
@@ -378,6 +481,27 @@ async def run_v2_analysis(
     executive = await executive_agent.synthesize_brief(companies_list, reports_for_exec, venture_context=venture_context, parameter_path=parameter_path)
     phase4_elapsed = time.time() - phase4_start
     print(f"  Phase 4 completed in {format_time(phase4_elapsed)}")
+    save_v2_checkpoint(
+        run_id=run_id,
+        phase="executive_complete",
+        companies=companies,
+        variable_ids=variable_ids,
+        variable_definitions=variable_definitions,
+        intelligence=intelligence,
+        analyses=analyses,
+        executive=executive.to_dict(),
+        research_synthesis=research_synthesis.to_dict(),
+        metadata={
+            "phase1_elapsed_seconds": phase1_elapsed,
+            "phase2_elapsed_seconds": phase2_elapsed,
+            "phase3_elapsed_seconds": phase3_elapsed,
+            "phase35_elapsed_seconds": phase35_elapsed,
+            "phase4_elapsed_seconds": phase4_elapsed,
+            "concurrency": concurrency,
+            "fast_mode": fast_mode,
+            "parameter_path": parameter_path,
+        },
+    )
 
     # =========================================================================
     # Graveyard Track (if enabled)
@@ -572,7 +696,6 @@ async def run_v2_analysis(
             print(f"\n  Graveyard track completed in {format_time(gy_elapsed)}")
 
     total_elapsed = time.time() - start_time
-    run_id = run_id_override or f"v2_run_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
     result = V2RunResult(
         run_id=run_id,
         timestamp=datetime.now(timezone.utc).isoformat(),

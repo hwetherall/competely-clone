@@ -9,6 +9,9 @@
 export type ConfidenceLevel = "high" | "medium" | "low" | "none";
 export type RunStatus = "pending" | "running" | "completed" | "failed";
 
+export type DiscoveryStatus = "running" | "complete" | "failed";
+export type DiscoveryFraming = "direct" | "problem_sharer" | "category_sharer" | "adjacency";
+
 // =============================================================================
 // Variable Types
 // =============================================================================
@@ -199,12 +202,75 @@ export interface RunCreateRequest {
   fast_mode?: boolean;
   version?: RunVersion;
   venture_context?: string;
+  parameter_path?: ParameterPath;
 }
 
 export interface RunCreateResponse {
   run_id: string;
   status: RunStatus;
   message: string;
+}
+
+// =============================================================================
+// Discovery Types
+// =============================================================================
+
+export interface DiscoveryTargetProfile {
+  company_name: string;
+  description: string;
+  website?: string | null;
+  industry?: string | null;
+  audience?: string | null;
+  notes?: string | null;
+}
+
+export interface CompetitorCandidate {
+  name: string;
+  canonical_domain?: string | null;
+  framings: DiscoveryFraming[];
+  rationales: Partial<Record<DiscoveryFraming, string>>;
+  evidence_urls: string[];
+  confidence: number;
+  discovered_at: string;
+}
+
+export interface DiscoveryRun {
+  id: string;
+  target_profile: DiscoveryTargetProfile;
+  framing_seeds: Partial<Record<DiscoveryFraming, string>>;
+  candidates: CompetitorCandidate[];
+  status: DiscoveryStatus;
+  created_at: string;
+  updated_at: string;
+  error?: string | null;
+}
+
+export interface DiscoveryCreateRequest {
+  target_profile?: DiscoveryTargetProfile;
+  framing_seeds?: Partial<Record<DiscoveryFraming, string>>;
+  max_candidates?: number;
+}
+
+export interface DiscoveryCreateResponse {
+  discovery_run_id: string;
+  status: DiscoveryStatus;
+}
+
+export interface DiscoveryPromoteRequest {
+  selected_names: string[];
+  variables?: string[];
+  dynamic_variables?: DynamicVariableDefinition[];
+  parameter_contexts?: Record<string, string>;
+  version?: RunVersion;
+  fast_mode?: boolean;
+  concurrency?: number;
+  parameter_path?: ParameterPath;
+}
+
+export interface DiscoveryPromoteResponse {
+  run_id: string;
+  status: RunStatus;
+  companies: string[];
 }
 
 // =============================================================================
@@ -336,7 +402,7 @@ export interface ConfidencePreview {
   suggestions: string[];
 }
 
-export type ParameterPath = "competely" | "avis";
+export type ParameterPath = "competely" | "avis" | "innovera";
 
 export interface ResearchPlan {
   id: string;

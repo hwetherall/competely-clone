@@ -31,6 +31,7 @@ import type {
   ResearchGoalResult,
   ConfidencePreview,
   GraveyardCompany,
+  ParameterPath,
 } from "@/lib/types";
 import { PlanWizardStepper } from "@/components/plans/PlanWizardStepper";
 import { CompanyValidation, type CompanyChoiceState } from "@/components/plans/CompanyValidation";
@@ -42,7 +43,7 @@ import { PlanReview } from "@/components/plans/PlanReview";
 import { SubsidiarySelectorModal } from "@/components/plans/SubsidiarySelectorModal";
 import { IntelligenceQuestionsPanel } from "@/components/plans/IntelligenceQuestionsPanel";
 import { GraveyardDiscovery } from "@/components/plans/GraveyardDiscovery";
-import { Loader2, AlertCircle, ChevronRight, Sparkles } from "lucide-react";
+import { Loader2, AlertCircle, ChevronRight, Sparkles, BarChart3, Landmark, Workflow } from "lucide-react";
 
 function getDefaultSelection(data: VariableGenerationResponse): string[] {
   const alwaysIds = data.always_variables.map((v) => v.id);
@@ -90,7 +91,7 @@ export default function NewPlanPage() {
   const updateIntel = (stepKey: string, patch: Partial<IntelStepState>) =>
     setIntelByStep((prev) => ({ ...prev, [stepKey]: { ...(prev[stepKey] ?? emptyIntel), ...patch } }));
 
-  const [parameterPath, setParameterPath] = useState<"competely" | "avis">("competely");
+  const [parameterPath, setParameterPath] = useState<ParameterPath>("competely");
   const [variableData, setVariableData] = useState<VariableGenerationResponse | null>(null);
   const [selectedVariableIds, setSelectedVariableIds] = useState<string[]>([]);
   const [dynamicVariableDefs, setDynamicVariableDefs] = useState<DynamicVariableDefinition[]>([]);
@@ -784,9 +785,9 @@ export default function NewPlanPage() {
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                {/* Path selector: Competely vs AVIS */}
+                {/* Path selector */}
                 {!variableData && (
-                  <div className="grid gap-3 sm:grid-cols-2">
+                  <div className="grid gap-3 lg:grid-cols-3">
                     <button
                       type="button"
                       onClick={() => setParameterPath("competely")}
@@ -797,7 +798,7 @@ export default function NewPlanPage() {
                       }`}
                     >
                       <div className="flex items-center gap-2 mb-2">
-                        <span className="text-lg">📊</span>
+                        <BarChart3 className="h-5 w-5 text-primary" />
                         <h4 className="font-semibold text-sm">Competely Path</h4>
                       </div>
                       <p className="text-xs text-muted-foreground leading-relaxed">
@@ -817,13 +818,33 @@ export default function NewPlanPage() {
                       }`}
                     >
                       <div className="flex items-center gap-2 mb-2">
-                        <span className="text-lg">🏛️</span>
+                        <Landmark className="h-5 w-5 text-primary" />
                         <h4 className="font-semibold text-sm">AVIS Path</h4>
                       </div>
                       <p className="text-xs text-muted-foreground leading-relaxed">
                         Investment-thesis lens (Innovera AVIS framework). Evaluates moats, funding, GTM, team, IP defensibility, and exit readiness.
                       </p>
                       {parameterPath === "avis" && (
+                        <span className="absolute top-3 right-3 h-2 w-2 rounded-full bg-primary" />
+                      )}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setParameterPath("innovera")}
+                      className={`relative rounded-xl border-2 p-5 text-left transition-all ${
+                        parameterPath === "innovera"
+                          ? "border-primary bg-primary/5 shadow-sm"
+                          : "border-muted hover:border-muted-foreground/30"
+                      }`}
+                    >
+                      <div className="flex items-center gap-2 mb-2">
+                        <Workflow className="h-5 w-5 text-primary" />
+                        <h4 className="font-semibold text-sm">Innovera Lens</h4>
+                      </div>
+                      <p className="text-xs text-muted-foreground leading-relaxed">
+                        Business-model lens for AI-native decision platforms and consulting firms adopting blended AI plus human delivery.
+                      </p>
+                      {parameterPath === "innovera" && (
                         <span className="absolute top-3 right-3 h-2 w-2 rounded-full bg-primary" />
                       )}
                     </button>

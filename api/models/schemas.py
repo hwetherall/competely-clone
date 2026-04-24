@@ -7,6 +7,8 @@ from pydantic import BaseModel, Field
 from datetime import datetime
 from enum import Enum
 
+from agents.schemas import CompetitorCandidate, DiscoveryRun, DiscoveryTargetProfile
+
 
 class ConfidenceLevel(str, Enum):
     HIGH = "high"
@@ -48,7 +50,7 @@ class GenerateVariablesRequest(BaseModel):
     )
     parameter_path: str = Field(
         default="competely",
-        description="Which parameter framework to use: 'competely' (product comparison) or 'avis' (investment thesis)",
+        description="Which parameter framework to use: 'competely', 'avis', or 'innovera'",
     )
 
 
@@ -89,6 +91,45 @@ class VariableGenerationResponse(BaseModel):
         default_factory=list,
         description="Tier 3 industry-specific variables with full definitions",
     )
+
+
+# =============================================================================
+# Discovery Schemas
+# =============================================================================
+
+class DiscoveryCreateRequest(BaseModel):
+    """Request to start a competitor discovery run."""
+    target_profile: Optional[DiscoveryTargetProfile] = None
+    framing_seeds: Optional[Dict[str, str]] = None
+    max_candidates: int = Field(default=20, ge=10, le=30)
+
+
+class DiscoveryCreateResponse(BaseModel):
+    discovery_run_id: str
+    status: str = "running"
+
+
+class DiscoveryRunResponse(DiscoveryRun):
+    """Discovery run response."""
+    pass
+
+
+class DiscoveryPromoteRequest(BaseModel):
+    """Promote selected discovery candidates into a standard research run."""
+    selected_names: List[str] = Field(..., min_length=1)
+    variables: Optional[List[str]] = None
+    dynamic_variables: Optional[List[DynamicVariableDefinition]] = None
+    parameter_contexts: Optional[Dict[str, str]] = None
+    version: Optional[str] = "v1"
+    fast_mode: bool = False
+    concurrency: int = Field(default=3, ge=1, le=10)
+    parameter_path: str = "innovera"
+
+
+class DiscoveryPromoteResponse(BaseModel):
+    run_id: str
+    status: RunStatus
+    companies: List[str]
 
 
 # =============================================================================
@@ -234,6 +275,10 @@ class RunCreateRequest(BaseModel):
     industry_context: Optional[str] = Field(
         default=None,
         description="Industry context for graveyard analysis",
+    )
+    parameter_path: Optional[str] = Field(
+        default="competely",
+        description="Parameter framework used for static variable lookup: 'competely', 'avis', or 'innovera'",
     )
 
 
@@ -455,7 +500,7 @@ class ResearchPlanSchema(BaseModel):
     accepted_suggestions: List[str] = []
 
     industry_context: str = ""
-    parameter_path: str = "competely"  # "competely" | "avis"
+    parameter_path: str = "competely"  # "competely" | "avis" | "innovera"
     selected_variable_ids: List[str] = []
     dynamic_variables: List[DynamicVariableDefinition] = []
     parameter_contexts: Dict[str, str] = {}

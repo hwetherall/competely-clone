@@ -24,6 +24,7 @@ from config import settings
 logger = logging.getLogger(__name__)
 
 SUMMARIZE_MODEL = settings.SUMMARIZE_MODEL
+SUMMARIZE_FALLBACK_MODEL = settings.SUMMARIZE_FALLBACK_MODEL
 
 
 class NormalizeAgent:
@@ -85,6 +86,7 @@ class NormalizeAgent:
                 temperature=0.3,
                 max_tokens=8000,
                 model_override=SUMMARIZE_MODEL,
+                fallback_model=SUMMARIZE_FALLBACK_MODEL,
             )
             if response and response.strip():
                 parsed = self._parse_normalize_json(response)

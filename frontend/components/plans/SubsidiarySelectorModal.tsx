@@ -53,6 +53,7 @@ export function SubsidiarySelectorModal({
 
   useEffect(() => {
     if (!open) return;
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setSelected(
       companyId != null && initialSelected?.length
         ? new Set(initialSelected)
