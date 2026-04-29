@@ -23,7 +23,7 @@ from agents.prompts import (
 from agents.schemas import EvidenceSource, EvidencePassage, EvidencePack
 from agents.page_reader import PageReader, get_page_reader
 from agents.passage_selector import select_passages_for_variable, merge_passages
-from agents.v2_schemas import IntelligenceDossier, FactItem
+from agents.v2_schemas import IntelligenceDossier, FactItem, CompetitorProfile, CommercialExtract
 from agents.v2_prompts import (
     GATHER_FACT_EXTRACTION_SYSTEM,
     GATHER_FACT_EXTRACTION_PROMPT,
@@ -36,6 +36,7 @@ logger = logging.getLogger(__name__)
 RESEARCH_MODEL = settings.RESEARCH_MODEL
 SUMMARIZE_MODEL = settings.SUMMARIZE_MODEL
 SUMMARIZE_FALLBACK_MODEL = settings.SUMMARIZE_FALLBACK_MODEL
+COMMERCIAL_VARIABLE_IDS = {"inv_packaging", "inv_pricing_mechanics", "inv_contract_structure", "inv_gtm_motion"}
 
 
 def create_search_client() -> SearchClient:
@@ -84,6 +85,9 @@ class GatherAgent:
         skip_evaluation: bool = False,
         enable_page_fetch: Optional[bool] = None,
         variable_lookup: Optional[Dict[str, VariableDefinition]] = None,
+        competitor_profiles: Optional[Dict[str, CompetitorProfile]] = None,
+        commercial_extracts: Optional[Dict[str, CommercialExtract]] = None,
+        commercial_search_client: Optional[SearchClient] = None,
     ):
         self.search_client = search_client or create_search_client()
         self.llm_client = llm_client or LLMClient()
@@ -95,6 +99,16 @@ class GatherAgent:
             enable_page_fetch if enable_page_fetch is not None else settings.ENABLE_PAGE_FETCH
         )
         self.variable_lookup = variable_lookup or {}
+        self.competitor_profiles = competitor_profiles or {}
+        self.commercial_extracts = commercial_extracts or {}
+        self.commercial_search_client = commercial_search_client
+        if self.commercial_search_client is None and settings.EXA_API_KEY:
+            try:
+                from agents.exa_client import ExaClient
+
+                self.commercial_search_client = ExaClient()
+            except Exception:
+                self.commercial_search_client = None
 
     async def gather(
         self,
@@ -114,6 +128,7 @@ class GatherAgent:
         max_iters = 1 if initial_queries is not None else self.max_iterations
 
         try:
+            self._seed_commercial_context(state)
             while state.iteration < max_iters:
                 state.iteration += 1
                 if initial_queries is not None and state.iteration == 1:
@@ -123,9 +138,7 @@ class GatherAgent:
                 for query in queries:
                     if query not in state.queries_tried:
                         try:
-                            result = await self.search_client.search(
-                                query, num_results=10, company=company
-                            )
+                            result = await self._search(state, query)
                             state.queries_tried.append(query)
                             state.search_results.append(result)
                         except Exception as e:
@@ -155,6 +168,7 @@ class GatherAgent:
                 "evidence_sources_used": len(state.evidence_sources),
                 "evidence_passages_count": len(state.evidence_passages),
             }
+            self._add_commercial_metadata(state, metadata)
             return IntelligenceDossier(
                 company=company,
                 parameter_id=variable_id,
@@ -179,6 +193,71 @@ class GatherAgent:
                 confidence="none",
                 metadata={"error": str(e)},
             )
+
+    async def _search(self, state: GatherState, query: str) -> SearchResult:
+        client = self.commercial_search_client if self._is_commercial_variable(state.variable.id) and self.commercial_search_client else self.search_client
+        try:
+            return await client.search(query, num_results=10, company=state.company)
+        except TypeError:
+            return await client.search(query, 10, state.company)
+
+    def _is_commercial_variable(self, variable_id: str) -> bool:
+        return variable_id in COMMERCIAL_VARIABLE_IDS
+
+    def _seed_commercial_context(self, state: GatherState) -> None:
+        if not self._is_commercial_variable(state.variable.id):
+            return
+        profile = self.competitor_profiles.get(state.company)
+        extract = self.commercial_extracts.get(state.company)
+        if not profile and not extract:
+            return
+
+        source_id = "C1"
+        source_url = ""
+        title = "Commercial pre-research"
+        if extract and extract.extracted_from_urls:
+            source_url = extract.extracted_from_urls[0]
+            title = "Firecrawl commercial extract"
+        elif profile and profile.homepage_url:
+            source_url = profile.homepage_url
+
+        source = EvidenceSource(
+            source_id=source_id,
+            url=source_url or f"commercial-profile://{state.company}",
+            title=title,
+            domain="firecrawl" if extract else "commercial-profile",
+            source_score=0.95 if extract and extract.status == "completed" else 0.75,
+            is_official=True,
+            tier="official",
+            content_type="application/json",
+        )
+        payload = {
+            "competitor_profile": profile.to_dict() if profile else {},
+            "commercial_extract": extract.to_dict() if extract else {},
+        }
+        text = (
+            "=== STRUCTURED EXTRACT (Firecrawl, source-of-truth for published facts) ===\n"
+            + json.dumps(payload, indent=2)
+        )
+        state.evidence_sources.insert(0, source)
+        state.evidence_passages.insert(0, EvidencePassage(
+            source_id=source_id,
+            passage_id="CP1",
+            text=text,
+            relevance_score=1.0,
+        ))
+        if profile and profile.type == "consulting_firm":
+            state.missing_info.append("Consulting-firm pricing is usually project-based and not published; surface opacity as a finding.")
+
+    def _add_commercial_metadata(self, state: GatherState, metadata: Dict[str, Any]) -> None:
+        if not self._is_commercial_variable(state.variable.id):
+            return
+        profile = self.competitor_profiles.get(state.company)
+        extract = self.commercial_extracts.get(state.company)
+        if profile:
+            metadata["competitor_profile"] = profile.to_dict()
+        if extract:
+            metadata["commercial_extract"] = extract.to_dict()
 
     def _get_variable(self, variable_id: str) -> VariableDefinition:
         if variable_id in self.variable_lookup:

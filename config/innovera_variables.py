@@ -60,6 +60,7 @@ Assess:
 2. ICP and buyer: target roles, company sizes, industries, and budget owners.
 3. Deal shape: pricing signals, deal size, free trial/demo motion, procurement friction, and time-to-first-customer if available.
 4. Channels: content, thought leadership, partnerships, marketplaces, events, expert networks, or outbound.
+5. Main revenue driver (Q10): subscription, usage, services, outcomes, project fees, data/API access, or another primary driver.
 
 IN SCOPE: Pricing pages, demo CTAs, case studies, customer pages, partner pages, job postings, founder interviews.
 NOT IN SCOPE: Product feature detail unless it directly shapes sales motion.
@@ -74,11 +75,106 @@ End with one practical GTM lesson for Innovera.""",
         answer_spec=[
             "primary sales model and channels",
             "ICP, buyer, and deal-size signals",
+            "main revenue driver - subscription, usage, services, outcomes, or project fees (Q10)",
             "GTM lesson for Innovera",
         ],
         preferred_source_types=["official", "tier1_news"],
-        key_terms=["pricing", "demo", "enterprise", "customers", "ICP", "sales", "partner", "go-to-market"],
+        key_terms=["pricing", "demo", "enterprise", "customers", "ICP", "sales", "partner", "go-to-market", "revenue", "subscription", "usage-based", "services revenue", "outcomes", "primary driver"],
         max_concise_chars=260,
+        tier="always",
+    ),
+    VariableDefinition(
+        id="inv_packaging",
+        name="Packaging",
+        category="Commercial Deep Dive",
+        research_prompt="""Analyze how {company} packages and bundles its product offering.
+
+Answer three things explicitly:
+1. TIER CONTENTS (Q1): For each named package or tier, what features, capabilities, limits, support level, and SLAs are included?
+2. ADD-ONS (Q4): What costs extra beyond the base package - paid integrations, professional services, premium support, advanced modules, training, certification?
+3. FLEXIBILITY (Q7): How flexible is the packaging? Are custom bundles offered for enterprise? Is there a Custom or Enterprise tier? Is everything modular or are tiers locked?
+
+PRIMARY SOURCE: the structured Firecrawl extract from the commercial pre-research phase if available.
+SECONDARY SOURCES: Exa for customer reviews mentioning what is negotiable in practice, including G2, Vendr, Reddit, and migration posts.
+
+If pricing or packaging is opaque, say so directly and treat opacity as the finding.""",
+        example_queries=[
+            "{company} pricing tiers what's included",
+            "{company} add-ons paid integrations services",
+            "{company} enterprise custom bundle plan",
+            "{company} G2 review features locked higher tier",
+        ],
+        answer_spec=[
+            "tier names and what each tier includes (Q1)",
+            "what costs extra beyond the base package - add-ons, services, integrations (Q4)",
+            "packaging flexibility - custom bundles, enterprise plans, negotiability (Q7)",
+        ],
+        preferred_source_types=["official", "tier1_news"],
+        key_terms=["tier", "plan", "package", "include", "add-on", "module", "enterprise", "custom", "bundle", "feature", "limit"],
+        max_concise_chars=240,
+        tier="always",
+    ),
+    VariableDefinition(
+        id="inv_pricing_mechanics",
+        name="Pricing Mechanics",
+        category="Commercial Deep Dive",
+        research_prompt="""Analyze the mechanics of how {company} charges customers.
+
+Answer four things explicitly:
+1. PRICING UNIT (Q2): What is the core unit of charge? Per user/seat, per project, per usage, per outcome, flat platform fee, or hybrid?
+2. STARTING PRICE & ACV (Q3): What is the published starting price? What is the typical annual contract value for a real customer?
+3. PILOT/ENTRY OFFER (Q5): Is there a free trial, freemium tier, paid pilot, or POC offering? What is its structure, duration, and conversion path?
+4. SCALING (Q9): How does the bill grow as the customer scales? Linear per-seat, tiered step-functions, volume discounts, or usage caps?
+
+PRIMARY SOURCE: structured Firecrawl extract for Q2, published starting price, and Q9. ACV and pilot conversion paths usually require Exa.
+
+If pricing is opaque, say so directly and report what can be inferred from credible evidence.""",
+        example_queries=[
+            "{company} pricing per user per seat per usage",
+            "{company} starting price minimum",
+            "{company} typical ACV annual contract value Vendr",
+            "{company} free trial pilot POC",
+            "{company} volume discount scale pricing",
+        ],
+        answer_spec=[
+            "core pricing unit - per user, per project, per usage, per outcome (Q2)",
+            "starting price and typical annual contract value (Q3)",
+            "pilot or entry offer structure (Q5)",
+            "how pricing scales with usage or scope (Q9)",
+        ],
+        preferred_source_types=["official", "tier1_news", "analyst"],
+        key_terms=["per seat", "per user", "per usage", "per query", "ACV", "starting at", "minimum", "trial", "pilot", "POC", "volume discount", "scale", "tier"],
+        max_concise_chars=300,
+        tier="always",
+    ),
+    VariableDefinition(
+        id="inv_contract_structure",
+        name="Contract Structure",
+        category="Commercial Deep Dive",
+        research_prompt="""Analyze the contract terms and upsell mechanics of {company}'s commercial relationships.
+
+Answer two things explicitly:
+1. UPGRADE TRIGGERS (Q6): What causes a customer to expand or upgrade? Seat expansion, usage thresholds, feature gating, time-based renegotiation, success milestones? What are the mechanisms - auto-upgrade, sales-led upsell, or hard cap forcing renegotiation?
+2. CONTRACT STRUCTURE (Q8): What are typical term lengths? Is there a minimum commitment? How does renewal work - auto-renew, negotiated, price uplift, early termination terms?
+
+PRIMARY SOURCE for Q8: Firecrawl extract on terms, legal, MSA, or pricing pages.
+PRIMARY SOURCE for Q6: Exa evidence from customer stories, negotiation guides, reviews, and seller content.
+
+If contract terms are not disclosed, say so and distinguish public terms from inferred enterprise practice.""",
+        example_queries=[
+            "{company} terms of service contract length",
+            "{company} minimum commitment seat floor",
+            "{company} renewal auto-renew price uplift",
+            "{company} upgrade trigger expansion playbook",
+            "{company} customer expanded contract Vendr",
+        ],
+        answer_spec=[
+            "upgrade and upsell triggers (Q6)",
+            "contract term length, minimum commitment, renewal mechanics (Q8)",
+        ],
+        preferred_source_types=["official", "tier1_news"],
+        key_terms=["contract", "term", "minimum", "commitment", "renewal", "auto-renew", "uplift", "expansion", "upgrade", "trigger", "seat floor", "MSA", "terms of service"],
+        max_concise_chars=240,
         tier="always",
     ),
     VariableDefinition(
@@ -230,6 +326,9 @@ Innovera context:
 This is a synthesis parameter. Use the available evidence from the other Innovera-lens dimensions when present:
 - Offer Shape & Scope
 - GTM Motion
+- Packaging
+- Pricing Mechanics
+- Contract Structure
 - Client Engagement Model
 - AI / Human Blend
 - Size Signals

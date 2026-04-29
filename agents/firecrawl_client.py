@@ -9,9 +9,9 @@ import asyncio
 import hashlib
 import json
 import logging
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 from pathlib import Path
-from typing import Optional, List
+from typing import Optional, List, Dict, Any
 
 import httpx
 from tenacity import retry, stop_after_attempt, wait_exponential, retry_if_exception_type
@@ -61,6 +61,45 @@ class FirecrawlClient:
 
     def _get_cache_path(self, cache_key: str) -> Path:
         return self.cache_dir / f"{cache_key}.json"
+
+    def _get_json_cache_path(self, namespace: str, key: str) -> Path:
+        path = self.cache_dir / namespace
+        path.mkdir(parents=True, exist_ok=True)
+        return path / f"{hashlib.md5(key.encode('utf-8')).hexdigest()}.json"
+
+    def _load_json_cache(
+        self,
+        namespace: str,
+        key: str,
+        ttl_days: Optional[int] = None,
+    ) -> Optional[Dict[str, Any]]:
+        if not self.cache_enabled:
+            return None
+        path = self._get_json_cache_path(namespace, key)
+        if not path.exists():
+            return None
+        if ttl_days is not None:
+            modified = datetime.fromtimestamp(path.stat().st_mtime, tz=timezone.utc)
+            if datetime.now(timezone.utc) - modified > timedelta(days=ttl_days):
+                return None
+        try:
+            with open(path, "r", encoding="utf-8") as f:
+                cached = json.load(f)
+            cached["_cached"] = True
+            return cached
+        except (json.JSONDecodeError, OSError) as e:
+            logger.warning("Failed to load Firecrawl %s cache: %s", namespace, e)
+            return None
+
+    def _save_json_cache(self, namespace: str, key: str, data: Dict[str, Any]) -> None:
+        if not self.cache_enabled:
+            return
+        path = self._get_json_cache_path(namespace, key)
+        try:
+            with open(path, "w", encoding="utf-8") as f:
+                json.dump(data, f, indent=2, ensure_ascii=False)
+        except OSError as e:
+            logger.warning("Failed to save Firecrawl %s cache: %s", namespace, e)
 
     def _load_from_cache(self, url: str) -> Optional[PageContent]:
         if not self.cache_enabled:
@@ -158,6 +197,137 @@ class FirecrawlClient:
             f"Firecrawl API error {response.status_code}: {response.text[:200]}",
             response.status_code,
         )
+
+    async def _post_json(self, endpoint: str, payload: Dict[str, Any]) -> Dict[str, Any]:
+        headers = {
+            "Authorization": f"Bearer {self.api_key}",
+            "Content-Type": "application/json",
+        }
+        async with httpx.AsyncClient(timeout=self.timeout) as client:
+            try:
+                response = await client.post(f"{self.base_url}/{endpoint.lstrip('/')}", headers=headers, json=payload)
+            except httpx.TimeoutException as e:
+                raise TransientFetchError(f"Firecrawl timeout calling {endpoint}: {e}")
+            except httpx.RequestError as e:
+                raise TransientFetchError(f"Firecrawl request error calling {endpoint}: {e}")
+        if response.status_code == 200:
+            return response.json()
+        if response.status_code in (429, 500, 502, 503, 504):
+            raise TransientFetchError(f"Firecrawl transient error {response.status_code} calling {endpoint}")
+        if response.status_code in (401, 403):
+            raise PermanentFirecrawlError("Firecrawl authentication error. Check FIRECRAWL_API_KEY.", response.status_code)
+        raise PermanentFirecrawlError(
+            f"Firecrawl API error {response.status_code}: {response.text[:200]}",
+            response.status_code,
+        )
+
+    async def _get_json(self, endpoint: str) -> Dict[str, Any]:
+        headers = {"Authorization": f"Bearer {self.api_key}"}
+        async with httpx.AsyncClient(timeout=self.timeout) as client:
+            try:
+                response = await client.get(f"{self.base_url}/{endpoint.lstrip('/')}", headers=headers)
+            except httpx.TimeoutException as e:
+                raise TransientFetchError(f"Firecrawl timeout calling {endpoint}: {e}")
+            except httpx.RequestError as e:
+                raise TransientFetchError(f"Firecrawl request error calling {endpoint}: {e}")
+        if response.status_code == 200:
+            return response.json()
+        if response.status_code in (429, 500, 502, 503, 504):
+            raise TransientFetchError(f"Firecrawl transient error {response.status_code} calling {endpoint}")
+        if response.status_code in (401, 403):
+            raise PermanentFirecrawlError("Firecrawl authentication error. Check FIRECRAWL_API_KEY.", response.status_code)
+        raise PermanentFirecrawlError(
+            f"Firecrawl API error {response.status_code}: {response.text[:200]}",
+            response.status_code,
+        )
+
+    async def map(
+        self,
+        url: str,
+        search: str = "",
+        limit: int = 100,
+        use_cache: bool = True,
+    ) -> Dict[str, Any]:
+        """Call Firecrawl v2 /map and return the raw JSON response."""
+        cache_key = json.dumps({"url": url, "search": search, "limit": limit}, sort_keys=True)
+        if use_cache:
+            cached = self._load_json_cache("map", cache_key, ttl_days=7)
+            if cached:
+                return cached
+        payload = {
+            "url": url,
+            "search": search,
+            "sitemap": "include",
+            "includeSubdomains": True,
+            "ignoreQueryParameters": True,
+            "limit": limit,
+            "timeout": self.timeout * 1000,
+        }
+        data = await self._post_json("map", payload)
+        if use_cache:
+            self._save_json_cache("map", cache_key, data)
+        return data
+
+    async def start_extract(
+        self,
+        urls: List[str],
+        schema: Dict[str, Any],
+        prompt: str,
+        show_sources: bool = True,
+    ) -> Dict[str, Any]:
+        payload = {
+            "urls": urls,
+            "prompt": prompt,
+            "schema": schema,
+            "enableWebSearch": False,
+            "ignoreSitemap": False,
+            "includeSubdomains": True,
+            "showSources": show_sources,
+            "ignoreInvalidURLs": True,
+            "scrapeOptions": {
+                "formats": ["markdown"],
+                "onlyMainContent": True,
+                "timeout": self.timeout * 1000,
+                "removeBase64Images": True,
+                "blockAds": True,
+                "storeInCache": True,
+            },
+        }
+        return await self._post_json("extract", payload)
+
+    async def get_extract_status(self, extract_id: str) -> Dict[str, Any]:
+        return await self._get_json(f"extract/{extract_id}")
+
+    async def extract(
+        self,
+        urls: List[str],
+        schema: Dict[str, Any],
+        prompt: str,
+        use_cache: bool = True,
+        cache_ttl_days: int = 30,
+        poll_interval: float = 2.0,
+        max_polls: int = 30,
+    ) -> Dict[str, Any]:
+        """Run asynchronous Firecrawl v2 /extract and poll until terminal."""
+        clean_urls = [u for u in urls if u]
+        cache_key = json.dumps({"urls": clean_urls, "schema": schema, "prompt": prompt}, sort_keys=True)
+        if use_cache:
+            cached = self._load_json_cache("extract", cache_key, ttl_days=cache_ttl_days)
+            if cached:
+                return cached
+        started = await self.start_extract(clean_urls, schema, prompt)
+        extract_id = started.get("id")
+        if not extract_id:
+            return started
+        result: Dict[str, Any] = started
+        for _ in range(max_polls):
+            await asyncio.sleep(poll_interval)
+            result = await self.get_extract_status(extract_id)
+            if result.get("status") in {"completed", "failed", "cancelled"}:
+                break
+        if use_cache and result.get("status") == "completed":
+            self._save_json_cache("extract", cache_key, result)
+        return result
 
     async def fetch(self, url: str, use_cache: bool = True) -> PageContent:
         if use_cache:

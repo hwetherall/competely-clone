@@ -104,6 +104,90 @@ class IntelligenceDossier:
 
 
 @dataclass
+class CompetitorProfile:
+    """
+    Commercial profile for one competitor.
+
+    Produced once per competitor before the normal V2 gather loop and used to
+    route commercial research.
+    """
+    competitor: str
+    type: str = "unknown"
+    has_pricing_page: bool = False
+    has_terms_page: bool = False
+    is_public: bool = False
+    homepage_url: str = ""
+    key_pages: Dict[str, Optional[str]] = field(default_factory=dict)
+    confidence: str = "low"
+    notes: str = ""
+
+    def to_dict(self) -> Dict[str, Any]:
+        return {
+            "competitor": self.competitor,
+            "type": self.type,
+            "has_pricing_page": self.has_pricing_page,
+            "has_terms_page": self.has_terms_page,
+            "is_public": self.is_public,
+            "homepage_url": self.homepage_url,
+            "key_pages": self.key_pages,
+            "confidence": self.confidence,
+            "notes": self.notes,
+        }
+
+    @classmethod
+    def from_dict(cls, data: Dict[str, Any]) -> "CompetitorProfile":
+        return cls(
+            competitor=data.get("competitor", ""),
+            type=data.get("type", "unknown"),
+            has_pricing_page=bool(data.get("has_pricing_page", False)),
+            has_terms_page=bool(data.get("has_terms_page", False)),
+            is_public=bool(data.get("is_public", False)),
+            homepage_url=data.get("homepage_url", ""),
+            key_pages=data.get("key_pages", {}) or {},
+            confidence=data.get("confidence", "low"),
+            notes=data.get("notes", ""),
+        )
+
+
+@dataclass
+class CommercialExtract:
+    """Structured commercial facts extracted once per competitor."""
+    competitor: str
+    data: Dict[str, Any] = field(default_factory=dict)
+    extracted_from_urls: List[str] = field(default_factory=list)
+    pricing_disclosure: str = "opaque"
+    status: str = "not_run"
+    error: str = ""
+    tokens_used: int = 0
+    cached: bool = False
+
+    def to_dict(self) -> Dict[str, Any]:
+        return {
+            "competitor": self.competitor,
+            "data": self.data,
+            "extracted_from_urls": self.extracted_from_urls,
+            "pricing_disclosure": self.pricing_disclosure,
+            "status": self.status,
+            "error": self.error,
+            "tokens_used": self.tokens_used,
+            "cached": self.cached,
+        }
+
+    @classmethod
+    def from_dict(cls, data: Dict[str, Any]) -> "CommercialExtract":
+        return cls(
+            competitor=data.get("competitor", ""),
+            data=data.get("data", {}) or {},
+            extracted_from_urls=list(data.get("extracted_from_urls", []) or []),
+            pricing_disclosure=data.get("pricing_disclosure", "opaque"),
+            status=data.get("status", "not_run"),
+            error=data.get("error", ""),
+            tokens_used=int(data.get("tokens_used", 0) or 0),
+            cached=bool(data.get("cached", False)),
+        )
+
+
+@dataclass
 class DataGap:
     """
     A gap in data identified during normalization.

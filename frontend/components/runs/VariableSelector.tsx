@@ -45,6 +45,15 @@ export function SmartVariableSelector({
   }
 
   const totalSelected = selectedVariableIds.length;
+  const alwaysByCategory = data.always_variables.reduce<Record<string, typeof data.always_variables>>(
+    (acc, variable) => {
+      const category = variable.category || "Other";
+      acc[category] = acc[category] ?? [];
+      acc[category].push(variable);
+      return acc;
+    },
+    {}
+  );
 
   return (
     <div className={cn("space-y-6", className)}>
@@ -76,21 +85,30 @@ export function SmartVariableSelector({
           </CardTitle>
         </CardHeader>
         <CardContent className="py-2 px-4">
-          <ul className="space-y-2">
-            {data.always_variables.map((v) => (
-              <li key={v.id} className="flex items-start gap-2">
-                <span className="inline-block w-4 h-4 mt-0.5 rounded border border-muted bg-muted/50 shrink-0" />
-                <div className="min-w-0">
-                  <span className="text-sm text-muted-foreground">{v.name}</span>
-                  {data.always_parameter_contexts?.[v.id] && (
-                    <p className="text-xs text-muted-foreground mt-0.5">
-                      {data.always_parameter_contexts[v.id]}
-                    </p>
-                  )}
-                </div>
-              </li>
+          <div className="space-y-4">
+            {Object.entries(alwaysByCategory).map(([category, variables]) => (
+              <div key={category}>
+                <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                  {category}
+                </p>
+                <ul className="space-y-2">
+                  {variables.map((v) => (
+                    <li key={v.id} className="flex items-start gap-2">
+                      <span className="inline-block w-4 h-4 mt-0.5 rounded border border-muted bg-muted/50 shrink-0" />
+                      <div className="min-w-0">
+                        <span className="text-sm text-muted-foreground">{v.name}</span>
+                        {data.always_parameter_contexts?.[v.id] && (
+                          <p className="text-xs text-muted-foreground mt-0.5">
+                            {data.always_parameter_contexts[v.id]}
+                          </p>
+                        )}
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              </div>
             ))}
-          </ul>
+          </div>
         </CardContent>
       </Card>
 
@@ -209,6 +227,11 @@ const VARIABLE_CATEGORIES = {
     { id: "market_share", name: "Market Share" },
     { id: "market_size", name: "Market Size" },
     { id: "estimated_revenue", name: "Estimated Revenue" },
+  ],
+  "Commercial Deep Dive": [
+    { id: "inv_packaging", name: "Packaging" },
+    { id: "inv_pricing_mechanics", name: "Pricing Mechanics" },
+    { id: "inv_contract_structure", name: "Contract Structure" },
   ],
 };
 

@@ -120,6 +120,13 @@ INSTRUCTIONS:
 7. List trends: 2-5 directional observations (e.g. "Race to zero on base fees").
 8. Set confidence: "high", "medium", or "low" based on evidence strength.
 
+Commercial Deep Dive source rules:
+- Blocks labeled STRUCTURED EXTRACT are Firecrawl extracts from official pages; use them as source-of-truth for published pricing, package, and contract facts.
+- Exa/search evidence is for inferred or market-observed facts such as ACV, upgrade triggers, negotiation flexibility, and customer sentiment.
+- If official extract and search evidence disagree about a published fact, prefer the official extract and note the discrepancy only if material.
+- If both official extract and search evidence are silent, write "not disclosed"; do not invent prices, ACV, terms, or package contents.
+- Surface opacity as data, especially for consulting firms and contact-sales enterprise vendors.
+
 Output your response as JSON inside <synthesis_json> tags:
 
 <synthesis_json>

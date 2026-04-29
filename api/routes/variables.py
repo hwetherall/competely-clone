@@ -167,6 +167,9 @@ def _generate_innovera(request: GenerateVariablesRequest) -> VariableGenerationR
     contexts = {
         "inv_offer_shape": "Shows whether a competitor has a narrower or faster package Innovera can learn from.",
         "inv_gtm_motion": "Reveals how competitors sell decision intelligence, AI research, and blended consulting offers.",
+        "inv_packaging": "Answers what is bundled, what costs extra, and where packaging is flexible or opaque.",
+        "inv_pricing_mechanics": "Captures pricing unit, starting price, ACV signals, pilot offers, and scaling mechanics.",
+        "inv_contract_structure": "Surfaces upgrade triggers, term length, commitments, renewal mechanics, and opaque contract norms.",
         "inv_client_engagement": "Compares onboarding, cadence, and human touchpoints against Innovera's expert-in-the-loop model.",
         "inv_ai_human_blend": "Tests whether consulting firms and AI-native platforms are ahead or behind on AI plus human delivery.",
         "inv_size_signals": "Anchors threat level with revenue, customers, funding, headcount, and adoption evidence.",

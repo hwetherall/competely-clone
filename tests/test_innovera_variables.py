@@ -18,11 +18,15 @@ def test_innovera_variable_set_shape():
     variables = get_innovera_always()
     ids = get_all_innovera_variable_ids()
 
-    assert len(variables) == 7
+    assert len(variables) == 10
     assert INNOVERA_TAKEAWAY_ID in ids
     assert len(ids) == len(set(ids))
     assert all(v.id.startswith("inv_") for v in variables)
     assert get_innovera_variable("inv_gtm_motion").name == "GTM Motion"
+    assert get_innovera_variable("inv_packaging").category == "Commercial Deep Dive"
+    assert get_innovera_variable("inv_pricing_mechanics").category == "Commercial Deep Dive"
+    assert get_innovera_variable("inv_contract_structure").category == "Commercial Deep Dive"
+    assert any("Q10" in item for item in get_innovera_variable("inv_gtm_motion").answer_spec)
     assert "Innovera" in get_innovera_variable(INNOVERA_TAKEAWAY_ID).research_prompt
 
 

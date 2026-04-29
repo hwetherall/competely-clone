@@ -30,6 +30,9 @@ from agents.research_synthesis_agent import ResearchSynthesisAgent
 from agents.executive_agent import ExecutiveAgent
 from agents.postmortem_agent import PostMortemAgent
 from agents.risk_overlay_agent import RiskOverlayAgent
+from agents.competitor_profiler import CompetitorProfiler
+from agents.commercial_extractor import CommercialExtractor, commercial_phases_required
+from agents.coverage_check import run_coverage_check, typology_distribution
 from agents.v2_schemas import (
     IntelligenceDossier,
     NormalizedDataset,
@@ -38,6 +41,8 @@ from agents.v2_schemas import (
     PostMortemBrief,
     GraveyardCompany,
     V2RunResult,
+    CompetitorProfile,
+    CommercialExtract,
 )
 from agents.variable_generator import generate_variables as generate_variables_impl
 from config.settings import validate_config
@@ -264,14 +269,62 @@ async def run_v2_analysis(
     print(f"  Mode: {'Fast' if fast_mode else 'Normal'}")
     print()
 
+    competitor_profiles: Dict[str, CompetitorProfile] = {}
+    commercial_extracts: Dict[str, CommercialExtract] = {}
+    commercial_metadata: Dict[str, Any] = {}
+    if commercial_phases_required(parameter_path, variable_ids):
+        if progress_callback:
+            progress_callback("profile", 0, len(companies), "Profiling competitors...")
+        print("Phase 1: Competitor Profiling\n")
+        profile_start = time.time()
+        try:
+            profiler = CompetitorProfiler()
+            competitor_profiles = await profiler.profile_companies(companies, max_concurrent=max(1, concurrency))
+            if progress_callback:
+                progress_callback("profile", len(companies), len(companies), "Competitor profiling complete")
+        except Exception as e:
+            logger.warning("Competitor profiling failed; continuing without commercial profiles: %s", e)
+            competitor_profiles = {}
+        profile_elapsed = time.time() - profile_start
+
+        if progress_callback:
+            progress_callback("commercial_extract", 0, len(companies), "Extracting commercial pages...")
+        print("\nPhase 2: Commercial Structured Extract\n")
+        extract_start = time.time()
+        try:
+            extractor = CommercialExtractor()
+            commercial_extracts = await extractor.extract_for_companies(
+                competitor_profiles,
+                max_concurrent=max(1, concurrency),
+            )
+            if progress_callback:
+                progress_callback("commercial_extract", len(companies), len(companies), "Commercial extraction complete")
+        except Exception as e:
+            logger.warning("Commercial extraction failed; continuing with normal gather: %s", e)
+            commercial_extracts = {}
+        extract_elapsed = time.time() - extract_start
+        profile_dict = {c: p.to_dict() for c, p in competitor_profiles.items()}
+        extract_dict = {c: x.to_dict() for c, x in commercial_extracts.items()}
+        commercial_metadata = {
+            "commercial_deep_dive_enabled": True,
+            "competitor_profiles": profile_dict,
+            "commercial_extracts": extract_dict,
+            "typology_distribution": typology_distribution(profile_dict),
+            "profiling_elapsed_seconds": profile_elapsed,
+            "commercial_extract_elapsed_seconds": extract_elapsed,
+        }
+        print(f"  Typology distribution: {commercial_metadata['typology_distribution']}")
+
     gather_agent = GatherAgent(
         max_iterations=1 if fast_mode else 3,
         min_iterations=1,
         skip_evaluation=fast_mode,
         variable_lookup=variable_lookup,
+        competitor_profiles=competitor_profiles,
+        commercial_extracts=commercial_extracts,
     )
     normalize_agent = NormalizeAgent()
-    synthesis_agent = SynthesisAgent(variable_lookup=variable_lookup)
+    synthesis_agent = SynthesisAgent(variable_lookup=variable_lookup, gather_agent=gather_agent)
     research_synthesis_agent = ResearchSynthesisAgent()
     executive_agent = ExecutiveAgent()
 
@@ -318,6 +371,7 @@ async def run_v2_analysis(
             "concurrency": concurrency,
             "fast_mode": fast_mode,
             "parameter_path": parameter_path,
+            **commercial_metadata,
         },
     )
 
@@ -421,10 +475,20 @@ async def run_v2_analysis(
                 "concurrency": concurrency,
                 "fast_mode": fast_mode,
                 "parameter_path": parameter_path,
+                **commercial_metadata,
             },
         )
     phase3_elapsed = time.time() - phase3_start
     print(f"\n  Phase 3 completed in {format_time(phase3_elapsed)}")
+
+    if commercial_metadata:
+        coverage = run_coverage_check(
+            companies,
+            analyses,
+            commercial_metadata.get("competitor_profiles", {}),
+        )
+        commercial_metadata["coverage_check"] = coverage
+        print(f"  Commercial coverage gaps: {coverage.get('gap_count', 0)}")
 
     # Phase 3.5: Research Synthesis
     if progress_callback:
@@ -464,6 +528,7 @@ async def run_v2_analysis(
             "concurrency": concurrency,
             "fast_mode": fast_mode,
             "parameter_path": parameter_path,
+            **commercial_metadata,
         },
     )
 
@@ -500,6 +565,7 @@ async def run_v2_analysis(
             "concurrency": concurrency,
             "fast_mode": fast_mode,
             "parameter_path": parameter_path,
+            **commercial_metadata,
         },
     )
 
@@ -718,6 +784,7 @@ async def run_v2_analysis(
             "fast_mode": fast_mode,
             "graveyard_enabled": bool(graveyard_companies),
             "parameter_path": parameter_path,
+            **commercial_metadata,
         },
         graveyard_companies=gy_companies_data,
         graveyard_intelligence=gy_intelligence,

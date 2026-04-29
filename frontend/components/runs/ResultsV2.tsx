@@ -32,9 +32,13 @@ function byCategory(
 
 export function ResultsV2({ data }: ResultsV2Props) {
   const [openParamId, setOpenParamId] = useState<string | null>(null);
-  const { executive, analyses, parameters, parameter_definitions } = data;
+  const { executive, analyses, parameters, parameter_definitions, metadata } = data;
   const categories = byCategory(parameter_definitions, parameters);
   const activeAnalysis = openParamId ? analyses[openParamId] : null;
+  const typologyDistribution = metadata.typology_distribution as Record<string, number> | undefined;
+  const coverageCheck = metadata.coverage_check as
+    | { gap_count?: number; covered_checks?: number; total_checks?: number; gaps?: Array<Record<string, string>> }
+    | undefined;
 
   return (
     <div className="space-y-8">
@@ -44,6 +48,59 @@ export function ResultsV2({ data }: ResultsV2Props) {
           <p className="text-xs font-semibold text-amber-700 uppercase tracking-wide mb-1">Venture Context</p>
           <p className="text-sm text-amber-900">{executive.venture_context}</p>
         </div>
+      )}
+
+      {(typologyDistribution || coverageCheck) && (
+        <Card>
+          <CardHeader>
+            <h2 className="text-xl font-semibold">Commercial Deep Dive</h2>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {typologyDistribution && (
+              <div>
+                <h3 className="mb-2 text-sm font-semibold text-gray-700">Competitor Typology</h3>
+                <div className="flex flex-wrap gap-2">
+                  {Object.entries(typologyDistribution).map(([type, count]) => (
+                    <Badge key={type} variant="outline" className="capitalize">
+                      {type.replace(/_/g, " ")}: {count}
+                    </Badge>
+                  ))}
+                </div>
+              </div>
+            )}
+            {coverageCheck && (
+              <div>
+                <h3 className="mb-2 text-sm font-semibold text-gray-700">Coverage</h3>
+                <p className="text-sm text-gray-600">
+                  {coverageCheck.covered_checks ?? 0} of {coverageCheck.total_checks ?? 0} commercial question checks covered.
+                  {coverageCheck.gap_count ? ` ${coverageCheck.gap_count} gaps surfaced.` : " No gaps surfaced."}
+                </p>
+                {!!coverageCheck.gaps?.length && (
+                  <div className="mt-3 max-h-48 overflow-y-auto rounded-md border bg-gray-50">
+                    <table className="min-w-full text-xs">
+                      <thead>
+                        <tr className="border-b bg-white">
+                          <th className="px-3 py-2 text-left font-medium">Company</th>
+                          <th className="px-3 py-2 text-left font-medium">Question</th>
+                          <th className="px-3 py-2 text-left font-medium">Reason</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {coverageCheck.gaps.slice(0, 30).map((gap, i) => (
+                          <tr key={i} className="border-b last:border-0">
+                            <td className="px-3 py-2">{gap.company}</td>
+                            <td className="px-3 py-2">{gap.question}</td>
+                            <td className="px-3 py-2">{gap.reason}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </div>
+            )}
+          </CardContent>
+        </Card>
       )}
 
       {/* Executive Brief */}

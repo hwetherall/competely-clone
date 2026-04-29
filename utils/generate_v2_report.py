@@ -501,6 +501,49 @@ def generate_v2_html(data, output_path):
     ws_matrix = executive.get("white_space_matrix", {})
     next_steps = executive.get("next_steps", {})
     venture_context = executive.get("venture_context", "")
+    typology_distribution = metadata.get("typology_distribution", {}) or {}
+    coverage_check = metadata.get("coverage_check", {}) or {}
+    commercial_summary_html = ""
+    if typology_distribution or coverage_check:
+        typology_badges = "".join(
+            f'<span class="inline-flex items-center rounded-full border border-indigo-200 bg-indigo-50 px-3 py-1 text-xs font-medium text-indigo-700">{html_escape.escape(str(k).replace("_", " ").title())}: {int(v)}</span>'
+            for k, v in typology_distribution.items()
+        )
+        coverage_line = ""
+        gaps_html = ""
+        if coverage_check:
+            covered = coverage_check.get("covered_checks", 0)
+            total = coverage_check.get("total_checks", 0)
+            gap_count = coverage_check.get("gap_count", 0)
+            coverage_line = f'<p class="text-sm text-slate-600">{covered} of {total} commercial question checks covered. {gap_count} gaps surfaced.</p>'
+            gaps = coverage_check.get("gaps", []) or []
+            if gaps:
+                rows = "".join(
+                    "<tr class='border-b border-slate-100'>"
+                    f"<td class='px-3 py-2'>{html_escape.escape(str(g.get('company', '')))}</td>"
+                    f"<td class='px-3 py-2'>{html_escape.escape(str(g.get('question', '')))}</td>"
+                    f"<td class='px-3 py-2'>{html_escape.escape(str(g.get('reason', '')))}</td>"
+                    "</tr>"
+                    for g in gaps[:30]
+                )
+                gaps_html = (
+                    "<div class='mt-4 overflow-x-auto rounded-lg border border-slate-200'>"
+                    "<table class='min-w-full text-xs'><thead><tr class='bg-slate-50 text-slate-600'>"
+                    "<th class='px-3 py-2 text-left font-semibold'>Company</th>"
+                    "<th class='px-3 py-2 text-left font-semibold'>Question</th>"
+                    "<th class='px-3 py-2 text-left font-semibold'>Reason</th>"
+                    f"</tr></thead><tbody>{rows}</tbody></table></div>"
+                )
+        commercial_summary_html = f"""
+    <section id="commercial-deep-dive" class="mb-12 animate-fade-in">
+        <div class="rounded-xl border border-slate-200 bg-white shadow-sm p-6 md:p-8">
+            <h2 class="text-2xl font-display font-bold text-slate-900 mb-4">Commercial Deep Dive</h2>
+            {f'<div class="mb-4 flex flex-wrap gap-2">{typology_badges}</div>' if typology_badges else ''}
+            {coverage_line}
+            {gaps_html}
+        </div>
+    </section>
+        """
 
     # Parameter cards HTML (grouped by category)
     by_category = {}
@@ -1352,6 +1395,7 @@ def generate_v2_html(data, output_path):
             <a href="#trends" class="nav-link px-4 py-2 rounded-lg text-sm font-medium text-slate-600 hover:text-indigo-600 hover:bg-indigo-50 transition-colors">Trends</a>
             <a href="#white-space" class="nav-link px-4 py-2 rounded-lg text-sm font-medium text-slate-600 hover:text-indigo-600 hover:bg-indigo-50 transition-colors">White Space</a>
             <a href="#next-steps" class="nav-link px-4 py-2 rounded-lg text-sm font-medium text-slate-600 hover:text-indigo-600 hover:bg-indigo-50 transition-colors">Next Steps</a>
+            {f'<a href="#commercial-deep-dive" class="nav-link px-4 py-2 rounded-lg text-sm font-medium text-slate-600 hover:text-indigo-600 hover:bg-indigo-50 transition-colors">Commercial</a>' if commercial_summary_html else ""}
             {'<a href="#moat-grid" class="nav-link px-4 py-2 rounded-lg text-sm font-medium text-slate-600 hover:text-indigo-600 hover:bg-indigo-50 transition-colors">Moat Grid</a><a href="#threat-matrix" class="nav-link px-4 py-2 rounded-lg text-sm font-medium text-slate-600 hover:text-indigo-600 hover:bg-indigo-50 transition-colors">Threat Matrix</a><a href="#value-curve" class="nav-link px-4 py-2 rounded-lg text-sm font-medium text-slate-600 hover:text-indigo-600 hover:bg-indigo-50 transition-colors">Value Curve</a>' if is_avis and avis_frameworks_html else ""}
             {'<a href="#postmortem" class="nav-link px-4 py-2 rounded-lg text-sm font-medium text-slate-600 hover:text-indigo-600 hover:bg-indigo-50 transition-colors">Post-Mortem</a>' if postmortem_html else ""}
             <a href="#parameter-analysis" class="nav-link px-4 py-2 rounded-lg text-sm font-medium text-slate-600 hover:text-indigo-600 hover:bg-indigo-50 transition-colors">Parameter Analysis</a>
@@ -1401,6 +1445,8 @@ def generate_v2_html(data, output_path):
             {avis_frameworks_html}
         </div>
     </section>
+
+    {commercial_summary_html}
 
     {postmortem_html}
 
@@ -1575,7 +1621,7 @@ document.querySelectorAll(".nav-link").forEach(function(link) {{
 /* Active nav highlighting via IntersectionObserver */
 (function() {{
     var navLinks = document.querySelectorAll(".nav-link");
-    var sectionIds = ["executive-brief", "trends", "white-space", "next-steps", "postmortem", "parameter-analysis"];
+    var sectionIds = ["executive-brief", "trends", "white-space", "next-steps", "commercial-deep-dive", "postmortem", "parameter-analysis"];
     function clearActive() {{ navLinks.forEach(function(l) {{ l.classList.remove("text-indigo-600", "bg-indigo-50"); }}); }}
     function setActive(id) {{
         clearActive();

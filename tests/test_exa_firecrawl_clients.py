@@ -172,3 +172,54 @@ class TestFirecrawlClient:
         assert call.kwargs["json"]["url"] == "https://example.com"
         assert call.kwargs["json"]["formats"] == ["markdown"]
         assert call.kwargs["json"]["onlyMainContent"] is True
+
+    def test_map_sends_firecrawl_shape(self, monkeypatch):
+        client = FirecrawlClient(api_key="test-key", cache_enabled=False, base_url="https://api.firecrawl.dev/v2")
+        client._post_json = AsyncMock(return_value={"success": True, "links": []})
+
+        result = asyncio.run(client.map("https://example.com", search="pricing", limit=25, use_cache=False))
+
+        assert result["success"] is True
+        call = client._post_json.call_args
+        assert call.args[0] == "map"
+        assert call.args[1]["url"] == "https://example.com"
+        assert call.args[1]["search"] == "pricing"
+        assert call.args[1]["limit"] == 25
+
+    def test_start_extract_sends_firecrawl_shape(self):
+        client = FirecrawlClient(api_key="test-key", cache_enabled=False)
+        client._post_json = AsyncMock(return_value={"success": True, "id": "extract-1"})
+        schema = {"type": "object", "properties": {"price": {"type": "string"}}}
+
+        result = asyncio.run(client.start_extract(["https://example.com/pricing"], schema, "Extract pricing"))
+
+        assert result["id"] == "extract-1"
+        call = client._post_json.call_args
+        assert call.args[0] == "extract"
+        assert call.args[1]["urls"] == ["https://example.com/pricing"]
+        assert call.args[1]["schema"] == schema
+        assert call.args[1]["showSources"] is True
+        assert call.args[1]["scrapeOptions"]["formats"] == ["markdown"]
+
+    def test_extract_polls_status(self):
+        client = FirecrawlClient(api_key="test-key", cache_enabled=False)
+        client.start_extract = AsyncMock(return_value={"success": True, "id": "extract-1"})
+        client.get_extract_status = AsyncMock(return_value={
+            "success": True,
+            "status": "completed",
+            "data": {"pricing_disclosure": "partial"},
+            "tokensUsed": 123,
+        })
+
+        result = asyncio.run(client.extract(
+            ["https://example.com/pricing"],
+            {"type": "object"},
+            "Extract pricing",
+            use_cache=False,
+            poll_interval=0,
+            max_polls=1,
+        ))
+
+        assert result["status"] == "completed"
+        assert result["data"]["pricing_disclosure"] == "partial"
+        client.get_extract_status.assert_awaited_once_with("extract-1")
