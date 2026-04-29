@@ -509,13 +509,8 @@ def generate_v2_html(data, output_path):
             f'<span class="inline-flex items-center rounded-full border border-indigo-200 bg-indigo-50 px-3 py-1 text-xs font-medium text-indigo-700">{html_escape.escape(str(k).replace("_", " ").title())}: {int(v)}</span>'
             for k, v in typology_distribution.items()
         )
-        coverage_line = ""
         gaps_html = ""
         if coverage_check:
-            covered = coverage_check.get("covered_checks", 0)
-            total = coverage_check.get("total_checks", 0)
-            gap_count = coverage_check.get("gap_count", 0)
-            coverage_line = f'<p class="text-sm text-slate-600">{covered} of {total} commercial question checks covered. {gap_count} gaps surfaced.</p>'
             gaps = coverage_check.get("gaps", []) or []
             if gaps:
                 rows = "".join(
@@ -539,11 +534,21 @@ def generate_v2_html(data, output_path):
         <div class="rounded-xl border border-slate-200 bg-white shadow-sm p-6 md:p-8">
             <h2 class="text-2xl font-display font-bold text-slate-900 mb-4">Commercial Deep Dive</h2>
             {f'<div class="mb-4 flex flex-wrap gap-2">{typology_badges}</div>' if typology_badges else ''}
-            {coverage_line}
             {gaps_html}
         </div>
     </section>
         """
+
+    # Coverage & Limitations section (replaces the old commercial-coverage banner counts).
+    try:
+        from agents.coverage_renderer import render_coverage_and_limitations
+        coverage_limitations_html = render_coverage_and_limitations(
+            analyses=analyses,
+            parameter_definitions=parameter_definitions,
+            competitor_profiles=metadata.get("competitor_profiles", {}) or {},
+        )
+    except Exception:
+        coverage_limitations_html = ""
 
     # Parameter cards HTML (grouped by category)
     by_category = {}
@@ -1396,6 +1401,7 @@ def generate_v2_html(data, output_path):
             <a href="#white-space" class="nav-link px-4 py-2 rounded-lg text-sm font-medium text-slate-600 hover:text-indigo-600 hover:bg-indigo-50 transition-colors">White Space</a>
             <a href="#next-steps" class="nav-link px-4 py-2 rounded-lg text-sm font-medium text-slate-600 hover:text-indigo-600 hover:bg-indigo-50 transition-colors">Next Steps</a>
             {f'<a href="#commercial-deep-dive" class="nav-link px-4 py-2 rounded-lg text-sm font-medium text-slate-600 hover:text-indigo-600 hover:bg-indigo-50 transition-colors">Commercial</a>' if commercial_summary_html else ""}
+            {f'<a href="#coverage-limitations" class="nav-link px-4 py-2 rounded-lg text-sm font-medium text-slate-600 hover:text-indigo-600 hover:bg-indigo-50 transition-colors">Coverage</a>' if coverage_limitations_html else ""}
             {'<a href="#moat-grid" class="nav-link px-4 py-2 rounded-lg text-sm font-medium text-slate-600 hover:text-indigo-600 hover:bg-indigo-50 transition-colors">Moat Grid</a><a href="#threat-matrix" class="nav-link px-4 py-2 rounded-lg text-sm font-medium text-slate-600 hover:text-indigo-600 hover:bg-indigo-50 transition-colors">Threat Matrix</a><a href="#value-curve" class="nav-link px-4 py-2 rounded-lg text-sm font-medium text-slate-600 hover:text-indigo-600 hover:bg-indigo-50 transition-colors">Value Curve</a>' if is_avis and avis_frameworks_html else ""}
             {'<a href="#postmortem" class="nav-link px-4 py-2 rounded-lg text-sm font-medium text-slate-600 hover:text-indigo-600 hover:bg-indigo-50 transition-colors">Post-Mortem</a>' if postmortem_html else ""}
             <a href="#parameter-analysis" class="nav-link px-4 py-2 rounded-lg text-sm font-medium text-slate-600 hover:text-indigo-600 hover:bg-indigo-50 transition-colors">Parameter Analysis</a>
@@ -1447,6 +1453,8 @@ def generate_v2_html(data, output_path):
     </section>
 
     {commercial_summary_html}
+
+    {coverage_limitations_html}
 
     {postmortem_html}
 

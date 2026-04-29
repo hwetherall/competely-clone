@@ -13,9 +13,111 @@ Defines dataclasses for:
 """
 
 from dataclasses import dataclass, field
-from typing import List, Optional, Dict, Any
+from typing import List, Optional, Dict, Any, Literal
 
 from agents.schemas import EvidenceSource, EvidencePassage
+
+
+@dataclass
+class NumericClaim:
+    """A numeric commercial claim with explicit epistemic state.
+
+    Three states:
+      - "published": a primary or credible secondary source publishes the number.
+      - "inferred":  no published number, but multiple signals support a defensible range.
+      - "unknown":   neither published nor reliably inferable.
+    """
+    state: Literal["published", "inferred", "unknown"] = "unknown"
+    value: Optional[float] = None              # published only
+    range_low: Optional[float] = None          # inferred only
+    range_high: Optional[float] = None         # inferred only
+    unit: str = ""                             # "USD", "USD/seat/year", etc.
+    assumptions: List[str] = field(default_factory=list)
+    method: str = ""                           # short methodology label
+    confidence: Literal["high", "medium", "low"] = "low"
+    source_ids: List[str] = field(default_factory=list)
+    reason: str = ""                           # unknown only
+
+    def to_dict(self) -> Dict[str, Any]:
+        return {
+            "state": self.state,
+            "value": self.value,
+            "range_low": self.range_low,
+            "range_high": self.range_high,
+            "unit": self.unit,
+            "assumptions": list(self.assumptions),
+            "method": self.method,
+            "confidence": self.confidence,
+            "source_ids": list(self.source_ids),
+            "reason": self.reason,
+        }
+
+    @classmethod
+    def from_dict(cls, data: Dict[str, Any]) -> "NumericClaim":
+        return cls(
+            state=data.get("state", "unknown"),
+            value=data.get("value"),
+            range_low=data.get("range_low"),
+            range_high=data.get("range_high"),
+            unit=data.get("unit", ""),
+            assumptions=list(data.get("assumptions", []) or []),
+            method=data.get("method", ""),
+            confidence=data.get("confidence", "low"),
+            source_ids=list(data.get("source_ids", []) or []),
+            reason=data.get("reason", ""),
+        )
+
+
+@dataclass
+class QuantifiedRecommendation:
+    """A recommendation with at least one numeric target.
+
+    Required: headline, rationale, time_horizon_days, success_metric, and
+    at least one entry in numeric_targets. impact_likelihood and
+    cost_to_implement are short labels for downstream prioritisation.
+    """
+    headline: str = ""
+    rationale: str = ""
+    numeric_targets: Dict[str, NumericClaim] = field(default_factory=dict)
+    time_horizon_days: int = 0
+    success_metric: str = ""
+    impact_likelihood: Literal["high", "medium", "low"] = "medium"
+    cost_to_implement: Literal["low", "medium", "high"] = "medium"
+    triangulation_source_ids: List[str] = field(default_factory=list)
+    qualitative_only: bool = False
+    qualitative_only_reason: str = ""
+
+    def to_dict(self) -> Dict[str, Any]:
+        return {
+            "headline": self.headline,
+            "rationale": self.rationale,
+            "numeric_targets": {k: v.to_dict() for k, v in self.numeric_targets.items()},
+            "time_horizon_days": self.time_horizon_days,
+            "success_metric": self.success_metric,
+            "impact_likelihood": self.impact_likelihood,
+            "cost_to_implement": self.cost_to_implement,
+            "triangulation_source_ids": list(self.triangulation_source_ids),
+            "qualitative_only": self.qualitative_only,
+            "qualitative_only_reason": self.qualitative_only_reason,
+        }
+
+    @classmethod
+    def from_dict(cls, data: Dict[str, Any]) -> "QuantifiedRecommendation":
+        return cls(
+            headline=data.get("headline", ""),
+            rationale=data.get("rationale", ""),
+            numeric_targets={
+                k: NumericClaim.from_dict(v) if isinstance(v, dict) else v
+                for k, v in (data.get("numeric_targets", {}) or {}).items()
+            },
+            time_horizon_days=int(data.get("time_horizon_days", 0) or 0),
+            success_metric=data.get("success_metric", ""),
+            impact_likelihood=data.get("impact_likelihood", "medium"),
+            cost_to_implement=data.get("cost_to_implement", "medium"),
+            triangulation_source_ids=list(data.get("triangulation_source_ids", []) or []),
+            qualitative_only=bool(data.get("qualitative_only", False)),
+            qualitative_only_reason=data.get("qualitative_only_reason", ""),
+        )
 
 
 @dataclass
@@ -328,6 +430,7 @@ class ComparativeReport:
     sources: List[EvidenceSource] = field(default_factory=list)
     synthesis_iterations: int = 0
     regather_count: int = 0
+    quantified_recommendations: List[Dict[str, Any]] = field(default_factory=list)
 
     def to_dict(self) -> Dict[str, Any]:
         return {
@@ -344,6 +447,7 @@ class ComparativeReport:
             "sources": [s.to_dict() for s in self.sources],
             "synthesis_iterations": self.synthesis_iterations,
             "regather_count": self.regather_count,
+            "quantified_recommendations": list(self.quantified_recommendations),
         }
 
     @classmethod
@@ -362,6 +466,7 @@ class ComparativeReport:
             sources=[EvidenceSource.from_dict(s) for s in data.get("sources", [])],
             synthesis_iterations=data.get("synthesis_iterations", 0),
             regather_count=data.get("regather_count", 0),
+            quantified_recommendations=list(data.get("quantified_recommendations", []) or []),
         )
 
 

@@ -109,7 +109,7 @@ Normalized comparison data:
 
 Additional context from dossiers (source IDs and passages):
 {dossiers_context}
-
+{takeaway_addendum}
 INSTRUCTIONS:
 1. Write a headline (1-2 sentences) that captures the main competitive verdict.
 2. Write an executive_summary (2-3 sentences).
@@ -124,8 +124,15 @@ Commercial Deep Dive source rules:
 - Blocks labeled STRUCTURED EXTRACT are Firecrawl extracts from official pages; use them as source-of-truth for published pricing, package, and contract facts.
 - Exa/search evidence is for inferred or market-observed facts such as ACV, upgrade triggers, negotiation flexibility, and customer sentiment.
 - If official extract and search evidence disagree about a published fact, prefer the official extract and note the discrepancy only if material.
-- If both official extract and search evidence are silent, write "not disclosed"; do not invent prices, ACV, terms, or package contents.
 - Surface opacity as data, especially for consulting firms and contact-sales enterprise vendors.
+
+Three-state pricing (epistemic posture):
+- When asked for a price, ACV, deal size, contract value, or any other numeric commercial fact, you must place it in one of three states:
+  * `published`: a primary or credible secondary source publishes the number. Cite the source_id.
+  * `inferred`: no published number, but multiple signals (benchmarks + scope evidence) support a defensible range. State range_low, range_high, the assumptions you used, and a short methodology label.
+  * `unknown`: neither published nor reliably inferable. State the reason (typology / pre-revenue / evidence gap / brand-collision).
+- Do NOT collapse `inferred` into `unknown` simply because no source publishes the number. If the STRUCTURED EXTRACT contains a `consulting_benchmark` block AND you have at least two signals about scope (engagement length, team size, deal size), you must produce an `inferred` claim.
+- When you produce an inferred numeric, render it inline in prose and tables with the `[inferred]` tag and the range, e.g. `Inferred $1.5M–$3M [inferred] (4-week, 4-person engagement at MBB blended day rate; medium confidence)`. A careful reader must be able to distinguish published facts from triangulated estimates.
 
 Output your response as JSON inside <synthesis_json> tags:
 
@@ -143,11 +150,50 @@ Output your response as JSON inside <synthesis_json> tags:
   "full_report_markdown": "Full narrative with citations...",
   "white_space": ["Opportunity 1", "Opportunity 2"],
   "trends": ["Trend 1", "Trend 2"],
-  "confidence": "high"
+  "confidence": "high",
+  "quantified_recommendations": [
+    {{
+      "headline": "Launch a 30-day Initiative Sprint",
+      "rationale": "...",
+      "numeric_targets": {{
+        "pilot_price_usd": {{"state": "inferred", "range_low": 50000, "range_high": 80000, "unit": "USD", "method": "5-10% of MBB engagement floor; 2-3x Glean annual contract", "confidence": "medium", "source_ids": ["S1", "S2"]}}
+      }},
+      "time_horizon_days": 90,
+      "success_metric": "8-12 paid pilots and 40% pilot-to-annual conversion",
+      "impact_likelihood": "high",
+      "cost_to_implement": "medium",
+      "triangulation_source_ids": ["S1", "S2", "S3"]
+    }}
+  ]
 }}
 </synthesis_json>
 
+(quantified_recommendations is REQUIRED only for parameter_id == inv_takeaway_for_innovera; omit it otherwise.)
+
 Your report:"""
+
+
+# =============================================================================
+# Takeaway addendum (injected only for parameter_id == "inv_takeaway_for_innovera")
+# =============================================================================
+
+INV_TAKEAWAY_ADDENDUM = """
+TAKEAWAY-SPECIFIC RULES (this is the Takeaway for Innovera; the dimension-level rollups have already been written):
+
+1. Do not restate the patterns the dimension layer has already named. The dimension rollups have already established:
+   - Vertical depth wins (Rogo, Hebbia)
+   - Trust architecture compounds (AlphaSense, FICO)
+   - Accessibility steals attention (Rocket, DeeCee.ai)
+   - Consulting-substitute language is crowding (NexStrat, NitroLens)
+   - Big Three are slow but distribution-rich (McKinsey, BCG, EY, Deloitte)
+   Your job is to surface what these patterns *jointly imply* — second-order observations a senior reader cannot get from any single dimension. Specifically: cross-pattern timing (which threats materialise when), forced tradeoffs (what Innovera must give up to win which segment), and quantified bets.
+
+2. Every recommendation in this Takeaway must include at least one quantified target — a price band, ARR target, time horizon, target conversion rate, or impact magnitude. The report contains pricing data on at least four competitors and ACV data on at least five (e.g. Glean $50–100/user/month + $60K min ACV; Rocket $25/month entry; Aily $25K–$120K setup, $25M+ contracts; Rogo ~$420K average ACV). Use them as triangulation anchors.
+   - For the Initiative Sprint specifically: land a fixed-fee pilot price band, a target pilot count over 90 days, a target pilot-to-annual conversion rate, and a 6-month revenue threshold.
+   - If you cannot produce a defensible quantified target from the evidence, mark the recommendation as `qualitative_only` with a one-line reason. This must be the exception, not the default.
+
+3. Render the recommendations as `quantified_recommendations`: an array alongside the standard fields. Each entry has headline, rationale, numeric_targets (object with at least one NumericClaim-shaped value), time_horizon_days, success_metric, impact_likelihood, cost_to_implement.
+"""
 
 
 # =============================================================================

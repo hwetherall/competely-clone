@@ -723,3 +723,64 @@ def get_variable_answer_spec(variable_id: str) -> List[str]:
 def get_variable_key_terms(variable_id: str) -> List[str]:
     """Get the key terms for passage selection for a variable."""
     return get_variable(variable_id).key_terms
+
+
+# =============================================================================
+# User-facing positioning-table columns
+# =============================================================================
+#
+# Pipeline-internal columns (evidence_summary, saved_fact_count, confidence,
+# rank, etc.) sometimes leak into recovered synthesis sections. The recovery
+# polish pass strips any column not declared here.
+#
+# DEFAULT_USER_FACING_COLUMNS applies when a parameter has no explicit
+# override. Per-parameter overrides go in PARAMETER_USER_FACING_COLUMNS.
+
+DEFAULT_USER_FACING_COLUMNS: List[str] = [
+    "company",
+    "position",
+    "label",
+    "trend",
+]
+
+# Columns that are always pipeline-internal and must never appear in
+# user-facing positioning tables, regardless of parameter.
+PIPELINE_INTERNAL_COLUMNS: List[str] = [
+    "evidence_summary",
+    "saved_fact_count",
+    "confidence",
+]
+
+# Per-parameter column overrides. The columns listed here are added to
+# DEFAULT_USER_FACING_COLUMNS when rendering that parameter.
+PARAMETER_USER_FACING_COLUMNS: Dict[str, List[str]] = {
+    "inv_packaging": ["tiers", "what_costs_extra", "packaging_flexibility"],
+    "inv_pricing_mechanics": [
+        "primary_pricing_unit",
+        "starting_price",
+        "typical_acv",
+        "scaling_model",
+        "pricing_disclosure",
+    ],
+    "inv_contract_structure": [
+        "contract_term_options",
+        "minimum_commitment",
+        "renewal_mechanics",
+        "upgrade_triggers",
+    ],
+    "inv_gtm_motion": ["main_revenue_driver", "sales_motion"],
+    "inv_takeaway_for_innovera": ["copy_or_test", "avoid", "next_experiment"],
+}
+
+
+def get_user_facing_columns(parameter_id: str) -> List[str]:
+    """Return the columns that should appear in a user-facing positioning table
+    for a given parameter, in display order."""
+    extras = PARAMETER_USER_FACING_COLUMNS.get(parameter_id, [])
+    seen = set()
+    out: List[str] = []
+    for col in list(DEFAULT_USER_FACING_COLUMNS) + list(extras):
+        if col not in seen:
+            seen.add(col)
+            out.append(col)
+    return out

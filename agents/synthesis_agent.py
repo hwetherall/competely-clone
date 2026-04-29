@@ -23,8 +23,27 @@ from agents.v2_prompts import (
     SYNTHESIS_DRAFT_PROMPT,
     SYNTHESIS_EVALUATE_SYSTEM,
     SYNTHESIS_EVALUATE_PROMPT,
+    INV_TAKEAWAY_ADDENDUM,
 )
 from config import settings
+
+
+TAKEAWAY_PARAMETER_ID = "inv_takeaway_for_innovera"
+TAKEAWAY_REDUNDANCY_THRESHOLD = 0.7  # >70% lexical overlap flags a sentence
+TAKEAWAY_REDUNDANCY_REWRITE_SYSTEM = (
+    "You are a senior strategy editor rewriting one sentence at a time so it stops "
+    "repeating dimension-level patterns and instead surfaces a second-order, "
+    "cross-pattern observation. Output only the rewritten sentence."
+)
+TAKEAWAY_REDUNDANCY_REWRITE_PROMPT = (
+    "The Takeaway sentence below repeats a pattern already named in dimension-level rollups. "
+    "Rewrite it as ONE sentence that surfaces a cross-pattern implication, forced tradeoff, "
+    "or quantified bet that the dimension layer cannot produce on its own. "
+    "Keep the same speaker voice and roughly the same length.\n\n"
+    "Dimension-level patterns already in the report:\n{dimension_text}\n\n"
+    "Sentence to rewrite:\n{sentence}\n\n"
+    "Rewritten sentence:"
+)
 
 logger = logging.getLogger(__name__)
 
@@ -93,6 +112,8 @@ class SynthesisAgent:
             )
             if not draft:
                 continue
+            if parameter_id == TAKEAWAY_PARAMETER_ID:
+                draft = await self._check_takeaway_redundancy(draft, normalized)
             evaluation = await self._evaluate_draft(draft, normalized)
             if evaluation.get("is_sufficient", False):
                 return self._finalize_report(
@@ -139,6 +160,11 @@ class SynthesisAgent:
         )
         normalized_data = json.dumps(normalized.company_data, indent=2)
         dossiers_context = _format_dossiers_context(normalized.raw_dossiers)
+        takeaway_addendum = (
+            INV_TAKEAWAY_ADDENDUM
+            if normalized.parameter_id == TAKEAWAY_PARAMETER_ID
+            else ""
+        )
         prompt = SYNTHESIS_DRAFT_PROMPT.format(
             parameter_name=normalized.parameter_name,
             parameter_context_line=parameter_context_line,
@@ -146,6 +172,7 @@ class SynthesisAgent:
             companies_list=companies_list,
             normalized_data=normalized_data,
             dossiers_context=dossiers_context,
+            takeaway_addendum=takeaway_addendum,
         )
         try:
             response = await self.llm_client.complete_simple(
@@ -330,6 +357,117 @@ class SynthesisAgent:
             parameter_context=parameter_context,
         )
 
+    async def _check_takeaway_redundancy(
+        self,
+        draft: Dict[str, Any],
+        normalized: NormalizedDataset,
+    ) -> Dict[str, Any]:
+        """One-pass redundancy check on the Takeaway full_report_markdown.
+
+        Compares each sentence against a concatenated dimension-pattern bag
+        (the recurring patterns the dimension layer has already named) and
+        rewrites any sentence with high lexical overlap. Capped at one rewrite
+        pass to avoid loops.
+        """
+        full_report = draft.get("full_report_markdown", "") or ""
+        if not full_report.strip():
+            return draft
+
+        dimension_text = self._collect_dimension_pattern_text(normalized)
+        sentences = re.split(r'(?<=[.!?])\s+(?=[A-Z\*\#])', full_report)
+        if not sentences:
+            return draft
+
+        dimension_tokens = self._tokenize(dimension_text)
+        if not dimension_tokens:
+            return draft
+
+        rewritten_count = 0
+        max_rewrites = 6  # safety cap on the single pass
+        for idx, sentence in enumerate(sentences):
+            if rewritten_count >= max_rewrites:
+                break
+            if len(sentence.split()) < 8:
+                continue
+            overlap = self._lexical_overlap(sentence, dimension_tokens)
+            if overlap < TAKEAWAY_REDUNDANCY_THRESHOLD:
+                continue
+            new_sentence = await self._rewrite_redundant_sentence(sentence, dimension_text)
+            if new_sentence and new_sentence != sentence:
+                sentences[idx] = new_sentence
+                rewritten_count += 1
+
+        if rewritten_count == 0:
+            return draft
+
+        new_draft = dict(draft)
+        new_draft["full_report_markdown"] = " ".join(sentences)
+        new_draft.setdefault("_takeaway_redundancy_rewrites", rewritten_count)
+        return new_draft
+
+    @staticmethod
+    def _collect_dimension_pattern_text(normalized: NormalizedDataset) -> str:
+        """Return the dimension-level pattern bag the Takeaway must transcend.
+
+        These are the patterns the dimension rollups have already named — kept
+        in sync with the patterns enumerated in INV_TAKEAWAY_ADDENDUM.
+        """
+        patterns = [
+            "Vertical depth wins, with Rogo and Hebbia as the canonical examples.",
+            "Trust architecture compounds, with AlphaSense and FICO as the canonical examples.",
+            "Accessibility steals attention, with Rocket and DeeCee.ai as the canonical examples.",
+            "Consulting-substitute language is crowding, with NexStrat and NitroLens as canonical examples.",
+            "The Big Three are slow but distribution-rich, with McKinsey, BCG, EY, and Deloitte as canonical examples.",
+        ]
+        return " ".join(patterns)
+
+    @staticmethod
+    def _tokenize(text: str) -> set:
+        """Lowercase token set, stripped of punctuation and short stopwords."""
+        if not text:
+            return set()
+        words = re.findall(r"[A-Za-z][A-Za-z\-']+", text.lower())
+        stop = {
+            "the", "and", "but", "for", "with", "from", "that", "this", "these",
+            "those", "are", "was", "were", "have", "has", "had", "their", "them",
+            "they", "into", "than", "then", "also", "such", "very", "much", "more",
+            "most", "some", "any", "all", "not", "only", "as", "at", "in", "on",
+            "to", "of", "by", "is", "be", "an", "a", "or", "it", "its",
+        }
+        return {w for w in words if len(w) > 2 and w not in stop}
+
+    def _lexical_overlap(self, sentence: str, dimension_tokens: set) -> float:
+        s_tokens = self._tokenize(sentence)
+        if not s_tokens:
+            return 0.0
+        return len(s_tokens & dimension_tokens) / len(s_tokens)
+
+    async def _rewrite_redundant_sentence(
+        self,
+        sentence: str,
+        dimension_text: str,
+    ) -> Optional[str]:
+        prompt = TAKEAWAY_REDUNDANCY_REWRITE_PROMPT.format(
+            dimension_text=dimension_text,
+            sentence=sentence,
+        )
+        try:
+            response = await self.llm_client.complete_simple(
+                prompt=prompt,
+                system_prompt=TAKEAWAY_REDUNDANCY_REWRITE_SYSTEM,
+                temperature=0.4,
+                max_tokens=500,
+                model_override=SYNTHESIS_MODEL,
+            )
+            if response and response.strip():
+                cleaned = response.strip().strip('"').strip()
+                # Strip leading "Rewritten sentence:" or numbered prefixes if any
+                cleaned = re.sub(r"^(rewritten sentence:|rewrite:)\s*", "", cleaned, flags=re.IGNORECASE)
+                return cleaned or None
+        except Exception as e:
+            logger.warning(f"Takeaway redundancy rewrite failed: {e}")
+        return None
+
     def _finalize_report(
         self,
         draft: Dict[str, Any],
@@ -380,4 +518,5 @@ class SynthesisAgent:
             sources=sources,
             synthesis_iterations=synthesis_iterations,
             regather_count=regather_count,
+            quantified_recommendations=list(draft.get("quantified_recommendations", []) or []),
         )

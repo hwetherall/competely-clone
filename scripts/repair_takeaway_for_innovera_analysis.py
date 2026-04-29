@@ -10,8 +10,13 @@ the saved table and Innovera profile.
 from __future__ import annotations
 
 import json
+import sys
 from pathlib import Path
 from typing import Any, Dict
+
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+
+from scripts.recovery_polish import polish_recovered_synthesis  # noqa: E402
 
 
 TARGET_FILES = [
@@ -191,8 +196,29 @@ def repair_file(path: Path) -> None:
     analysis["white_space"] = WHITE_SPACE
     analysis["trends"] = TRENDS
     analysis["confidence"] = "high"
+
+    evidence_table = _build_evidence_table(data)
+    polished = polish_recovered_synthesis(
+        parameter_id="inv_takeaway_for_innovera",
+        recovered_section=analysis,
+        evidence_table=evidence_table,
+    )
+    data["analyses"]["inv_takeaway_for_innovera"] = polished
+
     _write(path, data)
     print(f"Updated Takeaway for Innovera analysis: {path}")
+
+
+def _build_evidence_table(data: Dict[str, Any]) -> Dict[str, Any]:
+    """Pull per-company facts for the Takeaway parameter from the saved intelligence."""
+    intelligence = data.get("intelligence", {}) or {}
+    by_company: Dict[str, Any] = {}
+    for company, params in intelligence.items():
+        dossier = (params or {}).get("inv_takeaway_for_innovera") or {}
+        facts = dossier.get("facts") or []
+        if facts:
+            by_company[company] = {"facts": facts}
+    return {"by_company": by_company}
 
 
 def main() -> None:

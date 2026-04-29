@@ -29,6 +29,7 @@ from agents.v2_prompts import (
     GATHER_FACT_EXTRACTION_PROMPT,
 )
 from config.variables import VariableDefinition, get_variable
+from config.consulting_benchmarks import benchmark_for_firm
 from config import settings
 
 logger = logging.getLogger(__name__)
@@ -235,6 +236,8 @@ class GatherAgent:
             "competitor_profile": profile.to_dict() if profile else {},
             "commercial_extract": extract.to_dict() if extract else {},
         }
+        if profile and profile.type == "consulting_firm":
+            payload["consulting_benchmark"] = benchmark_for_firm(state.company)
         text = (
             "=== STRUCTURED EXTRACT (Firecrawl, source-of-truth for published facts) ===\n"
             + json.dumps(payload, indent=2)
@@ -247,7 +250,11 @@ class GatherAgent:
             relevance_score=1.0,
         ))
         if profile and profile.type == "consulting_firm":
-            state.missing_info.append("Consulting-firm pricing is usually project-based and not published; surface opacity as a finding.")
+            state.missing_info.append(
+                "Consulting-firm pricing is rarely published, but the structured extract carries a consulting_benchmark anchor. "
+                "Triangulate an `inferred` engagement-price range from blended day rate, team size, and engagement length; "
+                "do NOT collapse to `unknown` when benchmark data is present."
+            )
 
     def _add_commercial_metadata(self, state: GatherState, metadata: Dict[str, Any]) -> None:
         if not self._is_commercial_variable(state.variable.id):
