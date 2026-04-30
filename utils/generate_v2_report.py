@@ -312,12 +312,37 @@ def generate_v2_html(data, output_path):
             "Install it with: pip install markdown"
         )
     import html as html_escape
+    import re
+
+    def first_colon_outside_brackets(s):
+        """Return the first colon not enclosed in square brackets."""
+        depth = 0
+        for i, ch in enumerate(s or ""):
+            if ch == "[":
+                depth += 1
+            elif ch == "]" and depth:
+                depth -= 1
+            elif ch == ":" and depth == 0:
+                return i
+        return None
+
+    def split_theme_card_text(s):
+        """Split a theme into a headline and detail without breaking bracket labels."""
+        if not s:
+            return "", ""
+        label_match = re.search(r"\s+(\[[^\]]+:\]\s+)", s)
+        if label_match:
+            return s[: label_match.start()].strip(), s[label_match.start() :].strip()
+        idx = first_colon_outside_brackets(s)
+        if idx is not None:
+            return s[:idx].strip(), s[idx + 1 :].strip()
+        return s, ""
 
     def bold_lead(s):
         """Bold the main point (text before the first colon) for readability."""
-        if not s or ":" not in s:
+        idx = first_colon_outside_brackets(s)
+        if idx is None:
             return html_escape.escape(s)
-        idx = s.index(":")
         lead = s[:idx].strip()
         tail = s[idx:]  # ": rest of text" including colon and original spacing
         return f'<strong>{html_escape.escape(lead)}</strong>{html_escape.escape(tail)}'
@@ -334,8 +359,8 @@ def generate_v2_html(data, output_path):
             if stripped.startswith("#") or stripped.startswith("- ") or stripped.startswith("* "):
                 result.append(line)
                 continue
-            if ":" in line:
-                idx = line.index(":")
+            idx = first_colon_outside_brackets(line)
+            if idx is not None:
                 lead = line[:idx].strip()
                 tail = line[idx:]
                 # Skip if lead looks like link text, URL, or already bold; keep lead short
@@ -355,14 +380,13 @@ def generate_v2_html(data, output_path):
         """In each <p> block, bold the phrase immediately before the first colon (main point) for readability."""
         if not html_content or "<p>" not in html_content:
             return html_content
-        import re
         # Match inner content of each <p>...</p> (DOTALL so newlines included)
         def process_paragraph(m):
             inner = m.group(1)
             # Greedy: match the 10–120 chars immediately before ": " so we bold the lead-in phrase, not the whole paragraph
             def repl(m2):
                 lead = m2.group(1).strip()
-                if not lead or "**" in lead:
+                if not lead or "**" in lead or "[" in lead:
                     return m2.group(0)
                 return "<strong>" + lead + "</strong>: "
             new_inner = re.sub(
@@ -593,10 +617,8 @@ def generate_v2_html(data, output_path):
     if key_themes:
         theme_cards = []
         for t in key_themes:
-            if ":" in t:
-                idx = t.index(":")
-                headline = t[:idx].strip()
-                detail = t[idx + 1:].strip()
+            headline, detail = split_theme_card_text(t)
+            if detail:
                 theme_cards.append(
                     f'<div class="rounded-lg border border-slate-200 bg-white p-4 border-l-4 border-l-indigo-500 hover:border-l-indigo-600 hover:shadow-sm transition-all">'
                     f'<h4 class="font-semibold text-slate-900 text-sm mb-1.5">{html_escape.escape(headline)}</h4>'

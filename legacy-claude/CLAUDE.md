@@ -466,3 +466,7 @@ For each (competitor × question) pair, the check inspects whether the parameter
 - [ ] Report renders the new parameters in a "Commercial Deep Dive" section
 - [ ] End-to-end run on the 20-competitor Innovera set completes in <2× the V1 runtime
 - [ ] Manual spot-check on 3 competitors of different typologies (e.g. Airtable, AlphaSense, McKinsey) confirms each typology's expected behavior
+
+### Synthesis tier model upgrade (Innovera Finetune, claude-tune.md)
+
+The synthesis tier has moved from Claude Sonnet 4.6 to Claude Opus 4.7. Gather and Phase 2 Firecrawl extraction remain on Sonnet 4.6. Tiering lives in `config/settings.py` under `GATHER_MODEL`, `EXTRACT_MODEL`, `SYNTHESIS_MODEL`, `TAKEAWAY_MODEL`, and `EXECUTIVE_MODEL`. Expect ~1.4–1.6× runtime and materially higher per-run model cost; see claude-tune.md §5 for the dimension-on-Sonnet compromise if budget tightens.

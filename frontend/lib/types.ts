@@ -239,10 +239,15 @@ export interface DiscoveryRun {
   target_profile: DiscoveryTargetProfile;
   framing_seeds: Partial<Record<DiscoveryFraming, string>>;
   candidates: CompetitorCandidate[];
+  manual_candidates: string[];
   status: DiscoveryStatus;
   created_at: string;
   updated_at: string;
   error?: string | null;
+}
+
+export interface DiscoveryManualCandidatesRequest {
+  names: string[];
 }
 
 export interface DiscoveryCreateRequest {

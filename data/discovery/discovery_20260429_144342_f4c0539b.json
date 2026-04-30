@@ -1,0 +1,333 @@
+{
+  "id": "discovery_20260429_144342_f4c0539b",
+  "target_profile": {
+    "company_name": "Innovera",
+    "description": "Innovera is an AI-native decision intelligence platform. Its core premise is that AI and fast-moving markets expand options faster than leadership can judge them. Innovera builds digital twins of initiatives through specialized agents covering opportunity validation, market research, competitive analysis, product and technology, GTM, financials, talent, legal, and IP. The platform combines AI analysis with expert-in-the-loop validation, sells into corporate innovators, strategy teams, and executives, and substitutes for large consulting-team engagements delivered faster.\n\nWhat Innovera actually is\n\nInnovera is not just “AI analysis.”\n\nIt’s a full decision system:\n\n1. An Innovation Operating Platform (IOP)\n\nA structured system that turns innovation from ad hoc into repeatable process\n\n2. A Decision Intelligence Engine\n\nIt:\n\nmodels business initiatives\nsimulates scenarios\nevaluates risks and outcomes\nproduces ranked options and action plans\n3. A Hybrid AI + Human system\nAI agents do structured analysis\nExperts validate and challenge outputs\nResults reach “consultant-grade” quality\nThe core mechanism (this is your real differentiator)\nDigital Twins for Business Decisions\n\nThis is the idea.\n\nEach initiative becomes a “digital twin”:\n\na simulated replica of a business decision\ncomposed of multiple AI agents\nexploring different future paths\n\nFrom the deck:\n\neach twin projects possible outcomes and pathways\nruns multi-scenario simulations\nprovides foresight before decisions are made\nWhat powers the twin (mapped to your internal thinking)\n\nThis aligns almost perfectly with your “agent bundle” architecture:\n\nEach twin includes agents like:\n\nopportunity validation\nmarket research\ncompetitive analysis\nproduct & technology\nGTM strategy\nfinancial modeling\n\nThis is essentially your:\n\nOpportunity Validation Bundle → then downstream execution chapters\n\nEach agent:\n\nanswers structured questions\nproduces “meso-level outputs” (your term)\nfeeds into synthesis layers\n\n👉 Exactly your:\n\nsignals → scenarios → decisions → roadmaps\n\nWhat it produces (this is key for buyers)\n\nNot just “insights” — but decisions and plans\n\nOutputs include:\n\ninvestment-grade reports\nclear recommendations\nranked options\nexecution roadmaps\nportfolio-level visibility\n\nThink:\n\nMcKinsey-quality output, but faster, cheaper, and continuously updatable.\n\nHow it works (end-to-end flow)\n1. Inputs\ncompany docs (PPT, PDF, etc.)\nuser questions\nexternal data\n2. Analysis\nAI agents collaborate like an advisory team\nstructured frameworks applied\nexpert oversight ensures rigor\n3. Digital Twin simulation\nmultiple scenarios explored\nrisks + tradeoffs mapped\n4. Outputs\nrefined via expert review\ndelivered as decision-ready artifacts\n\nThe use cases (where it actually lands)\n\nFrom your deck, four core categories:\n\n1. Market Entry\n\n“Should we enter this market — and how?”\n\n2. Investment / M&A / Venture Diligence\n\n“Is this worth backing?”\n\n3. New Product / Venture\n\n“Should we build this?”\n\n4. Vendor / Technology Selection\n\n“Which option is best?”\n\nThe real strategic positioning (this is the part most people miss)\n\nInnovera is NOT:\n\na chatbot\na BI tool\na simple LLM wrapper\n\nIt is:\n\n→ A system for making forward-looking decisions under uncertainty\n\nWhere most AI tools answer:\n\n“What happened?”\n\nInnovera answers:\n\n“What will happen if we do X—and what should we do?”\n\nYour deeper truth (from all your chats)\n\nThis is where your internal architecture sharpens the story:\n\nInnovera is effectively building:\n\nA Decision Factory\nstructured questions (framework-driven)\nagent specialization (peer-aware systems)\nsynthesis layers (section → chapter → memo)\noutput optimized for decision-making (not readability)\n\nYou’ve been obsessing over:\n\ninformation density\nframework coverage\ndecision-grade synthesis\n\nThat’s exactly what makes this defensible.\n\nThe strongest articulation (if you were pitching)\n\nI’d say:\n\nInnovera is an AI-native decision intelligence platform that builds digital twins of business initiatives, simulates possible futures, and produces investment-grade recommendations—so organizations can move from analysis paralysis to confident action, at the speed of AI.\n\nWhere this gets really powerful (your edge)\n\nCompared to competitors:\n\nvs Consultants\nfaster\nscalable\ncheaper\nvs LLM tools\nstructured\nmulti-agent\nframework-driven\ndecision-focused\nvs BI / analytics\nforward-looking\nscenario-based\nprescriptive\nFinal take (straight up)\n\nInnovera is trying to become:\n\nThe operating system for enterprise decision-making under uncertainty",
+    "website": "https://innovera.ai/",
+    "industry": "AI-native decision intelligence",
+    "audience": "Corporate innovators, strategy teams, and executives",
+    "notes": null
+  },
+  "framing_seeds": {
+    "direct": "Other AI-native decision intelligence, strategy, market research, competitive analysis, or initiative digital-twin platforms.",
+    "problem_sharer": "Consulting firms and expert networks solving strategic decisions under uncertainty, including blended AI plus human models such as McKinsey QuantumBlack, BCG X, Bain Vector, Accenture, GLG, and Third Bridge.",
+    "category_sharer": "Multi-agent AI research, enterprise knowledge, analyst, and market-intelligence platforms with adjacent solution shapes, such as Glean, Hebbia, Rogo, AlphaSense, and AI analyst tools.",
+    "adjacency": "Big 4 firms, foundation-model labs, CRMs/ERPs, Palantir-like decision layers, sovereign funds, and trading houses with data, capital, or distribution that could enter decision intelligence."
+  },
+  "candidates": [
+    {
+      "name": "Aera Technology",
+      "canonical_domain": "aeratechnology.com",
+      "framings": [
+        "direct"
+      ],
+      "rationales": {
+        "direct": "Agentic AI decision intelligence platform that automates and optimizes enterprise decisions in real time, with scenario modeling and multi-agent architecture—direct overlap with Innovera's core positioning."
+      },
+      "evidence_urls": [
+        "https://aeratechnology.com/decision-cloud",
+        "https://www.aeratechnology.com/news/aera-technology-introduces-agentic-ai-workspaces-and-control-room-to-enable-the-full-spectrum-of-enterprise-decisions",
+        "https://meet.aeratechnology.com/whitepapers/accelerating-enterprise-decision-intelligence-with-ai-agents"
+      ],
+      "confidence": 0.59,
+      "discovered_at": "2026-04-29T20:44:48.799161Z"
+    },
+    {
+      "name": "Hebbia",
+      "canonical_domain": "hebbia.com",
+      "framings": [
+        "category_sharer"
+      ],
+      "rationales": {
+        "category_sharer": "Multi-agent AI research platform targeting enterprise knowledge work and financial analysis; same solution shape (structured AI agents producing analyst-grade outputs) aimed at strategy and investment teams."
+      },
+      "evidence_urls": [
+        "https://agent.nexus/blog/hebbia-alternatives",
+        "https://www.cbinsights.com/compare/glean-2-vs-hebbia",
+        "https://www.hebbia.com/resources/financial-research-platforms"
+      ],
+      "confidence": 0.43,
+      "discovered_at": "2026-04-29T20:44:48.799161Z"
+    },
+    {
+      "name": "IBM (Decision Intelligence & Consulting Advantage)",
+      "canonical_domain": "ibm.com",
+      "framings": [
+        "adjacency"
+      ],
+      "rationales": {
+        "adjacency": "IBM has both a dedicated Decision Intelligence product and IBM Consulting Advantage (AI services platform with role-based assistants), giving it the capital, brand, enterprise distribution, and AI infrastructure to pivot directly into AI-native decision intelligence for strategy teams."
+      },
+      "evidence_urls": [
+        "https://www.ibm.com/products/decision-intelligence",
+        "https://www.ibm.com/consulting/advantage",
+        "https://newsroom.ibm.com/2024-01-17-IBM-Introduces-IBM-Consulting-Advantage,-an-AI-Services-Platform-and-Library-of-Assistants-to-Empower-Consultants"
+      ],
+      "confidence": 0.35,
+      "discovered_at": "2026-04-29T20:44:48.799161Z"
+    },
+    {
+      "name": "Cosmo Tech",
+      "canonical_domain": "cosmotech.com",
+      "framings": [
+        "direct"
+      ],
+      "rationales": {
+        "direct": "Digital twin simulation technology for business decisions, backed by Accenture investment—directly overlaps with Innovera's digital twin of initiatives concept for strategic decision-making."
+      },
+      "evidence_urls": [
+        "https://newsroom.accenture.com/news/2023/accenture-invests-in-cosmo-tech-expanding-clients-access-to-digital-twin-simulation-technology"
+      ],
+      "confidence": 0.34,
+      "discovered_at": "2026-04-29T20:44:48.799161Z"
+    },
+    {
+      "name": "Rogo",
+      "canonical_domain": "rogo.ai",
+      "framings": [
+        "category_sharer"
+      ],
+      "rationales": {
+        "category_sharer": "AI analyst platform for financial and strategic research, producing investment-grade outputs via structured AI agents; directly compared to AlphaSense and Hebbia in the same category-sharer space."
+      },
+      "evidence_urls": [
+        "https://prod.alpha-sense.com/compare/alphasense-vs-rogo/",
+        "https://agent.nexus/blog/hebbia-alternatives"
+      ],
+      "confidence": 0.34,
+      "discovered_at": "2026-04-29T20:44:48.799161Z"
+    },
+    {
+      "name": "Simile",
+      "canonical_domain": "simile.ai",
+      "framings": [
+        "direct"
+      ],
+      "rationales": {
+        "direct": "AI digital twin startup that raised $100M, directly competing in the business digital twin simulation space that underpins Innovera's core mechanism."
+      },
+      "evidence_urls": [
+        "https://siliconangle.com/2026/02/12/ai-digital-twin-startup-simile-raises-100m-funding/"
+      ],
+      "confidence": 0.32,
+      "discovered_at": "2026-04-29T20:44:48.799161Z"
+    },
+    {
+      "name": "NexStrat AI",
+      "canonical_domain": "nexstrat.ai",
+      "framings": [
+        "problem_sharer"
+      ],
+      "rationales": {
+        "problem_sharer": "Positions itself as an AI Management Consultant and Strategy Operating System, combining consulting-grade rigor with AI speed to turn complex strategy into executable plans — directly competing for the same corporate strategy buyer."
+      },
+      "evidence_urls": [
+        "https://www.nexstrat.ai/"
+      ],
+      "confidence": 0.32,
+      "discovered_at": "2026-04-29T20:44:48.799161Z"
+    },
+    {
+      "name": "NitroLens AI",
+      "canonical_domain": "nitrolens.ai",
+      "framings": [
+        "problem_sharer"
+      ],
+      "rationales": {
+        "problem_sharer": "Agent-led, framework-native strategy platform built by ex-McKinsey consultants promising consulting-grade rigor and end-to-end strategic analysis — same problem, same buyer, different solution."
+      },
+      "evidence_urls": [
+        "https://www.nitrolens.ai/"
+      ],
+      "confidence": 0.31,
+      "discovered_at": "2026-04-29T20:44:48.799161Z"
+    },
+    {
+      "name": "Cloverpop",
+      "canonical_domain": "cloverpop.com",
+      "framings": [
+        "direct"
+      ],
+      "rationales": {
+        "direct": "Positions itself as the 'decision layer' missing from enterprise AI strategy, targeting the same organizational decision-making infrastructure gap that Innovera addresses."
+      },
+      "evidence_urls": [
+        "https://www.cloverpop.com/blog/the-decision-layer-the-missing-piece-in-your-enterprise-ai-strategy"
+      ],
+      "confidence": 0.31,
+      "discovered_at": "2026-04-29T20:44:48.799161Z"
+    },
+    {
+      "name": "Mindcorp",
+      "canonical_domain": "mindcorp.ai",
+      "framings": [
+        "problem_sharer"
+      ],
+      "rationales": {
+        "problem_sharer": "AI platform for business strategy and decision intelligence using 10,000+ specialized AI agents (ACEs) for complex knowledge work including commercial due diligence and corporate development — directly overlaps with Innovera's multi-agent decision system."
+      },
+      "evidence_urls": [
+        "https://www.mindcorp.ai/"
+      ],
+      "confidence": 0.3,
+      "discovered_at": "2026-04-29T20:44:48.799161Z"
+    },
+    {
+      "name": "Quantexa",
+      "canonical_domain": "quantexa.com",
+      "framings": [
+        "direct"
+      ],
+      "rationales": {
+        "direct": "Global decision intelligence platform with AI-driven analytics and generative AI assistant targeting enterprises and government, competing in the same decision intelligence category."
+      },
+      "evidence_urls": [
+        "https://www.quantexa.com/press/microsoft-partnership-product-roadmap"
+      ],
+      "confidence": 0.3,
+      "discovered_at": "2026-04-29T20:44:48.799161Z"
+    },
+    {
+      "name": "Diwo",
+      "canonical_domain": "diwo.ai",
+      "framings": [
+        "direct"
+      ],
+      "rationales": {
+        "direct": "Decision intelligence platform that surfaces ranked opportunities and recommended strategies from data, targeting enterprise operators—similar prescriptive, forward-looking decision output as Innovera."
+      },
+      "evidence_urls": [
+        "https://diwo.ai/decide"
+      ],
+      "confidence": 0.29,
+      "discovered_at": "2026-04-29T20:44:48.799161Z"
+    },
+    {
+      "name": "Syntari Amplifi",
+      "canonical_domain": "syntari-ai.com",
+      "framings": [
+        "problem_sharer"
+      ],
+      "rationales": {
+        "problem_sharer": "AI operating system for consulting execution targeting consultants, enterprise, PE, and financial services teams — competes for the same strategy and decision-making workflow Innovera targets."
+      },
+      "evidence_urls": [
+        "https://syntari-ai.com/platforms/amplifi"
+      ],
+      "confidence": 0.28,
+      "discovered_at": "2026-04-29T20:44:48.799161Z"
+    },
+    {
+      "name": "Deloitte",
+      "canonical_domain": "deloitte.com",
+      "framings": [
+        "adjacency"
+      ],
+      "rationales": {
+        "adjacency": "Deloitte's Enterprise AI Navigator and Deloitte Ascend platform combine agentic AI workflows, proprietary industry data, and consulting delivery at scale—directly overlapping with Innovera's positioning as a faster, AI-driven substitute for large consulting engagements."
+      },
+      "evidence_urls": [
+        "https://deloitte.com/us/en/industries/industry-advantage-business-transformation/enterprise-ai-solutions.html",
+        "https://www.deloitte.com/us/en/services/consulting/services/technology-enabled-transformation-solutions.html"
+      ],
+      "confidence": 0.28,
+      "discovered_at": "2026-04-29T20:44:48.799161Z"
+    },
+    {
+      "name": "Twinning Labs",
+      "canonical_domain": "twinninglabs.com",
+      "framings": [
+        "direct"
+      ],
+      "rationales": {
+        "direct": "Digital twin platform for business scenarios, overlapping with Innovera's initiative digital twin architecture for decision simulation."
+      },
+      "evidence_urls": [
+        "https://www.twinninglabs.com/"
+      ],
+      "confidence": 0.27,
+      "discovered_at": "2026-04-29T20:44:48.799161Z"
+    },
+    {
+      "name": "AlphaSense",
+      "canonical_domain": "alpha-sense.com",
+      "framings": [
+        "category_sharer"
+      ],
+      "rationales": {
+        "category_sharer": "Enterprise market intelligence platform used by strategy and investment teams for research synthesis; adjacent solution shape delivering structured insights from large document corpora."
+      },
+      "evidence_urls": [
+        "https://prod.alpha-sense.com/compare/alphasense-vs-rogo/"
+      ],
+      "confidence": 0.27,
+      "discovered_at": "2026-04-29T20:44:48.799161Z"
+    },
+    {
+      "name": "Rocket",
+      "canonical_domain": "rocket.new",
+      "framings": [
+        "category_sharer",
+        "adjacency"
+      ],
+      "rationales": {
+        "category_sharer": "Required Innovera discovery option: AI-native product/application generation platform with an adjacent multi-agent workflow shape.",
+        "adjacency": "Required Innovera discovery option: could sit near initiative validation, prototyping, and execution workflows connected to decision intelligence."
+      },
+      "evidence_urls": [
+        "https://www.rocket.new/"
+      ],
+      "confidence": 0.27,
+      "discovered_at": "2026-04-29T20:44:48.799161Z"
+    },
+    {
+      "name": "Quantive",
+      "canonical_domain": "quantive.com",
+      "framings": [
+        "problem_sharer"
+      ],
+      "rationales": {
+        "problem_sharer": "AI-powered strategic planning platform that turns data overload into decision clarity with expert AI analysis — addresses the same executive decision paralysis problem Innovera targets."
+      },
+      "evidence_urls": [
+        "https://quantive.com/products/strategies"
+      ],
+      "confidence": 0.26,
+      "discovered_at": "2026-04-29T20:44:48.799161Z"
+    },
+    {
+      "name": "Jeda.ai",
+      "canonical_domain": "jeda.ai",
+      "framings": [
+        "problem_sharer"
+      ],
+      "rationales": {
+        "problem_sharer": "Multi-LLM agentic AI platform for strategy consultants applying 300+ frameworks to produce competitive intelligence and strategic analysis — overlaps with Innovera's framework-driven multi-agent analysis approach."
+      },
+      "evidence_urls": [
+        "https://jeda.ai/ai-for-strategy-consultants"
+      ],
+      "confidence": 0.24,
+      "discovered_at": "2026-04-29T20:44:48.799161Z"
+    },
+    {
+      "name": "Glean",
+      "canonical_domain": "glean.com",
+      "framings": [
+        "category_sharer"
+      ],
+      "rationales": {
+        "category_sharer": "Enterprise AI knowledge and search platform that aggregates and synthesizes organizational information for decision-makers; same buyer profile (corporate teams and executives) and multi-agent knowledge architecture."
+      },
+      "evidence_urls": [
+        "https://www.cbinsights.com/compare/glean-2-vs-hebbia"
+      ],
+      "confidence": 0.24,
+      "discovered_at": "2026-04-29T20:44:48.799161Z"
+    }
+  ],
+  "status": "complete",
+  "created_at": "2026-04-29T20:43:42.167537Z",
+  "updated_at": "2026-04-29T20:44:48.800714Z",
+  "error": null
+}

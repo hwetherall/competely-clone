@@ -4,6 +4,7 @@
   "scripts": {
     "dev": "concurrently -n backend,frontend -c blue,magenta \"node scripts/start-backend.js\" \"cd frontend && npm run dev\"",
     "dev:backend": "node scripts/start-backend.js",
+    "dev:backend:reload": "node scripts/start-backend.js --reload",
     "dev:frontend": "cd frontend && npm run dev"
   },
   "devDependencies": {

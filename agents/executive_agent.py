@@ -20,6 +20,7 @@ from agents.v2_prompts import (
     EXECUTIVE_BRIEF_PROMPT,
     AVIS_EXECUTIVE_BRIEF_SYSTEM,
     AVIS_EXECUTIVE_BRIEF_PROMPT,
+    DEPTH_OF_REASONING_INSTRUCTION,
     format_parameter_summaries_for_executive,
     build_venture_context_block,
 )
@@ -67,6 +68,7 @@ class ExecutiveAgent:
             venture_ws_instruction=vc_parts["venture_ws_instruction"],
             venture_matrix_instruction=vc_parts["venture_matrix_instruction"],
             venture_ns_instruction=vc_parts["venture_ns_instruction"],
+            depth_of_reasoning_instruction=DEPTH_OF_REASONING_INSTRUCTION,
         )
         try:
             response = await self.llm_client.complete_simple(

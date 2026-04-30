@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { KeyboardEvent, useMemo, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import {
   AlertCircle,
@@ -9,14 +9,17 @@ import {
   ExternalLink,
   Loader2,
   Play,
+  Plus,
   RefreshCw,
   Search,
+  X,
 } from "lucide-react";
 import { Header } from "@/components/layout/Header";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   Table,
@@ -26,7 +29,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { useDiscovery } from "@/lib/api";
+import { useDiscovery, useUpdateManualCandidates } from "@/lib/api";
 import type { CompetitorCandidate, DiscoveryFraming } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
@@ -69,11 +72,18 @@ export default function DiscoveryDetailPage() {
   const params = useParams<{ id: string }>();
   const discoveryId = params.id;
   const { data: discovery, isLoading, error, refetch, isFetching } = useDiscovery(discoveryId);
+  const updateManual = useUpdateManualCandidates(discoveryId);
   const [manualSelectedNames, setManualSelectedNames] = useState<string[] | null>(null);
+  const [manualInput, setManualInput] = useState("");
 
   const candidates = useMemo(
     () => [...(discovery?.candidates ?? [])].sort((a, b) => b.confidence - a.confidence),
     [discovery?.candidates],
+  );
+
+  const manualCompetitors = useMemo(
+    () => discovery?.manual_candidates ?? [],
+    [discovery?.manual_candidates],
   );
 
   const defaultSelectedNames = useMemo(() => {
@@ -83,7 +93,20 @@ export default function DiscoveryDetailPage() {
     return defaults.length > 0 ? defaults : fallback;
   }, [candidates, discovery]);
 
-  const selectedNames = manualSelectedNames ?? defaultSelectedNames;
+  const candidateSelectedNames = manualSelectedNames ?? defaultSelectedNames;
+  const selectedNames = useMemo(
+    () => [...new Set([...candidateSelectedNames, ...manualCompetitors])],
+    [candidateSelectedNames, manualCompetitors],
+  );
+
+  const candidateNameSet = useMemo(
+    () => new Set(candidates.map((candidate) => candidate.name.toLowerCase())),
+    [candidates],
+  );
+  const manualNameSet = useMemo(
+    () => new Set(manualCompetitors.map((name) => name.toLowerCase())),
+    [manualCompetitors],
+  );
 
   const toggleCandidate = (name: string, checked: boolean) => {
     setManualSelectedNames((prev) => {
@@ -98,6 +121,31 @@ export default function DiscoveryDetailPage() {
     setManualSelectedNames(checked ? candidates.map((candidate) => candidate.name) : []);
   };
 
+  const addManualCompetitor = (raw: string) => {
+    const trimmed = raw.trim();
+    if (!trimmed) return;
+    const lowered = trimmed.toLowerCase();
+    if (candidateNameSet.has(lowered) || manualNameSet.has(lowered)) {
+      setManualInput("");
+      return;
+    }
+    updateManual.mutate({ names: [...manualCompetitors, trimmed] });
+    setManualInput("");
+  };
+
+  const removeManualCompetitor = (name: string) => {
+    updateManual.mutate({ names: manualCompetitors.filter((entry) => entry !== name) });
+  };
+
+  const handleManualKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      addManualCompetitor(manualInput);
+    } else if (e.key === "Backspace" && !manualInput && manualCompetitors.length > 0) {
+      removeManualCompetitor(manualCompetitors[manualCompetitors.length - 1]);
+    }
+  };
+
   const handleRunAnalysis = () => {
     const params = new URLSearchParams();
     params.set("companies", selectedNames.join("\n"));
@@ -105,7 +153,8 @@ export default function DiscoveryDetailPage() {
     router.push(`/runs/new?${params.toString()}`);
   };
 
-  const allSelected = candidates.length > 0 && selectedNames.length === candidates.length;
+  const allSelected =
+    candidates.length > 0 && candidateSelectedNames.length === candidates.length;
 
   return (
     <>
@@ -155,6 +204,9 @@ export default function DiscoveryDetailPage() {
                   <div className="flex flex-wrap items-center gap-2">
                     <StatusBadge status={discovery.status} />
                     <Badge variant="outline">{candidates.length} candidates</Badge>
+                    {manualCompetitors.length > 0 && (
+                      <Badge variant="outline">{manualCompetitors.length} manual</Badge>
+                    )}
                     <Badge variant="outline">{selectedNames.length} selected</Badge>
                   </div>
                   <p className="max-w-3xl text-sm text-muted-foreground">
@@ -278,6 +330,67 @@ export default function DiscoveryDetailPage() {
                       The discovery agent has not returned shortlist candidates.
                     </p>
                   </div>
+                )}
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Add Competitors Manually</CardTitle>
+                <CardDescription>
+                  Include companies the discovery agent missed. Press Enter to add. They join
+                  the selected set when you run analysis.
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <div className="flex flex-wrap items-center gap-2 rounded-lg border bg-background p-3 min-h-[52px]">
+                  {manualCompetitors.map((name) => (
+                    <Badge
+                      key={name}
+                      variant="secondary"
+                      className="flex items-center gap-1 px-3 py-1.5 text-sm"
+                    >
+                      {name}
+                      <button
+                        type="button"
+                        onClick={() => removeManualCompetitor(name)}
+                        className="ml-1 rounded-full p-0.5 hover:bg-muted-foreground/20"
+                        aria-label={`Remove ${name}`}
+                      >
+                        <X className="h-3 w-3" />
+                      </button>
+                    </Badge>
+                  ))}
+                  <div className="min-w-[180px] flex-1">
+                    <Input
+                      type="text"
+                      value={manualInput}
+                      onChange={(e) => setManualInput(e.target.value)}
+                      onKeyDown={handleManualKeyDown}
+                      placeholder={
+                        manualCompetitors.length === 0
+                          ? "Add a competitor name..."
+                          : "Add another..."
+                      }
+                      className="h-8 border-0 px-1 shadow-none focus-visible:ring-0"
+                    />
+                  </div>
+                </div>
+                {manualInput.trim() && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => addManualCompetitor(manualInput)}
+                  >
+                    <Plus className="h-4 w-4" />
+                    Add &quot;{manualInput.trim()}&quot;
+                  </Button>
+                )}
+                {updateManual.isError && (
+                  <p className="text-xs text-destructive">
+                    Failed to save manual additions. Try again.
+                  </p>
                 )}
               </CardContent>
             </Card>

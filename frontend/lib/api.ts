@@ -12,6 +12,7 @@ import type {
   RunCreateResponse,
   DiscoveryCreateRequest,
   DiscoveryCreateResponse,
+  DiscoveryManualCandidatesRequest,
   DiscoveryPromoteRequest,
   DiscoveryPromoteResponse,
   DiscoveryRun,
@@ -153,7 +154,11 @@ export function useRunProgress(runId: string, enabled: boolean = true) {
     queryKey: ["progress", runId],
     queryFn: () => getRunProgress(runId),
     enabled: enabled && !!runId,
-    refetchInterval: enabled ? 3000 : false, // Poll every 3s while running
+    refetchInterval: (query) => {
+      if (!enabled) return false;
+      const status = query.state.data?.status;
+      return status === "running" || status === "pending" || !status ? 3000 : false;
+    },
   });
 }
 
@@ -193,6 +198,16 @@ export async function promoteDiscovery(
   });
 }
 
+export async function updateManualCandidates(
+  discoveryId: string,
+  request: DiscoveryManualCandidatesRequest,
+): Promise<DiscoveryRun> {
+  return fetchAPI<DiscoveryRun>(`/api/discovery/${discoveryId}/manual-candidates`, {
+    method: "PUT",
+    body: JSON.stringify(request),
+  });
+}
+
 export function useCreateDiscovery() {
   return useMutation({
     mutationFn: createDiscovery,
@@ -216,6 +231,35 @@ export function usePromoteDiscovery(discoveryId: string) {
     mutationFn: (request: DiscoveryPromoteRequest) => promoteDiscovery(discoveryId, request),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["runs"] });
+    },
+  });
+}
+
+export function useUpdateManualCandidates(discoveryId: string) {
+  const queryClient = useQueryClient();
+  const queryKey = ["discovery", discoveryId];
+
+  return useMutation({
+    mutationFn: (request: DiscoveryManualCandidatesRequest) =>
+      updateManualCandidates(discoveryId, request),
+    onMutate: async (request) => {
+      await queryClient.cancelQueries({ queryKey });
+      const previous = queryClient.getQueryData<DiscoveryRun>(queryKey);
+      if (previous) {
+        queryClient.setQueryData<DiscoveryRun>(queryKey, {
+          ...previous,
+          manual_candidates: request.names,
+        });
+      }
+      return { previous };
+    },
+    onError: (_err, _vars, context) => {
+      if (context?.previous) {
+        queryClient.setQueryData(queryKey, context.previous);
+      }
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey });
     },
   });
 }

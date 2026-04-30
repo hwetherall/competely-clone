@@ -114,6 +114,11 @@ class DiscoveryRunResponse(DiscoveryRun):
     pass
 
 
+class DiscoveryManualCandidatesRequest(BaseModel):
+    """Replace the manual-additions list on a discovery run."""
+    names: List[str] = Field(default_factory=list)
+
+
 class DiscoveryPromoteRequest(BaseModel):
     """Promote selected discovery candidates into a standard research run."""
     selected_names: List[str] = Field(..., min_length=1)

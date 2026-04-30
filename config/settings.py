@@ -133,6 +133,7 @@ JINA_READER_MAX_CONTENT_LENGTH: int = int(os.getenv("JINA_READER_MAX_CONTENT_LEN
 FIRECRAWL_BASE_URL: str = os.getenv("FIRECRAWL_BASE_URL", "https://api.firecrawl.dev/v2")
 FIRECRAWL_TIMEOUT: int = int(os.getenv("FIRECRAWL_TIMEOUT", "60"))
 FIRECRAWL_MAX_CONTENT_LENGTH: int = int(os.getenv("FIRECRAWL_MAX_CONTENT_LENGTH", "50000"))
+FIRECRAWL_MAX_CONCURRENT: int = int(os.getenv("FIRECRAWL_MAX_CONCURRENT", "1"))
 PAGE_READER: str = os.getenv("PAGE_READER", "jina")  # jina|firecrawl
 
 # Source scoring
@@ -153,9 +154,16 @@ DEFAULT_MAX_CONCISE_CHARS: int = int(os.getenv("DEFAULT_MAX_CONCISE_CHARS", "240
 # V2 Pipeline Configuration (Relational Competitive Intelligence Engine)
 # =============================================================================
 
-# Claude Sonnet 4.6 for synthesis and executive reasoning (OpenRouter)
-SYNTHESIS_MODEL: str = os.getenv("SYNTHESIS_MODEL", "anthropic/claude-sonnet-4.6")
-EXECUTIVE_MODEL: str = os.getenv("EXECUTIVE_MODEL", "anthropic/claude-sonnet-4.6")
+# V2 pipeline model tiers (OpenRouter slugs).
+# Gather/extract stays on Sonnet 4.6 (fast, cheap, accurate enough). Synthesis,
+# Takeaway, and executive brief upgrade to Opus 4.7 for depth-of-reasoning headroom.
+# See claude-tune.md §5 for the cost/latency posture and the dimension-on-Sonnet
+# fallback if budget tightens.
+GATHER_MODEL: str = os.getenv("GATHER_MODEL", "anthropic/claude-sonnet-4.6")
+EXTRACT_MODEL: str = os.getenv("EXTRACT_MODEL", "anthropic/claude-sonnet-4.6")
+SYNTHESIS_MODEL: str = os.getenv("SYNTHESIS_MODEL", "anthropic/claude-opus-4.7")
+TAKEAWAY_MODEL: str = os.getenv("TAKEAWAY_MODEL", "anthropic/claude-opus-4.7")
+EXECUTIVE_MODEL: str = os.getenv("EXECUTIVE_MODEL", "anthropic/claude-opus-4.7")
 
 # Synthesis phase: max iterations of draft -> evaluate -> re-gather -> re-normalize
 MAX_SYNTHESIS_ITERATIONS: int = int(os.getenv("MAX_SYNTHESIS_ITERATIONS", "3"))

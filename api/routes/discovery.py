@@ -22,6 +22,7 @@ from agents.schemas import DiscoveryRun, DiscoveryTargetProfile
 from api.models import (
     DiscoveryCreateRequest,
     DiscoveryCreateResponse,
+    DiscoveryManualCandidatesRequest,
     DiscoveryRunResponse,
     DiscoveryPromoteRequest,
     DiscoveryPromoteResponse,
@@ -79,6 +80,39 @@ async def get_discovery(discovery_id: str):
         raise HTTPException(status_code=404, detail=f"Discovery run not found: {discovery_id}")
 
 
+@router.put("/{discovery_id}/manual-candidates", response_model=DiscoveryRunResponse)
+async def update_manual_candidates(
+    discovery_id: str,
+    request: DiscoveryManualCandidatesRequest,
+):
+    """Replace the user-curated manual additions on a discovery run.
+
+    Dedupes case-insensitively against agent candidates and within itself,
+    preserving first-seen order and the original casing the user typed.
+    """
+    try:
+        discovery = load_discovery_run(discovery_id)
+    except FileNotFoundError:
+        raise HTTPException(status_code=404, detail=f"Discovery run not found: {discovery_id}")
+
+    candidate_lower = {c.name.lower() for c in discovery.candidates}
+    seen_lower: set[str] = set()
+    cleaned: list[str] = []
+    for raw in request.names:
+        name = raw.strip()
+        if not name:
+            continue
+        lowered = name.lower()
+        if lowered in candidate_lower or lowered in seen_lower:
+            continue
+        seen_lower.add(lowered)
+        cleaned.append(name)
+
+    discovery.manual_candidates = cleaned
+    save_discovery_run(discovery)
+    return discovery
+
+
 @router.post("/{discovery_id}/promote", response_model=DiscoveryPromoteResponse)
 async def promote_discovery(
     discovery_id: str,
@@ -93,7 +127,7 @@ async def promote_discovery(
     if discovery.status != "complete":
         raise HTTPException(status_code=400, detail=f"Discovery run is not complete: {discovery.status}")
 
-    known_names = {c.name for c in discovery.candidates}
+    known_names = {c.name for c in discovery.candidates} | set(discovery.manual_candidates)
     selected = []
     for name in request.selected_names:
         clean = name.strip()

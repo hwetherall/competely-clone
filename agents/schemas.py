@@ -54,6 +54,10 @@ class DiscoveryRun(BaseModel):
     target_profile: DiscoveryTargetProfile
     framing_seeds: Dict[str, str]
     candidates: List[CompetitorCandidate] = []
+    # User-curated additions made on the discovery results page. Stored alongside
+    # the agent-produced `candidates` so re-loads preserve them, but kept as plain
+    # names because they have no framings/evidence/confidence to surface.
+    manual_candidates: List[str] = []
     status: Literal["running", "complete", "failed"] = "running"
     created_at: datetime
     updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))

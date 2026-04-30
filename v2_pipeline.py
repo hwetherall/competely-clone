@@ -45,6 +45,7 @@ from agents.v2_schemas import (
     CommercialExtract,
 )
 from agents.variable_generator import generate_variables as generate_variables_impl
+from config import settings
 from config.settings import validate_config
 from config.variables import (
     VARIABLES,
@@ -273,13 +274,14 @@ async def run_v2_analysis(
     commercial_extracts: Dict[str, CommercialExtract] = {}
     commercial_metadata: Dict[str, Any] = {}
     if commercial_phases_required(parameter_path, variable_ids):
+        firecrawl_concurrency = max(1, min(concurrency, settings.FIRECRAWL_MAX_CONCURRENT))
         if progress_callback:
             progress_callback("profile", 0, len(companies), "Profiling competitors...")
         print("Phase 1: Competitor Profiling\n")
         profile_start = time.time()
         try:
             profiler = CompetitorProfiler()
-            competitor_profiles = await profiler.profile_companies(companies, max_concurrent=max(1, concurrency))
+            competitor_profiles = await profiler.profile_companies(companies, max_concurrent=firecrawl_concurrency)
             if progress_callback:
                 progress_callback("profile", len(companies), len(companies), "Competitor profiling complete")
         except Exception as e:
@@ -295,7 +297,7 @@ async def run_v2_analysis(
             extractor = CommercialExtractor()
             commercial_extracts = await extractor.extract_for_companies(
                 competitor_profiles,
-                max_concurrent=max(1, concurrency),
+                max_concurrent=firecrawl_concurrency,
             )
             if progress_callback:
                 progress_callback("commercial_extract", len(companies), len(companies), "Commercial extraction complete")
@@ -312,6 +314,7 @@ async def run_v2_analysis(
             "typology_distribution": typology_distribution(profile_dict),
             "profiling_elapsed_seconds": profile_elapsed,
             "commercial_extract_elapsed_seconds": extract_elapsed,
+            "firecrawl_concurrency": firecrawl_concurrency,
         }
         print(f"  Typology distribution: {commercial_metadata['typology_distribution']}")
 

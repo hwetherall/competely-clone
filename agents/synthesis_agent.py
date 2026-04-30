@@ -24,6 +24,7 @@ from agents.v2_prompts import (
     SYNTHESIS_EVALUATE_SYSTEM,
     SYNTHESIS_EVALUATE_PROMPT,
     INV_TAKEAWAY_ADDENDUM,
+    DEPTH_OF_REASONING_INSTRUCTION,
 )
 from config import settings
 
@@ -48,6 +49,7 @@ TAKEAWAY_REDUNDANCY_REWRITE_PROMPT = (
 logger = logging.getLogger(__name__)
 
 SYNTHESIS_MODEL = settings.SYNTHESIS_MODEL
+TAKEAWAY_MODEL = settings.TAKEAWAY_MODEL
 MAX_SYNTHESIS_ITERATIONS = settings.MAX_SYNTHESIS_ITERATIONS
 MAX_REGATHERS_PER_PARAMETER = settings.MAX_REGATHERS_PER_PARAMETER
 
@@ -160,11 +162,8 @@ class SynthesisAgent:
         )
         normalized_data = json.dumps(normalized.company_data, indent=2)
         dossiers_context = _format_dossiers_context(normalized.raw_dossiers)
-        takeaway_addendum = (
-            INV_TAKEAWAY_ADDENDUM
-            if normalized.parameter_id == TAKEAWAY_PARAMETER_ID
-            else ""
-        )
+        is_takeaway = normalized.parameter_id == TAKEAWAY_PARAMETER_ID
+        takeaway_addendum = INV_TAKEAWAY_ADDENDUM if is_takeaway else ""
         prompt = SYNTHESIS_DRAFT_PROMPT.format(
             parameter_name=normalized.parameter_name,
             parameter_context_line=parameter_context_line,
@@ -173,14 +172,16 @@ class SynthesisAgent:
             normalized_data=normalized_data,
             dossiers_context=dossiers_context,
             takeaway_addendum=takeaway_addendum,
+            depth_of_reasoning_instruction=DEPTH_OF_REASONING_INSTRUCTION,
         )
+        draft_model = TAKEAWAY_MODEL if is_takeaway else SYNTHESIS_MODEL
         try:
             response = await self.llm_client.complete_simple(
                 prompt=prompt,
                 system_prompt=SYNTHESIS_DRAFT_SYSTEM,
                 temperature=0.5,
                 max_tokens=16000,
-                model_override=SYNTHESIS_MODEL,
+                model_override=draft_model,
             )
             if response and response.strip():
                 return self._parse_synthesis_json(response)
@@ -226,13 +227,18 @@ class SynthesisAgent:
             normalized_data=normalized_data,
             gaps_text=gaps_text,
         )
+        evaluate_model = (
+            TAKEAWAY_MODEL
+            if normalized.parameter_id == TAKEAWAY_PARAMETER_ID
+            else SYNTHESIS_MODEL
+        )
         try:
             response = await self.llm_client.complete_simple(
                 prompt=prompt,
                 system_prompt=SYNTHESIS_EVALUATE_SYSTEM,
                 temperature=0.3,
                 max_tokens=4000,
-                model_override=SYNTHESIS_MODEL,
+                model_override=evaluate_model,
             )
             if response and response.strip():
                 return self._parse_evaluate_json(response)
@@ -457,7 +463,7 @@ class SynthesisAgent:
                 system_prompt=TAKEAWAY_REDUNDANCY_REWRITE_SYSTEM,
                 temperature=0.4,
                 max_tokens=500,
-                model_override=SYNTHESIS_MODEL,
+                model_override=TAKEAWAY_MODEL,
             )
             if response and response.strip():
                 cleaned = response.strip().strip('"').strip()

@@ -77,6 +77,8 @@ class V2Runner:
         self.run_id: str = ""
         self.start_time: float = 0
         self.started_at: str = ""
+        self.companies: List[str] = []
+        self.variables: List[str] = []
 
     def _update_progress(
         self,
@@ -89,10 +91,20 @@ class V2Runner:
         if not self.progress_file:
             return
         elapsed = time.time() - self.start_time
+        existing: Dict[str, Any] = {}
+        try:
+            if self.progress_file.exists():
+                with open(self.progress_file, "r", encoding="utf-8") as f:
+                    existing = json.load(f)
+        except Exception:
+            existing = {}
         data = {
+            **existing,
             "run_id": self.run_id,
             "status": status,
             "phase": phase,
+            "companies": self.companies,
+            "variables": self.variables,
             "completed": completed,
             "total": total,
             "current": current,
@@ -164,6 +176,8 @@ class V2Runner:
         self.progress_file = RESULTS_DIR / f"progress_{run_id}.json"
         self.start_time = time.time()
         self.started_at = datetime.now().isoformat()
+        self.companies = list(companies)
+        self.variables = list(variables)
         variable_lookup = _build_variable_lookup(
             variables, dynamic_variables, parameter_contexts, parameter_path
         )

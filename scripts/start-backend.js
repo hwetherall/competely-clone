@@ -8,15 +8,24 @@ const pythonPath = isWindows
   ? path.join("venv", "Scripts", "python.exe")
   : path.join("venv", "bin", "python");
 const python = path.resolve(process.cwd(), pythonPath);
+const reloadEnabled = process.env.BACKEND_RELOAD === "1" || process.argv.includes("--reload");
 
-// Use = form for --reload-exclude so globs are not expanded by the shell on Windows
-const proc = spawn(python, [
+const args = [
   "-m", "uvicorn", "api.main:app",
-  "--reload", "--port", "8000",
-  "--reload-exclude=venv",
-  "--reload-exclude=data",
-  "--reload-exclude=node_modules",
-], {
+  "--port", "8000",
+];
+
+if (reloadEnabled) {
+  // Use = form for --reload-exclude so globs are not expanded by the shell on Windows.
+  args.push(
+    "--reload",
+    "--reload-exclude=venv",
+    "--reload-exclude=data",
+    "--reload-exclude=node_modules",
+  );
+}
+
+const proc = spawn(python, args, {
   stdio: "inherit",
   cwd: process.cwd(),
   shell: false,

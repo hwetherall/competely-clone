@@ -57,6 +57,14 @@ def parse_result_file(filepath: Path) -> Optional[dict]:
         return None
 
 
+def parse_progress_status(status_str: str) -> RunStatus:
+    """Map persisted progress strings to the public run status enum."""
+    try:
+        return RunStatus(status_str)
+    except ValueError:
+        return RunStatus.PENDING
+
+
 @router.get("", response_model=List[RunListItem])
 async def list_runs():
     """
@@ -137,7 +145,7 @@ async def list_runs():
                     id=run_id,
                     companies=progress.get("companies", []),
                     variables=progress.get("variables", []),
-                    status=RunStatus.RUNNING if progress.get("status") == "running" else RunStatus.PENDING,
+                    status=parse_progress_status(progress.get("status", "pending")),
                     created_at=progress.get("started_at", ""),
                     total_cells=progress.get("total", 0),
                     successful_cells=progress.get("completed", 0),
@@ -314,11 +322,7 @@ async def get_run_status(run_id: str):
                 for a in progress.get("recent_activity", [])[-10:]  # Last 10 items
             ]
             
-            status_str = progress.get("status", "pending")
-            try:
-                status = RunStatus(status_str)
-            except ValueError:
-                status = RunStatus.PENDING
+            status = parse_progress_status(progress.get("status", "pending"))
             
             return RunProgressResponse(
                 run_id=run_id,

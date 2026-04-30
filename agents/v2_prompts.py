@@ -93,6 +93,47 @@ Your normalization:"""
 
 
 # =============================================================================
+# Depth-of-reasoning instruction (injected into dimension synthesis, white-space
+# callouts, the Takeaway for Innovera, and the executive brief; NOT into
+# individual cell-level extraction)
+# =============================================================================
+
+DEPTH_OF_REASONING_INSTRUCTION = """
+For each major claim in your output, produce a second-order implication
+immediately after the claim. The structure is:
+
+  [Evidence-grounded first-order claim about the competitor or market.]
+  [Second-order implication: what this claim means for the buyer, the
+   market, or Innovera over the next 12-24 months.]
+
+The implication must not restate the claim. It must answer one of:
+  - Vulnerability: what does this expose the competitor to?
+  - Opportunity: what does this enable that the competitor is not yet doing?
+  - Trajectory: what does this predict about the competitor's path?
+  - Innovera-specific: what does this mean for how Innovera should compete?
+
+Implications are not optional. A first-order claim without a second-order
+implication is shallow synthesis and should be revised before output. Keep
+each implication to one or two sentences — do not over-elaborate.
+
+Worked example.
+
+  Shallow:
+    "AlphaSense's moat is its content licensing - its enterprise customers
+    pay primarily for access to expert-call transcripts and broker research."
+
+  With second-order implication:
+    "AlphaSense's moat is its content licensing - its enterprise customers
+    pay primarily for access to expert-call transcripts and broker research.
+    [Vulnerability:] This moat is rentable, not built - any well-capitalized
+    foundation-model lab or financial data incumbent can license the same
+    content at the same price. AlphaSense's vertical-first defensibility
+    therefore has a finite half-life and depends on staying ahead on workflow
+    integration faster than capital crowds in."
+"""
+
+
+# =============================================================================
 # Phase 3: Synthesize - Draft Report
 # =============================================================================
 
@@ -133,7 +174,7 @@ Three-state pricing (epistemic posture):
   * `unknown`: neither published nor reliably inferable. State the reason (typology / pre-revenue / evidence gap / brand-collision).
 - Do NOT collapse `inferred` into `unknown` simply because no source publishes the number. If the STRUCTURED EXTRACT contains a `consulting_benchmark` block AND you have at least two signals about scope (engagement length, team size, deal size), you must produce an `inferred` claim.
 - When you produce an inferred numeric, render it inline in prose and tables with the `[inferred]` tag and the range, e.g. `Inferred $1.5M–$3M [inferred] (4-week, 4-person engagement at MBB blended day rate; medium confidence)`. A careful reader must be able to distinguish published facts from triangulated estimates.
-
+{depth_of_reasoning_instruction}
 Output your response as JSON inside <synthesis_json> tags:
 
 <synthesis_json>
@@ -329,7 +370,7 @@ Produce ALL of the following sections:
    - "monitor_and_defend": Competitive moves to watch that could disrupt positioning
    Include 1-4 items per bucket.
    {venture_ns_instruction}
-
+{depth_of_reasoning_instruction}
 Output your response as JSON inside <executive_json> tags:
 
 <executive_json>
@@ -644,7 +685,7 @@ Produce ALL of the following sections. The first 6 sections follow the standard 
    - "parity_zones": List of dimensions where most competitors cluster (low differentiation)
    - "differentiation_zones": List of dimensions where companies diverge significantly
    - "white_space_dimensions": Dimensions where NO company scores above 3 (unserved needs)
-
+{depth_of_reasoning_instruction}
 Output your response as JSON inside <executive_json> tags:
 
 <executive_json>
